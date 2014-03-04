@@ -91,7 +91,6 @@ class Video:
     fence: statistical term to describe outlier range, "mild" and "extreme", use
       number for custom value.
     """
-
     data = np.array( [[0,0]] )
     for imgs in self.scoped_frames(start=start, end=end, size=2):
       iis = [img['img'] for img in imgs]
