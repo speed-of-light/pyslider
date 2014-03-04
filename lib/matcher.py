@@ -147,30 +147,48 @@ class PdfSlider():
   Purpose: Operations on pdf files
   """
   @property
-  def slide_path(self):
-    """The root of slide images
+  def slides_path(self, density=100):
+    """The root of converted slide images
     """
-    return "./tmp/{}".format(self.filename)
+    rt = self.root if self.root == "" else "{}/".format(self.root)
+    return "./data/{1}{0}/slides/{2}".format(self.proj_name, rt, density)
+
+  @property
+  def pdf_path(self):
+    """The root of converted slide images
+    """
+    rt = self.root if self.root == "" else "{}/".format(self.root)
+    return "./data/{1}{0}/{0}.pdf".format(self.proj_name, rt)
+
   @property
   def pages(self):
     """The root of slide images
     """
     return self.pages
 
-  def __init__(self, pdf_path):
-    self.pdf_path = pdf_path
-    pdf = PdfFileReader(self.pdf_path)
-    self.pages = pdf.getNumPages()
+  def __init__(self, proj_name="", root=""):
+    """ Init data with project name and root dir
+      root: base dir of pdf and video data
+    """
+    self.root = root
+    self.proj_name = proj_name
+    self.pages = None
+    if os.path.isfile(self.pdf_path):
+      pdf = PdfFileReader(self.pdf_path)
+      self.pages = pdf.getNumPages()
 
-  def to_jpg(self):
-    pages = self.pages
+  def to_jpgs(self, density=100, pages=None):
+    """ Convert pdf to jpeg images
+      pages: array for pages, None for extract all
+    """
+    pages = np.arange( 0, self.pages, 1) if pages is None else pages
     if pages < 1: return
-    fn = self.filename = os.path.splitext(os.path.basename(self.pdf_path))[0]
-    tmpdf = "./tmp/{}".format(fn)
-    if os.path.exists( tmpdf ): shutil.rmtree(tmpdf)
-    os.makedirs( tmpdf )
+    sp = self.slides_path(density)
+    if os.path.exists(sp): shutil.rmtree(sp)
+    os.makedirs(sp)
     conv = Image()
-    conv.density( '100')
-    for page in np.arange( 0, pages, 1):
+    conv.density("{}".format(density))
+    for page in pages:
+      if page > self.pages: continue
       conv.read( "{}[{}]".format(self.pdf_path, page) )
-      conv.write( "{}/slides_{}.jpg".format(tmpdf, page) )
+      conv.write( "{}/{:03d}.jpg".format(sp, page) )
