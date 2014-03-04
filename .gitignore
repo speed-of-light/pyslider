@@ -1,4 +1,5 @@
 lib/*.pyc
 data
 tmp
-./test.*
+/test.*
+.ipynb_checkpoints/
