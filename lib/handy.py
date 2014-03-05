@@ -111,10 +111,32 @@ class HandyStat:
 class HandyStore:
   """Handling HDFstore
   """
+
   @property
-  def store(self):
-    return self.store
+  def cmplv(self):
+    return 5
+
+  def put(self, df, key):
+    return self.store.put( key, df, format='t', data_columns=True,
+        complib='blosc', complevel=self.cmplv)
+    ""
 
   def __init__(self, path):
-    self.store = pd.HDFStore('{}.h5'.format(path))
+    self.path = '{}.h5'.format(path)
+    self.store = pd.HDFStore(self.path, format='t', data_columns=True,
+        complib='blosc', complevel=self.cmplv)
     ""
+
+  def save_df(self, df, key):
+    if key is None: return False
+    """
+    format='t' for table hdf
+    data_columns to support table query, ex: where
+    complib to reduce disc usage and speed up
+    complevel from 0 to 9
+    """
+    df.to_hdf(self.path, key, mode='a', format='t', data_columns=True,
+        complib='blosc', complevel=self.cmplv)
+
+  def load_df(self, key):
+    return pd.read_hdf(self.path, key, format='t')

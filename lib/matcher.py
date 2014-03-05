@@ -146,12 +146,11 @@ class PdfSlider():
   Author: speed-of-light
   Purpose: Operations on pdf files
   """
-  @property
-  def slides_path(self, density=100):
+  def slides_path(self, size="mid"):
     """The root of converted slide images
     """
     rt = self.root if self.root == "" else "{}/".format(self.root)
-    return "./data/{1}{0}/slides/{2}".format(self.proj_name, rt, density)
+    return "./data/{1}{0}/slides/{2}".format(self.proj_name, rt, size)
 
   @property
   def pdf_path(self):
@@ -177,13 +176,15 @@ class PdfSlider():
       pdf = PdfFileReader(self.pdf_path)
       self.pages = pdf.getNumPages()
 
-  def to_jpgs(self, density=100, pages=None):
+  def to_jpgs(self, size='mid', pages=None):
     """ Convert pdf to jpeg images
       pages: array for pages, None for extract all
     """
+    dendic = dict( thumb=60, mid=100, big=150)
+    density = dendic[size]
     pages = np.arange( 0, self.pages, 1) if pages is None else pages
     if pages < 1: return
-    sp = self.slides_path(density)
+    sp = self.slides_path(size)
     if os.path.exists(sp): shutil.rmtree(sp)
     os.makedirs(sp)
     conv = Image()
