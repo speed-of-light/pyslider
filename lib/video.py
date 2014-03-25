@@ -66,15 +66,20 @@ class Video:
     cap = capr['cap']
     i = 0 if start < 0 else start
     fin = capr['seconds'] if (end == -1 and end < capr['seconds']) else end
+    fin = fin* 1000 #time range in ms
     iset = collections.deque([])
-    while i < fin:
-      cap.set(cv.CV_CAP_PROP_POS_MSEC, i*time_span)
+    while True:
+      k = i*time_span
+      if k > fin: break
+      cap.set(cv.CV_CAP_PROP_POS_MSEC, k)
       grabed, img = cap.read()
       if grabed:
-        iset.append( dict(img=img, ms=cap.get(cv.CV_CAP_PROP_POS_MSEC)) )
+        iset.append( dict(img=img,
+          fn=cap.get(cv.CV_CAP_PROP_POS_FRAMES),
+          ms=cap.get(cv.CV_CAP_PROP_POS_MSEC)) )
         if len(iset) > size: iset.popleft()
         yield(iset)
-      i = i + 1
+      i += 1
 
   def get_frame(self, ms=0):
     cap = self.cap['cap']

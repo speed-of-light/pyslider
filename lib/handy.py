@@ -108,6 +108,19 @@ class HandyStat:
     minutes, seconds = divmod(remainder, 60)
     return "{:02}:{:02}:{:02}".format(hours, minutes, seconds)
 
+  @staticmethod
+  def make_gnd(gt):
+    """ Create single entry slide index
+    :gt: dataframe that second column with slide indexes
+    """
+    fa = []; hold=-1
+    for zv in gt.values:
+      gv = zv[1]
+      if gv > 0 and gv != hold:
+        hold = gv
+        fa.append(zv[0])
+    return gt[gt.frame.isin(fa)]
+
 class HandyStore:
   """Handling HDFstore
   """
@@ -139,4 +152,80 @@ class HandyStore:
         complib='blosc', complevel=self.cmplv)
 
   def load_df(self, key):
+    """
+    global:
+      summary
+    local:
+      './data/[root]/[name]/data
+      keys:
+        prepare:
+          vital_frame:
+            navie
+            fast_navie
+            key_frame_shot
+            surf
+          color_equal:
+            hist
+            gamma
+        feats:
+          keypoints:
+            fast
+            surf
+            sift
+            brisk
+          descs:
+            sift
+            surf
+            orb
+            freak
+            fast
+            color_hist
+            text_region
+            hough_rect
+          descs_sr: # frame descs within slide region # refinement
+            sift
+            surf
+            orb
+            freak
+            fast
+            color_hist
+            text_region
+        matched_feats:
+          compare_hist
+            correlation
+            chi_square
+            intersection
+            Bhattacharyya
+          svm
+          pca
+          brute_force
+          flann
+          ransac
+        refine:
+          time_series
+            dtw
+            hmm
+            mdp
+            gsm
+          region_seek
+            ransac
+            hough_rect
+    """
     return pd.read_hdf(self.path, key, format='t')
+
+class HandyFormatter:
+  """ Quick common formatters for pandas
+  :cnt_: content targeting formatter
+  :xml_: markup targeting formatter
+  :tex_: latex targeting formatter
+  """
+  def cnt_gnd_status(v):
+    ss = { '-1' : "no_slide", '1'   : "full_slide",
+     '2'   : "small_slide", '-99' : "missing_slide" }
+    return ss[str(v)]
+
+  def cnt_gnd_vid_status(v):
+    vs = [ "zoom_in", "stay_fixed", "zoom_out", "pan_tilt",
+    "slide_cut1", "slide_cut2", "slide_in", "stay_out",
+    "slide_out"]
+    return vs[v]
