@@ -146,42 +146,107 @@ class FeatsKp:
     """
 
 from multiprocessing import Process, Queue
+from lib.handy import HandyStore as hs
 class Prepare():
   def __init__(self, root, name):
     vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
     self.vid = vid
     self.key = "./data/{}/{}/prepare".format( root, name)
+    self.statq = self.cmdq = self.p = None
 
-  def run_nf(self, stop=False, end=-1):
-    def naive_frame():
-      vid = Video(self.vid)
-      fps = vid.cap['fps']
-      ret = []
-      for il in vid.scoped_frames(start=0, end=end, size=2, time_span=1000/fps):
-        lfn = il[0]['fn']
-        ret.append(
-          dict(val=cv2.absdiff(il[0]['img'], il[-1]['img']).sum(),
-          fn=lfn))
-        status = il[0]['ms']/(1000*end)
-        sq = self.statq
-        if sq.full(): sq.get()
-        sq.put_nowait("{}".format(status))
-        cq = self.cmdq
-        if not cq.empty():
-          cmd = cq.get_nowait()
-          if cmd == 'stop':
-            if sq.full(): sq.get()
-            sq.put_nowait("Process terminated at frame {}".format(lfn)
-            break
-      return ret
+  def share_data(self, data):
+    sq = self.statq
+    if sq.full(): sq.get()
+    sq.put_nowait(data)
 
-    if stop:
-      self.p.join()
-      self.p.terminate()
+  def get_cmd(self):
+    cq = self.cmdq
+    cmd = None
+    if not cq.empty(): cmd = cq.get_nowait()
+    return cmd
+
+  def save_to(self, dkey, df):
+    hdf = hs(self.key)
+    ks = hdf.store.keys()
+    if dkey in ks: hdf.store.remove(dkey)
+    hdf.put(dkey, df)
+    hdf.store.close()
+
+  def diff(self, key='base', end=-1, size=2):
+    vid = Video(self.vid)
+    fps = vid.cap['fps']
+    ret = []
+    bgm = cv2.BackgroundSubtractorMOG(10, 6, 0.9, .1)
+    for il in vid.scoped_frames(start=0, end=end, size=2, time_span=1000/fps):
+      fgmask = bgm.apply(il[0]['img'])
+      data = [ il[0]['ms'], il[0]['fn'], fgmask.sum() ]
+      ret.append( data )
+    return ret
+
+  def diff_base(self, key='base', end=-1, size=2):
+    vid = Video(self.vid)
+    fps = vid.cap['fps']
+    ret = []
+    for il in vid.scoped_frames(start=0, end=end, size=2, time_span=1000/fps):
+      data = yield(il)
+      ret.append( data )
+      self.share_data( il[0]['ms']/(1000*end) )
+      if self.get_cmd() == 'stop':
+        print "Process terminated at frame {}".format(il[0]['fn'])
+        break
+    df = pd.DataFrame(ret, columns=['ms', 'frame_id', 'diff'])
+    self.save_to("diff_{}_{}".format(key, end), df)
+
+  def diff_next(self, end=-1):
+    fdb = self.diff_base(key='next', end=end)
+    il = fdb.next()
+    while il:
+      data = [ il[0]['ms'], il[0]['fn'],
+        cv2.absdiff(il[0]['img'], il[-1]['img']).sum(),
+        ]
+      try:
+        il = fdb.send( data )
+      except StopIteration:
+        break
+
+  def diff_bkg(self, end=-1, sec=3):
+    bgm = cv2.BackgroundSubtractorMOG(10, 6, 0.9, .1)
+    fdb = self.diff_base(key='bkg', end=end)
+    il = fdb.next()
+    while il:
+      fgmask = bgm.apply(il[0]['img'])
+      data = [ il[0]['ms'], il[0]['fn'], fgmask.sum() ]
+      try:
+        il = fdb.send( data )
+      except StopIteration:
+        break
+
+  def stop(self):
+    if self.idle(): return
+    self.cmdq.put_nowait("stop")
+    proc = self.p
+    while not self.statq.empty():
+      time.sleep(2)
+      self.statq.get_nowait()
+    if proc and proc.is_alive():
+      proc.join()
+      proc.terminate()
+
+  def idle(self):
+    balive = self.p and self.p.is_alive()
+    sqnpt = self.statq and self.statq.empty()
+    cqnpt = self.cmdq and self.cmdq.empty()
+    return not ( balive and sqnpt and cqnpt )
+
+  def cap_vital_frame(self, byfunc, end=-1):
+    def func(*args, **kwargs): #unwrap function for local use
+      return byfunc(*args, **kwargs)
+    if not self.idle():
+      print "{} is working for {}".format( self.key, self.p.name)
       return
     self.statq = Queue(3)
     self.cmdq = Queue(5)
-    self.p = Process(target=naive_frame, args=())
+    self.p = Process(target=func, kwargs={'end': end})
     self.p.start()
 
 

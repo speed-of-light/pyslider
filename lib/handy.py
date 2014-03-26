@@ -1,3 +1,4 @@
+from __future__ import print_function #for progress bar
 import pandas as pd
 import matplotlib.gridspec as gs
 class HandyPlot:
@@ -129,7 +130,7 @@ class HandyStore:
   def cmplv(self):
     return 5
 
-  def put(self, df, key):
+  def put(self, key, df):
     return self.store.put( key, df, format='t', data_columns=True,
         complib='blosc', complevel=self.cmplv)
     ""
@@ -140,7 +141,7 @@ class HandyStore:
         complib='blosc', complevel=self.cmplv)
     ""
 
-  def save_df(self, df, key):
+  def save_df(self, key, df):
     if key is None: return False
     """
     format='t' for table hdf
@@ -211,6 +212,7 @@ class HandyStore:
             ransac
             hough_rect
     """
+    #if self.store: self.store.close()
     return pd.read_hdf(self.path, key, format='t')
 
 class HandyFormatter:
@@ -229,3 +231,47 @@ class HandyFormatter:
     "slide_cut1", "slide_cut2", "slide_in", "stay_out",
     "slide_out"]
     return vs[v]
+
+
+import sys, time
+class ProgressBar:
+  def __init__(self, iterations):
+    self.iterations = iterations
+    self.prog_bar = '[]'
+    self.fill_char = '*'
+    self.width = 50
+    self.__update_amount(0)
+
+  def animate(self, iter):
+    sys.stdout.flush()
+    self.update_iteration(iter)
+    print('\r', self, end='')
+
+  def update_iteration(self, elapsed_iter):
+    self.__update_amount((elapsed_iter / float(self.iterations)) * 100.0)
+    self.prog_bar += '  %d of %s complete' % (elapsed_iter, self.iterations)
+
+  def __update_amount(self, new_amount):
+    percent_done = int(round((new_amount / 100.0) * 100.0))
+    all_full = self.width - 2
+    num_hashes = int(round((percent_done / 100.0) * all_full))
+    self.prog_bar = '[' + self.fill_char * num_hashes + ' ' * (all_full - num_hashes) + ']'
+    pct_place = (len(self.prog_bar) // 2) - len(str(percent_done))
+    pct_string = '%d%%' % percent_done
+    self.prog_bar = self.prog_bar[0:pct_place] + \
+        (pct_string + self.prog_bar[pct_place + len(pct_string):])
+
+  def anistr(self, new_amount):
+    percent_done = int(round((new_amount / 100.0) * 100.0))
+    all_full = self.width - 2
+    num_hashes = int(round((percent_done / 100.0) * all_full))
+    pstr = '[' + self.fill_char * num_hashes + ' ' * (all_full - num_hashes) + ']'
+    pct_place = (len(pstr) // 2) - len(str(percent_done))
+    pct_string = '%d%%' % percent_done
+    pstr = pstr[0:pct_place] + \
+        (pct_string + pstr[pct_place + len(pct_string):])
+    return pstr
+
+
+  def __str__(self):
+    return str(self.prog_bar)
