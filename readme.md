@@ -16,9 +16,9 @@
   global: './data/store.h5'
     summary
   local: './data/[root]/[name]/store/[data].h5'
-    ======================================================================
+
     | prepare          | feats         | matched_feats  | refinement     |
-    ----------------------------------------------------------------------
+    |-----------------:|:-------------:|:---------------|:---------------|
     | vital_frame:     | keypoints:    | compare_hist   | refine:        |
     |   `diff_next`    |   fast        |   correlation  |   time_series  |
     |   diff_bkg       |   surf        |   chi_square   |     dtw        |
@@ -33,7 +33,6 @@
     |                  |   color_hist  |                |                |
     |                  |   text_region |                |                |                                                                                 a
     |                  |   hough_rect  |                |                |
-    ======================================================================
 
 
 - 0.1.0: 2014-03-05 Wed 11:21 AM
