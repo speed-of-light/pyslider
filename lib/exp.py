@@ -196,6 +196,7 @@ class Prepare():
         break
     df = pd.DataFrame(ret, columns=['ms', 'frame_id', 'diff'])
     self.save_to("diff_{}".format(key), df)
+    self.share_data( 'finish' )
 
   def diff_next(self, end=-1):
     fdb = self.diff_base(key='next', end=end)
