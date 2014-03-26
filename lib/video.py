@@ -65,7 +65,7 @@ class Video:
     capr = self.cap
     cap = capr['cap']
     i = 0 if start < 0 else start
-    fin = capr['seconds'] if (end == -1 and end < capr['seconds']) else end
+    fin = capr['seconds'] if (end == -1 or end > capr['seconds']) else end
     fin = fin* 1000 #time range in ms
     iset = collections.deque([])
     while True:
