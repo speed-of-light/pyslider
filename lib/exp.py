@@ -195,7 +195,7 @@ class Prepare():
         print "Process terminated at frame {}".format(il[0]['fn'])
         break
     df = pd.DataFrame(ret, columns=['ms', 'frame_id', 'diff'])
-    self.save_to("diff_{}_{}".format(key, end), df)
+    self.save_to("diff_{}".format(key), df)
 
   def diff_next(self, end=-1):
     fdb = self.diff_base(key='next', end=end)
