@@ -1,3 +1,4 @@
+from __future__ import print_function #for progress bar
 import pandas as pd
 import matplotlib.gridspec as gs
 class HandyPlot:
@@ -108,13 +109,169 @@ class HandyStat:
     minutes, seconds = divmod(remainder, 60)
     return "{:02}:{:02}:{:02}".format(hours, minutes, seconds)
 
+  @staticmethod
+  def make_gnd(gt):
+    """ Create single entry slide index
+    :gt: dataframe that second column with slide indexes
+    """
+    fa = []; hold=-1
+    for zv in gt.values:
+      gv = zv[1]
+      if gv > 0 and gv != hold:
+        hold = gv
+        fa.append(zv[0])
+    return gt[gt.frame.isin(fa)]
+
 class HandyStore:
   """Handling HDFstore
   """
+
   @property
-  def store(self):
-    return self.store
+  def cmplv(self):
+    return 5
+
+  def put(self, key, df):
+    return self.store.put( key, df, format='t', data_columns=True,
+        complib='blosc', complevel=self.cmplv)
+    ""
 
   def __init__(self, path):
-    self.store = pd.HDFStore('{}.h5'.format(path))
+    self.path = '{}.h5'.format(path)
+    self.store = pd.HDFStore(self.path, format='t', data_columns=True,
+        complib='blosc', complevel=self.cmplv)
     ""
+
+  def save_df(self, key, df):
+    if key is None: return False
+    """
+    format='t' for table hdf
+    data_columns to support table query, ex: where
+    complib to reduce disc usage and speed up
+    complevel from 0 to 9
+    """
+    df.to_hdf(self.path, key, mode='a', format='t', data_columns=True,
+        complib='blosc', complevel=self.cmplv)
+
+  def load_df(self, key):
+    """
+    global:
+      summary
+    local:
+      './data/[root]/[name]/data
+      keys:
+        prepare:
+          vital_frame:
+            navie
+            fast_navie
+            key_frame_shot
+            surf
+          color_equal:
+            hist
+            gamma
+        feats:
+          keypoints:
+            fast
+            surf
+            sift
+            brisk
+          descs:
+            sift
+            surf
+            orb
+            freak
+            fast
+            color_hist
+            text_region
+            hough_rect
+          descs_sr: # frame descs within slide region # refinement
+            sift
+            surf
+            orb
+            freak
+            fast
+            color_hist
+            text_region
+        matched_feats:
+          compare_hist
+            correlation
+            chi_square
+            intersection
+            Bhattacharyya
+          svm
+          pca
+          brute_force
+          flann
+          ransac
+        refine:
+          time_series
+            dtw
+            hmm
+            mdp
+            gsm
+          region_seek
+            ransac
+            hough_rect
+    """
+    #if self.store: self.store.close()
+    return pd.read_hdf(self.path, key, format='t')
+
+class HandyFormatter:
+  """ Quick common formatters for pandas
+  :cnt_: content targeting formatter
+  :xml_: markup targeting formatter
+  :tex_: latex targeting formatter
+  """
+  def cnt_gnd_status(v):
+    ss = { '-1' : "no_slide", '1'   : "full_slide",
+     '2'   : "small_slide", '-99' : "missing_slide" }
+    return ss[str(v)]
+
+  def cnt_gnd_vid_status(v):
+    vs = [ "zoom_in", "stay_fixed", "zoom_out", "pan_tilt",
+    "slide_cut1", "slide_cut2", "slide_in", "stay_out",
+    "slide_out"]
+    return vs[v]
+
+
+import sys, time
+class ProgressBar:
+  def __init__(self, iterations):
+    self.iterations = iterations
+    self.prog_bar = '[]'
+    self.fill_char = '*'
+    self.width = 50
+    self.__update_amount(0)
+
+  def animate(self, iter):
+    sys.stdout.flush()
+    self.update_iteration(iter)
+    print('\r', self, end='')
+
+  def update_iteration(self, elapsed_iter):
+    self.__update_amount((elapsed_iter / float(self.iterations)) * 100.0)
+    self.prog_bar += '  %d of %s complete' % (elapsed_iter, self.iterations)
+
+  def __update_amount(self, new_amount):
+    percent_done = int(round((new_amount / 100.0) * 100.0))
+    all_full = self.width - 2
+    num_hashes = int(round((percent_done / 100.0) * all_full))
+    self.prog_bar = '[' + self.fill_char * num_hashes + ' ' * (all_full - num_hashes) + ']'
+    pct_place = (len(self.prog_bar) // 2) - len(str(percent_done))
+    pct_string = '%d%%' % percent_done
+    self.prog_bar = self.prog_bar[0:pct_place] + \
+        (pct_string + self.prog_bar[pct_place + len(pct_string):])
+
+  def anistr(self, new_amount):
+    percent_done = int(round((new_amount / 100.0) * 100.0))
+    all_full = self.width - 2
+    num_hashes = int(round((percent_done / 100.0) * all_full))
+    pstr = '[' + self.fill_char * num_hashes + ' ' * (all_full - num_hashes) + ']'
+    pct_place = (len(pstr) // 2) - len(str(percent_done))
+    pct_string = '%d%%' % percent_done
+    pstr = pstr[0:pct_place] + \
+        (pct_string + pstr[pct_place + len(pct_string):])
+    return pstr
+
+
+  def __str__(self):
+    return str(self.prog_bar)
