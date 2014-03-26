@@ -151,7 +151,7 @@ class Prepare():
   def __init__(self, root, name):
     vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
     self.vid = vid
-    self.key = "./data/{}/{}/prepare".format( root, name)
+    self.key = "./data/{}/{}/stores/prepare".format( root, name)
     self.statq = self.cmdq = self.p = None
 
   def share_data(self, data):
