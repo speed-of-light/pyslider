@@ -186,7 +186,7 @@ class Prepare():
   def diff_base(self, key='base', end=-1, size=2):
     vid = Video(self.vid)
     fps = vid.cap['fps']
-    end = capr['seconds'] if (end == -1 or end > capr['seconds']) else end
+    end = vid.cap['seconds'] if (end == -1 or end > vid.cap['seconds']) else end
     ret = []
     for il in vid.scoped_frames(start=0, end=end, size=2, time_span=1000/fps):
       data = yield(il)
