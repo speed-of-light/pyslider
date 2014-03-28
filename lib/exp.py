@@ -258,12 +258,13 @@ class Prepare():
     def func(*args, **kwa): #unwrap function for local use
       for kw in kwa['kw_list']:
         fn = kw['fn']
-        params = kw['params']
-        with ht(verbose=True) as t:
-          #byfunc(*args, **kw)
-          mus = mu((fn, args, params), interval=.0, timeout=None, max_usage=False)
-        self.finq.put_nowait(dict(keys=params, name=fn.__name__,
-          mem=mus[0], time=t.msecs))
+        parl = kw['params']
+        for par in parl:
+          with ht(verbose=True) as t:
+            #byfunc(*args, **kw)
+            mus = mu((fn, args, par), interval=.0, timeout=None, max_usage=False)
+          self.finq.put_nowait(dict(keys=par, name=fn.__name__,
+            mem=mus[0], time=t.msecs))
       self.current_job = None
 
     if not self.idle():
