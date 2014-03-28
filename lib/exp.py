@@ -145,28 +145,32 @@ class FeatsKp:
     http://docs.opencv.org/trunk/modules/features2d/doc/feature_detection_and_description.html
     """
 
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Lock
 from lib.handy import HandyStore as hs
+from lib.handy import HandyTimer as ht
+from memory_profiler import memory_usage as mu
 class Prepare():
   def __init__(self, root, name):
     vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
     self.vid = vid
-    self.key = "./data/{}/{}/stores/prepare".format( root, name)
+    self.path = "./data/{}/{}/stores/prepare".format( root, name)
     self.statq = self.cmdq = self.p = None
 
   def share_data(self, data):
     sq = self.statq
+    if sq is None: return
     if sq.full(): sq.get()
     sq.put_nowait(data)
 
   def get_cmd(self):
     cq = self.cmdq
+    if cq is None: return
     cmd = None
     if not cq.empty(): cmd = cq.get_nowait()
     return cmd
 
   def save_to(self, dkey, df):
-    hdf = hs(self.key)
+    hdf = hs(self.path)
     ks = hdf.store.keys()
     if dkey in ks: hdf.store.remove(dkey)
     hdf.put(dkey, df)
@@ -183,37 +187,47 @@ class Prepare():
       ret.append( data )
     return ret
 
-  def diff_base(self, key='base', end=-1, size=2):
+  def diff_base(self, lock, key='base', end=-1, size=2):
     vid = Video(self.vid)
     fps = vid.cap['fps']
     end = vid.cap['seconds'] if (end == -1 or end > vid.cap['seconds']) else end
     ret = []
-    for il in vid.scoped_frames(start=0, end=end, size=2, time_span=1000/fps):
+    for il in vid.scoped_frames(start=0, end=end, size=size, time_span=1000/fps):
       data = yield(il)
       ret.append( data )
-      self.share_data( il[0]['ms']/(1000*end) )
+      self.share_data(dict(prog=il[0]['ms']/(1000*end)))
       if self.get_cmd() == 'stop':
         print "Process terminated at frame {}".format(il[0]['fn'])
         break
     df = pd.DataFrame(ret, columns=['ms', 'frame_id', 'diff'])
-    self.save_to("diff_{}".format(key), df)
-    self.share_data( 'finish' )
+    self.share_data(dict(prog=1.0))
+    if lock is not None:
+      lock.acquire(timeout=180)
+      self.save_to("diff_{}".format(key), df)
+      lock.release()
 
-  def diff_next(self, end=-1):
-    fdb = self.diff_base(key='next', end=end)
+  def diff_next(self, lock, end=-1, size=2):
+    dk = "next/size_{}".format(size)
+    fdb = self.diff_base(lock, key=dk, end=end, size=size)
     il = fdb.next()
     while il:
-      data = [ il[0]['ms'], il[0]['fn'],
-        cv2.absdiff(il[0]['img'], il[-1]['img']).sum(),
-        ]
+      ratio = 1.0/len(il)
+      mix = il[0]['img']
+      mix = cv2.addWeighted(mix, ratio, mix, 0, 0)
+      for i, img in enumerate(il):
+        if i == 0 : continue
+        mix = cv2.addWeighted(mix, 1, img['img'], ratio, 0)
+      suma = cv2.absdiff(il[-1]['img'], mix).sum()
+      data = [ il[0]['ms'], il[0]['fn'], suma ]
       try:
         il = fdb.send( data )
       except StopIteration:
         break
 
-  def diff_bkg(self, end=-1, sec=3):
-    bgm = cv2.BackgroundSubtractorMOG(10, 6, 0.9, .1)
-    fdb = self.diff_base(key='bkg', end=end)
+  def diff_bkg(self, lock, end=-1, hist=30, bgr=0.9, nog=5, nr=.1):
+    bgm = cv2.BackgroundSubtractorMOG(hist, nog, bgr, nr)
+    dfk = "bkg/hist_{}/bgr_{}/nog_{}/nr_{}".format(hist, bgr, nog, nr)
+    fdb = self.diff_base(lock, key=dfk, end=end)
     il = fdb.next()
     while il:
       fgmask = bgm.apply(il[0]['img'])
@@ -240,15 +254,24 @@ class Prepare():
     cqnpt = self.cmdq and self.cmdq.empty()
     return not ( balive and sqnpt and cqnpt )
 
-  def cap_vital_frame(self, byfunc, end=-1):
-    def func(*args, **kwargs): #unwrap function for local use
-      return byfunc(*args, **kwargs)
+  def cap_vital_frame(self, byfunc, **kwargs):
+    def func(*args, **kwa): #unwrap function for local use
+      for fn, kw in zip(kwa['fn_list'], kwa['kw_list']):
+        with ht(verbose=True) as t:
+          #byfunc(*args, **kw)
+          mus = mu((fn, args, kw), interval=.0, timeout=None, max_usage=False)
+        self.finq.put_nowait(dict(keys=kw, name=fn.__name__,
+          mem=mus[0], time=t.msecs))
+      self.current_job = None
+
     if not self.idle():
-      print "{} is working for {}".format( self.key, self.p.name)
+      print "{} is working for {}".format( self.path, self.p.name)
       return
+    lock = Lock()
     self.statq = Queue(3)
     self.cmdq = Queue(5)
-    self.p = Process(target=func, kwargs={'end': end})
+    self.finq = Queue(500)
+    self.p = Process(target=func, args=(lock,), kwargs=kwargs)
     self.p.start()
 
 
