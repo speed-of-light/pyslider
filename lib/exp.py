@@ -256,13 +256,14 @@ class Prepare():
 
   def cap_vital_frame(self, byfunc, **kwargs):
     def func(*args, **kwa): #unwrap function for local use
-      for fn in kwa['fn_list']:
-        for kw in kwa['kw_list']:
-          with ht(verbose=True) as t:
-            #byfunc(*args, **kw)
-            mus = mu((fn, args, kw), interval=.0, timeout=None, max_usage=False)
-          self.finq.put_nowait(dict(keys=kw, name=fn.__name__,
-            mem=mus[0], time=t.msecs))
+      for kw in kwa['kw_list']:
+        fn = kw['fn']
+        params = kw['params']
+        with ht(verbose=True) as t:
+          #byfunc(*args, **kw)
+          mus = mu((fn, args, params), interval=.0, timeout=None, max_usage=False)
+        self.finq.put_nowait(dict(keys=params, name=fn.__name__,
+          mem=mus[0], time=t.msecs))
       self.current_job = None
 
     if not self.idle():
