@@ -9,6 +9,11 @@
   - have finish Prepare class
   - have basic latex generator for diagrams and tables for Prepare class
 
+- `0.1.6`: 2014-03-28 Fri 06:09 PM
+  - add diff with average frames
+  - make diff function more flexible for accept params
+  - Add profiler for time and memory
+
 - `0.1.5`: 2014-03-26 Wed 02:53 PM
   - mock up needed classes
   - create a base framework for collecting data
