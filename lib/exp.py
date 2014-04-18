@@ -8,6 +8,8 @@ from video import Video
 import cv2, cv
 import numpy as np
 import pandas as pd
+# plotting
+from matplotlib import offsetbox as ofb
 
 class Refine:
   # time series relation ship
@@ -226,6 +228,7 @@ class Prepare():
 
   def diff_bkg(self, lock, end=-1, hist=30, bgr=0.9, nog=5, nr=.1):
     bgm = cv2.BackgroundSubtractorMOG(hist, nog, bgr, nr)
+    # TODO: dfk does not support keys like 3.x test.name etc..
     dfk = "bkg/hist_{}/bgr_{}/nog_{}/nr_{}".format(hist, bgr, nog, nr)
     fdb = self.diff_base(lock, key=dfk, end=end)
     il = fdb.next()
@@ -277,6 +280,68 @@ class Prepare():
     self.p = Process(target=func, args=(lock,), kwargs=kwargs)
     self.p.start()
 
+  def seq_reduce(self, df, value_key='diff'):
+    """
+    Keep max value in each continued sequence.
+    ex:
+     index = [ 1, 2, 3, 4, 7, 8, 9, 12, 13]
+     value = [ 4, 2, 3, 3, 5, 8, 7,  8,  9]
+     =>
+     index = [ 1, 8, 13]
+     value = [ 4, 8,  9]
+    """
+    igmax = -1; last_v = -1
+    for i, v in enumerate(df.index):
+      if i == 0:
+        igmax = v
+        next
+      if (v - last_v) == 1: # check conti series max
+        if df.ix[igmax][value_key] < df.ix[v][value_key]:
+          df = df.drop([igmax])
+          igmax = v
+        else:
+          df = df.drop([v])
+      else:
+        igmax = v
+      last_v = v
+    return df
+
+  def plot_annote(self, ax, raw, nodes, ffrom=0, fto=2000):
+    """
+    `ax`: axes for plot area
+    `raw`: raw data for observation
+    `nodes`: nodes dict contained
+      (index array, value array, text array) for marking
+      important data.
+    `section`: data range to display
+    `window_size`: data size to display
+    """
+    def add_artist(ax, fid, pval, bounce=(.5,.5)):
+      vimg = vid.get_frame(by='id', value=fid)
+      oft = ofb.OffsetImage(vimg, zoom=0.1)
+      ab = ofb.AnnotationBbox(oft, (fid, pval), xycoords='data', xybox=bounce,
+        boxcoords=('data', "axes fraction"), bboxprops=dict(boxstyle='round,pad=0.1', ec='g'),
+        arrowprops=dict(arrowstyle="->", color='g'))
+      ax.add_artist(ab)
+    vid = Video(self.vid)
+    xlim = (ffrom, fto)
+    ax.plot(raw, color='black')
+    ax.plot([ii['index'] for ii in nodes], [vv['value'] for vv in nodes], 'ro')
+    ax.set_xlim(xlim)
+    for nod in nodes:
+      if nod['index'] < xlim[0]: next
+      if nod['index'] > xlim[1]: break
+      add_artist(ax, nod['fid'] - 1, nod['value'], (nod['fid']-15, .75))
+      # last
+      add_artist(ax, nod['fid'], nod['value'], (nod['fid'], .95))
+      oft = ofb.TextArea(str(nod['fid']))
+      ab = ofb.AnnotationBbox(oft, (nod['index'], nod['value']), xycoords='data',
+        xybox=(nod['index'], 0.90), boxcoords=('data', "axes fraction"), bboxprops=dict(boxstyle='round,pad=0.1', ec='g'),
+        arrowprops=dict(arrowstyle="->", color='g'))
+      ax.add_artist(ab)
+      # last
+      add_artist(ax, nod['fid'] + 1, nod['value'], (nod['fid']+15, .75))
+
 
 class Summary:
   def __init__(self, summary):
@@ -321,7 +386,7 @@ class Summary:
     :example:
       from lib.exp import DataSet
       ds = DataSet(data)
-      ds.summary_extract_slides()
+      ds.extract_slides()
     """
     for ps in self.ps_list():
       for si in ('thumb', 'mid', 'big'):

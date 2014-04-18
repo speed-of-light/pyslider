@@ -36,15 +36,6 @@ class Video:
   def __init__(self, stream_path=""):
     self.stream_path = stream_path
 
-  def get_frame(self, index):
-    """Return converted image for show in matplotlib
-    """
-    if index > self.frame_count: raise Exception("Frame index is out of range.")
-    capture = cv2.VideoCapture(self.vpath)
-    capture.set(cv.CV_CAP_PROP_POS_FRAMES, index)
-    ret, img = capture.read()
-    return img[:,:,[2,1,0]] #convert for matplotlib
-
   def scoped_frames(self, start=0, end=-1, size=1, time_span=1000):
     """
     Return a generator to manipulate with frames
@@ -81,11 +72,12 @@ class Video:
         yield(iset)
       i += 1
 
-  def get_frame(self, ms=0):
+  def get_frame(self, by='id', value=0):
+    key = dict(time=cv.CV_CAP_PROP_POS_MSEC, id=cv.CV_CAP_PROP_POS_FRAMES)
     cap = self.cap['cap']
-    cap.set(cv.CV_CAP_PROP_POS_MSEC, ms)
+    cap.set(key[by], value)
     grabed, img = cap.read()
-    return img[:,:,[2,1,0]] #convert for matplotlib
+    return img[:,:,[2,1,0]]  #convert for matplotlib
 
   def diff_pre(self, start=0, end=-1, fence="mild"):
     """
