@@ -1,6 +1,7 @@
 # system
-import os.path
+import os
 import glob
+import re
 # custom
 from matcher import PdfSlider
 from video import Video
@@ -10,6 +11,76 @@ import numpy as np
 import pandas as pd
 # plotting
 from matplotlib import offsetbox as ofb
+
+class ExpCommon():
+  def __init__(self, root, name):
+    """
+    `root`: file root
+    `name`: project name
+    """
+    self.root = root
+    self.name = name
+    self.comp = 6
+
+  def slide_pages(self):
+    ps = PdfSlider(self.name, self.root)
+    return ps.pages()
+
+  def slides_path(self, size='mid'):
+    ps = PdfSlider(self.name, self.root)
+    return ps.slides_path(size)
+
+  def store(self):
+    sp = self.store_path()
+    return pd.HDFStore(sp, format='t', data_columns=True,
+        complib='blosc', complevel=self.comp)
+
+  def store_path(self):
+    rt = self.root
+    pn = self.name
+    cn = self._underscore(self.__class__.__name__)
+    return "data/{}/{}/stores/{}.h5".format( rt, pn, cn)
+
+  def delete_file(self):
+    os.remove(self.store_path())
+
+  def save(self, key, data):
+    sp = self.store_path()
+    data.to_hdf(sp, key, mode='a', data_columns=True,
+         format='t', complib='blosc', complevel=self.comp)
+    kf = self.load('keys')
+    if kf is None: kf = pd.DataFrame([key], columns=['key'])
+    else:
+      kf = kf.append(pd.DataFrame([key], columns=['key']))
+      kf = kf.reset_index()
+    kf.to_hdf(sp, 'keys', mode='a', data_columns=True,
+         format='t', complib='blosc', complevel=self.comp)
+
+  def load(self, key):
+    sp = self.store_path()
+    try:
+      df = pd.read_hdf(sp, key, format='t')
+    except KeyError, e:
+      return None
+    return df
+
+
+  def _underscore(self, string):
+    # move pre-compile out the loop to improve performance
+    first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+    all_cap_re = re.compile('([a-z0-9])([A-Z])')
+    s1 = first_cap_re.sub(r'\1_\2', string)
+    return all_cap_re.sub(r'\1_\2', s1).lower()
+
+  def _ustr_dict(self, di):
+    """
+    Make dict keys underscore for saving to hdfs
+    """
+    s = ""
+    ks = di.keys(); ks.sort()
+    for k in ks: s += "/{}_{}".format( k, di[k])
+    return s
+
 
 class Refine:
   # time series relation ship
@@ -39,7 +110,6 @@ class Refine:
 
 
 class Matching:
-
   def compare_hist(self):
     """
     http://docs.opencv.org/doc/tutorials/imgproc/histograms/histogram_comparison/histogram_comparison.html
@@ -121,11 +191,57 @@ class FeatsDesc:
     """
 
 
-class FeatsKp:
-  def __init__(self, img):
+class Feats(ExpCommon):
+  def __init__(self, root, name):
     """
     """
-    self.img = img
+    ExpCommon.__init__(self, root, name)
+
+  def o_slides(self, gray=False):
+    spm = self.slides_path(size='big')
+    slides = [spm+"/"+name for name in os.listdir(spm) if os.path.isfile(spm+"/"+name)]
+    for i, sp in enumerate(slides, 1):
+      if gray: img = cv2.imread(sp, cv2.COLOR_GRAY2BGR)
+      else: img = cv2.imread(sp)
+      yield(dict(img=img, index=i))
+
+  def detect_with(self, img_iter=[], mod=dict(kp_adp='', kp_algo='FAST',
+    des_adp='', des_algo='SIFT'), **opts):
+    """
+    `mod` dict should include
+      `kp_adp`: '', 'Grid', 'Pyramid' #adaptive method for detection
+      `kp_algo`: "FAST","STAR","SIFT","SURF","ORB","MSER","GFTT","HARRIS"
+      `des_adp`: '', 'Opponent'
+      `des_algo`: "SIFT", "SURF", "BRIEF", "BRISK", "ORB", "FREAK"
+    """
+    fd = cv2.FeatureDetector_create(mod['kp_adp']+mod['kp_algo'])
+    de = cv2.DescriptorExtractor_create(mod['des_adp']+mod['des_algo'])
+    #if det.empty(): return None
+    cols = [ 'x', 'y', 'size', 'angle', 'response', 'octave', 'class_id']
+    dkrk = self._df_key_root(mod, opts, 'slide')
+    dkrd = self._df_key_root(mod, opts, 'slide', dtype='desc')
+    for im in img_iter:
+      imid = im['index']
+      img = im['img']
+      with ht(verbose=True) as ts:
+        kps = fd.detect(img, None)
+        kps, des = de.compute(img, kps)
+      kdf = pd.DataFrame([[ kp.pt[0], kp.pt[1], kp.size, kp.angle,
+        kp.response, kp.octave, kp.class_id] for kp in kps], columns = cols)
+      ddf = pd.DataFrame(des)
+      kdf[kdf.columns] = kdf[kdf.columns].astype(kdf['x'].dtype)
+      ddf.columns = [("i_" + str(cc)) for cc in ddf.columns]
+      self.save("{}/i{:03d}".format(dkrk, imid), kdf)
+      self.save("{}/i{:03d}".format(dkrd, imid), ddf)
+      print imid
+    return None
+
+  def _df_key_root(self, mod, opt, set_name='slide', dtype='kp'):
+    hdfk = "/{}/{}".format(mod['kp_adp']+mod['kp_algo'],
+        mod['des_adp']+mod['des_algo'])
+    us = self._ustr_dict(opt)
+    fik = "{}{}/{}/{}".format(hdfk, us, set_name, dtype)
+    return fik
 
   def fast(self):
     """
@@ -147,16 +263,21 @@ class FeatsKp:
     http://docs.opencv.org/trunk/modules/features2d/doc/feature_detection_and_description.html
     """
 
+
 from multiprocessing import Process, Queue, Lock
 from lib.handy import HandyStore as hs
 from lib.handy import HandyTimer as ht
 from memory_profiler import memory_usage as mu
 class Prepare():
   def __init__(self, root, name):
-    vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
-    self.vid = vid
-    self.path = "./data/{}/{}/stores/prepare".format( root, name)
+    self.root = root
+    self.pj_name = name
     self.statq = self.cmdq = self.p = None
+
+  def path(self):
+    rt = self.root
+    pn = self.pj_name
+    return "./data/{}/{}/stores/prepare".format( rt, pn)
 
   def share_data(self, data):
     sq = self.statq
@@ -306,41 +427,56 @@ class Prepare():
       last_v = v
     return df
 
-  def plot_annote(self, ax, raw, nodes, ffrom=0, fto=2000):
+  def plot_annote(self, ax, raw, gnd, nodes, ffrom=0, fto=2000):
     """
     `ax`: axes for plot area
     `raw`: raw data for observation
+    `gnd`: ground truth data
     `nodes`: nodes dict contained
       (index array, value array, text array) for marking
       important data.
     `section`: data range to display
     `window_size`: data size to display
     """
-    def add_artist(ax, fid, pval, bounce=(.5,.5)):
-      vimg = vid.get_frame(by='id', value=fid)
-      oft = ofb.OffsetImage(vimg, zoom=0.1)
+    def add_artist(ax, fid, pval, bounce=(.5,.5), img=None):
+      if img is None: img = vid.get_frame(by='id', value=fid)
+      oft = ofb.OffsetImage(img, zoom=0.1)
       ab = ofb.AnnotationBbox(oft, (fid, pval), xycoords='data', xybox=bounce,
-        boxcoords=('data', "axes fraction"), bboxprops=dict(boxstyle='round,pad=0.1', ec='g'),
+        boxcoords=('axes fraction', "axes fraction"), bboxprops=dict(boxstyle='round,pad=0.1', ec='g'),
         arrowprops=dict(arrowstyle="->", color='g'))
       ax.add_artist(ab)
-    vid = Video(self.vid)
+    vid = Video(self.root, self.pj_name)
+    slid = PdfSlider(self.pj_name, self.root)
     xlim = (ffrom, fto)
-    ax.plot(raw, color='black')
-    ax.plot([ii['index'] for ii in nodes], [vv['value'] for vv in nodes], 'ro')
+    # plot diff value
+    ln_raw = ax.plot(raw, color='black')
+    ln_peak = ax.plot([ii['index'] for ii in nodes], [vv['value'] for vv in nodes], 'ro')
+    # plot ground truth
+    ax2 = ax.twinx()
+    ln_gnd = ax2.plot(gnd['fid'], gnd['sid'], 'b-')
+    rng_sid = gnd[(gnd['fid'] > ffrom) & (gnd['fid'] < fto)].sid
+    ax2.set_ylim( rng_sid.min()-1, rng_sid.max() + 1)
     ax.set_xlim(xlim)
+    # make legend
+    lns = ln_raw + ln_peak + ln_gnd
+    labs = [l.get_label() for l in lns]
+    ax.legend(lns, ['raw', 'peak', 'ground'], loc=0)
     for nod in nodes:
-      if nod['index'] < xlim[0]: next
-      if nod['index'] > xlim[1]: break
-      add_artist(ax, nod['fid'] - 1, nod['value'], (nod['fid']-15, .75))
+      inx = nod['index']; nov = nod['value']; gsid = int(nod['gsid'])
+      if inx < xlim[0]: continue
+      if inx > xlim[1]: break
+      frac = (inx-ffrom)*1.0/(fto-ffrom)
+      add_artist(ax, inx - 1, nov, (frac-0.05, .65))
       # last
-      add_artist(ax, nod['fid'], nod['value'], (nod['fid'], .95))
-      oft = ofb.TextArea(str(nod['fid']))
-      ab = ofb.AnnotationBbox(oft, (nod['index'], nod['value']), xycoords='data',
-        xybox=(nod['index'], 0.90), boxcoords=('data', "axes fraction"), bboxprops=dict(boxstyle='round,pad=0.1', ec='g'),
+      add_artist(ax, inx, nov, (frac, .95))
+      add_artist(ax, inx, nov, (frac, .05), img=slid.get_slide(gsid))
+      oft = ofb.TextArea("{}[{}]".format(inx, gsid))
+      ab = ofb.AnnotationBbox(oft, (inx, nov), xycoords='data',
+        xybox=(inx, 0.90), boxcoords=('data', "axes fraction"), bboxprops=dict(boxstyle='round,pad=0.1', ec='g'),
         arrowprops=dict(arrowstyle="->", color='g'))
       ax.add_artist(ab)
       # last
-      add_artist(ax, nod['fid'] + 1, nod['value'], (nod['fid']+15, .75))
+      add_artist(ax, inx + 1, nov, (frac+0.05, .8))
 
 
 class Summary:
@@ -406,13 +542,41 @@ class Summary:
     for v in data[['n_name', 'n_root']].values:
       print v
 
-class GroundTruth:
-  def __init__(self, gnd):
-    """
-    :gnd: the dataframe contained ground truth
-    """
-    self.gnd = gnd
+class GroundTruth(ExpCommon):
+  def __init__(self, root, name):
+    ExpCommon.__init__(self, root, name)
 
-  def aggregate(self):
-    gf = self.gnd
+  def univ_df(self):
+    coll = []
+    gnd = "data/{}/{}/ground_truth".format(self.root, self.name)
+    with open(gnd, 'r') as f:
+      for ln in f.readlines():
+        cols = [int(x) for x in ln.split(',')]
+        coll.append(cols)
+    gf = pd.DataFrame(data=coll, columns=['fid', 'sid', 'slide_type', 'cam_status'])
+    gcf = self._aggregate(gf.clone())
+    return gcf
+
+  def _aggregate(self, df):
+    f_slid = -1; f_cnt = 1; f_keep=-1
+    for inx in df.index:
+      if f_slid < 0: f_slid = df.ix[inx]['sid']; continue
+      if f_slid == df.ix[inx]['sid']:
+        if f_cnt == 1: f_cnt = 2; f_keep = inx; continue
+        if f_cnt > 1: df = df.drop(f_keep)
+        f_keep = inx
+      else:
+        f_cnt = 1
+        f_slid = df.ix[inx]['sid']
+        continue
+    return df
+
+  def frame_gnd_tag(res, gnd):
+    candi = []
+    for di in res.index:
+      qry = gnd[(gnd['fid'] <= di)]
+      if len(qry) > 0: candi.append(qry.values[-1][1])
+      else: candi.append(-1)
+    res['ground_sid'] = candi
+
 

@@ -205,3 +205,13 @@ class PdfSlider():
       img.write("{}.jpg".format(slid))
     #break
     #self.png_jpg('test.png')
+
+  def get_slide(self, index=1):
+    if index < 1:
+      img = cv2.imread( "{}/{:03d}.jpg".format(self.slides_path(), 1) )
+      img[:] = (255,255,255)
+      cv2.line(img, (0,0), (img.shape[1], img.shape[0]), (0,0,255), int(0.1*img.shape[0]))
+      cv2.line(img, (0, img.shape[0]), (img.shape[1], 0), (0,0,255), int(0.1*img.shape[0]))
+    else:
+      img = cv2.imread( "{}/{:03d}.jpg".format(self.slides_path('big'), index))
+    return img[:,:,[2,1,0]]  #convert for matplotlib

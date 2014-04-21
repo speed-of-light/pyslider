@@ -2,6 +2,7 @@ import cv2, cv
 import collections
 import numpy as np
 import pandas as pd
+import glob
 
 class Video:
   """
@@ -33,8 +34,13 @@ class Video:
       }
       return ret
 
-  def __init__(self, stream_path=""):
+  @classmethod
+  def from_path(self, stream_path=""):
     self.stream_path = stream_path
+
+  def __init__(self, root, name):
+    vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
+    self.stream_path = vid
 
   def scoped_frames(self, start=0, end=-1, size=1, time_span=1000):
     """
@@ -71,6 +77,13 @@ class Video:
         if len(iset) > size: iset.popleft()
         yield(iset)
       i += 1
+
+  def get_frames(self, ids=[]):
+    cap = self.cap['cap']
+    for fid in ids:
+      cap.set(cv.CV_CAP_PROP_POS_FRAMES, fid)
+      grabed, img = cap.read()
+      if grabed: yield(dict(img=img, fid=fid))
 
   def get_frame(self, by='id', value=0):
     key = dict(time=cv.CV_CAP_PROP_POS_MSEC, id=cv.CV_CAP_PROP_POS_FRAMES)
