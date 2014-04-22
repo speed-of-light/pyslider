@@ -1,7 +1,5 @@
 # system
-import os
-import glob
-import re
+import os, glob, re, itertools, logging
 # custom
 from matcher import PdfSlider
 from video import Video
@@ -53,8 +51,10 @@ class ExpCommon():
     else:
       kf = kf.append(pd.DataFrame([key], columns=['key']))
       kf = kf.reset_index()
+      for rc in ['index', 'level']:
+        if rc in kf.columns: del kf[rc]
     kf.to_hdf(sp, 'keys', mode='a', data_columns=True,
-         format='t', complib='blosc', complevel=self.comp)
+        format='t', complib='blosc', complevel=self.comp)
 
   def load(self, key):
     sp = self.store_path()
@@ -63,7 +63,6 @@ class ExpCommon():
     except KeyError, e:
       return None
     return df
-
 
   def _underscore(self, string):
     # move pre-compile out the loop to improve performance
@@ -205,8 +204,8 @@ class Feats(ExpCommon):
       else: img = cv2.imread(sp)
       yield(dict(img=img, index=i))
 
-  def detect_with(self, img_iter=[], mod=dict(kp_adp='', kp_algo='FAST',
-    des_adp='', des_algo='SIFT'), **opts):
+  def detect_with(self, img_iter=[], img_type='slide',
+      mod=dict( kp_algo='FAST', des_algo='SIFT'), **opts):
     """
     `mod` dict should include
       `kp_adp`: '', 'Grid', 'Pyramid' #adaptive method for detection
@@ -214,18 +213,20 @@ class Feats(ExpCommon):
       `des_adp`: '', 'Opponent'
       `des_algo`: "SIFT", "SURF", "BRIEF", "BRISK", "ORB", "FREAK"
     """
-    fd = cv2.FeatureDetector_create(mod['kp_adp']+mod['kp_algo'])
-    de = cv2.DescriptorExtractor_create(mod['des_adp']+mod['des_algo'])
+    fd = cv2.FeatureDetector_create(mod['kp_algo'])
+    de = cv2.DescriptorExtractor_create(mod['des_algo'])
     #if det.empty(): return None
     cols = [ 'x', 'y', 'size', 'angle', 'response', 'octave', 'class_id']
-    dkrk = self._df_key_root(mod, opts, 'slide')
-    dkrd = self._df_key_root(mod, opts, 'slide', dtype='desc')
+    dkrk = self._df_key_root(mod, opts, img_type)
+    dkrd = self._df_key_root(mod, opts, img_type, dtype='desc')
+    dlog = pd.DataFrame(columns=['ms', 'kps']).convert_objects()
     for im in img_iter:
       imid = im['index']
       img = im['img']
-      with ht(verbose=True) as ts:
+      with ht(verbose=0) as ts:
         kps = fd.detect(img, None)
         kps, des = de.compute(img, kps)
+      dlog = dlog.append( pd.DataFrame([[int(ts.msecs), len(des)]], columns=['ms', 'kps']))
       kdf = pd.DataFrame([[ kp.pt[0], kp.pt[1], kp.size, kp.angle,
         kp.response, kp.octave, kp.class_id] for kp in kps], columns = cols)
       ddf = pd.DataFrame(des)
@@ -233,15 +234,59 @@ class Feats(ExpCommon):
       ddf.columns = [("i_" + str(cc)) for cc in ddf.columns]
       self.save("{}/i{:03d}".format(dkrk, imid), kdf)
       self.save("{}/i{:03d}".format(dkrd, imid), ddf)
-      print imid
-    return None
+      logging.info(self.__str__('dt') + "(" + str(imid) + ")")
+    dklg = self._df_key_root(mod, opts, img_type, dtype='log')
+    dlog = dlog.reset_index()
+    del dlog['index']
+    dlog[dlog.columns] = dlog[dlog.columns].astype(np.uint32)
+    self.save(dklg, dlog)
+    return dlog
+
+  def __str__(self, mn=None):
+    ret = "{}[{}]".format(self.root, self.name)
+    if mn is not None: ret += " - {}".format(mn)
+    return ret
 
   def _df_key_root(self, mod, opt, set_name='slide', dtype='kp'):
-    hdfk = "/{}/{}".format(mod['kp_adp']+mod['kp_algo'],
-        mod['des_adp']+mod['des_algo'])
+    hdfk = "/{}/{}".format(mod['kp_algo'], mod['des_algo'])
     us = self._ustr_dict(opt)
     fik = "{}{}/{}/{}".format(hdfk, us, set_name, dtype)
     return fik
+
+  def comb_fm_list(self):
+    """
+    List combinations of each methods
+    """
+    kp_adp = ['', 'Grid', 'Pyramid']
+    kp_algo = ["FAST","STAR","SIFT","SURF","ORB","MSER","GFTT","HARRIS"]
+    kps = [dd[0]+dd[1] for dd in itertools.product(kp_adp, kp_algo)]
+    des_adp = ['', 'Opponent']
+    des_algo = ["SIFT", "SURF", "BRIEF", "BRISK", "ORB", "FREAK"]
+    des = [dd[0]+dd[1] for dd in itertools.product(des_adp, des_algo)]
+    pkg = [dd for dd in itertools.product(kps, des)]
+    return pkg
+
+  def set_extractor(self, exc, opts={}):
+    def set_value(exc, name, value):
+      dtype = exc.paramType(name)
+      if dtype == 0 or dtype==10: exc.setInt(name, int(value))
+      elif dtype == 1: exc.setBool(name, bool(value))
+      elif dtype == 2: exc.setDouble(name, double(value))
+      elif dtype == 3: exc.setString(name, str(value))
+    for dk in opts.keys():
+      set_value(exc, dk, opts[dk])
+    #for p in de.getParams():
+    #  res = get_value(de, p)
+    #  print p, res
+
+  def get_exc_value(self, exc, name):
+    dtype = exc.paramType(name)
+    if dtype == 0 or dtype==10: v = exc.getInt(name)
+    elif dtype == 1: v = exc.getBool(name)
+    elif dtype == 2: v = exc.getDouble(name)
+    elif dtype == 3: v = exc.getString(name)
+    va = ['Int', 'Bool', 'Double', 'Str', '-', '-', '-', '-', '-', '-', 'Short']
+    return (va[dtype], v)
 
   def fast(self):
     """

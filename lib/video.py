@@ -78,12 +78,14 @@ class Video:
         yield(iset)
       i += 1
 
-  def get_frames(self, ids=[]):
+  def get_frames(self, ids=[], gray=False):
     cap = self.cap['cap']
     for fid in ids:
       cap.set(cv.CV_CAP_PROP_POS_FRAMES, fid)
       grabed, img = cap.read()
-      if grabed: yield(dict(img=img, fid=fid))
+      if grabed:
+        if gray: img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        yield(dict(img=img, fid=fid))
 
   def get_frame(self, by='id', value=0):
     key = dict(time=cv.CV_CAP_PROP_POS_MSEC, id=cv.CV_CAP_PROP_POS_FRAMES)
