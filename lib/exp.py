@@ -19,6 +19,34 @@ class ExpCommon():
     self.root = root
     self.name = name
     self.comp = 6
+    self._init_logger()
+
+  def _init_logger(self):
+    cn = self._underscore(self.__class__.__name__)
+    fmt = logging.Formatter(fmt= '%(asctime)s,%(levelname)s,'+
+        '%(name)s,%(funcName)s,%(lineno)d, %(message)s',
+        datefmt='%m/%d/%Y %H:%M:%S')
+    logger = logging.getLogger("{}.{}".format(__name__, cn))
+    logger.setLevel(logging.INFO)
+    logger.propagate = 0
+    # FileHandler
+    fp = "log/{}_{}".format(self.root, self.name)
+    self._asure_path(fp)
+    fn = "{}/{}.log".format(fp, cn)
+    fnh = fn + "_fh"; cnh = fn + "_ch"
+    if fnh not in [lh.name for lh in logger.handlers]:
+      fh = logging.handlers.RotatingFileHandler(fn, maxBytes=10485760, backupCount=5)
+      fh.name = fnh
+      fh.setFormatter(fmt)
+      logger.addHandler(fh)
+    # StreamHandler
+    if 0 and cnh not in [lh.name for lh in logger.handlers]:
+      ch = logging.StreamHandler()
+      ch.name = cnh
+      ch.setFormatter(fmt)
+      logger.addHandler(ch)
+    logger.info(">>============== {} inited ================= <<".format(cn))
+    self.logger = logger
 
   def slide_pages(self):
     ps = PdfSlider(self.name, self.root)
@@ -40,7 +68,7 @@ class ExpCommon():
     return "data/{}/{}/stores/{}.h5".format( rt, pn, cn)
 
   def delete_file(self):
-    os.remove(self.store_path())
+    if os.path.isfile(self.store_path()): os.remove(self.store_path())
 
   def save(self, key, data):
     sp = self.store_path()
@@ -79,6 +107,9 @@ class ExpCommon():
     ks = di.keys(); ks.sort()
     for k in ks: s += "/{}_{}".format( k, di[k])
     return s
+
+  def _asure_path(self, path):
+    if not os.path.exists(path): os.makedirs(path)
 
 
 class Refine:
@@ -220,6 +251,7 @@ class Feats(ExpCommon):
     dkrk = self._df_key_root(mod, opts, img_type)
     dkrd = self._df_key_root(mod, opts, img_type, dtype='desc')
     dlog = pd.DataFrame(columns=['ms', 'kps']).convert_objects()
+    self.logger.info("param path" + dkrk)
     for im in img_iter:
       imid = im['index']
       img = im['img']
@@ -234,12 +266,13 @@ class Feats(ExpCommon):
       ddf.columns = [("i_" + str(cc)) for cc in ddf.columns]
       self.save("{}/i{:03d}".format(dkrk, imid), kdf)
       self.save("{}/i{:03d}".format(dkrd, imid), ddf)
-      logging.info(self.__str__('dt') + "(" + str(imid) + ")")
+      self.logger.info(self.__str__("sid[{}] ".format(imid)) + str(ts.msecs) )
     dklg = self._df_key_root(mod, opts, img_type, dtype='log')
     dlog = dlog.reset_index()
     del dlog['index']
     dlog[dlog.columns] = dlog[dlog.columns].astype(np.uint32)
     self.save(dklg, dlog)
+    self.logger.info("fn finished" + dkrk)
     return dlog
 
   def __str__(self, mn=None):
