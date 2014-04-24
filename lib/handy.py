@@ -41,6 +41,7 @@ class HandyPlot:
     fig.colorbar(cax, ax=ax2)
     return fig
 
+
 class HandyStat:
   """
   Author: speed-of-light
@@ -121,6 +122,7 @@ class HandyStat:
         hold = gv
         fa.append(zv[0])
     return gt[gt.frame.isin(fa)]
+
 
 class HandyStore:
   """Handling HDFstore
@@ -215,6 +217,7 @@ class HandyStore:
     #if self.store: self.store.close()
     return pd.read_hdf(self.path, key, format='t')
 
+
 class HandyFormatter:
   """ Quick common formatters for pandas
   :cnt_: content targeting formatter
@@ -295,7 +298,7 @@ class HandyTimer(object):
 
   def tds(self, ms, fmt):
     d = dict()
-    d['dy'], rem = divmod(ms, 86400000)
+    d['dy'], rem = divmod(int(ms), 86400000)
     d["hr"], rem = divmod(rem, 3600000)
     d["mn"], rem = divmod(rem, 60000)
     d["se"], rem = divmod(rem, 1000)
