@@ -36,9 +36,7 @@ class ExpCommon():
     logger.setLevel(logging.INFO)
     logger.propagate = 0
     # FileHandler
-    fp = "log/{}_{}".format(self.root, self.name)
-    self._asure_path(fp)
-    fn = "{}/{}.log".format(fp, cn)
+    fn = self.make_path('log', 'log', False, False)
     fnh = fn + "_fh"; cnh = fn + "_ch"
     if fnh not in [lh.name for lh in logger.handlers]:
       fh = logging.handlers.RotatingFileHandler(fn, maxBytes=10485760, backupCount=5)
@@ -84,9 +82,9 @@ class ExpCommon():
     cn = self._underscore(self.__class__.__name__)
     pth = "data/{}/{}/{}".format( rt, pn, resource)
     if root: return pth
-    pth = "{}/{}".format(cn)
-    if asure: self._asure_path( pth)
+    pth = "{}/{}".format(pth, cn)
     if ext is not None: pth = "{}.{}".format(pth, ext)
+    elif asure: self._asure_path( pth)
     return pth
 
   def store_path(self):
@@ -95,9 +93,9 @@ class ExpCommon():
     """
     return self.make_path()
 
-  def delete_file(self, tar=[('store', 'h5')]):
-    for res, ext in tar:
-      self.make_path(res, ext, False, False)
+  def delete_file(self, tar=[('store', 'h5', False)]):
+    for res, ext, root in tar:
+      self.make_path(res, ext, False, root)
 
   def save(self, key, data):
     self.log.info('save key ==> {}'.format(key))
@@ -357,10 +355,10 @@ class Feats(ExpCommon):
 
   def run_all_slides(self, np=''):
     cfl = self.comb_fm_list()
-    osl = self.o_slides(gray=True)
     self.log.info('here')
     with ht() as ts:
       for cc in cfl:
+        osl = self.o_slides(gray=True)
         self.detect_with(img_iter=osl, img_type='slide',
           mod=dict( kp_algo=cc[0], des_algo=cc[1]))
     with Emailer(config=dict(uname="speed.of.lightt@gmail.com", upass=np)) as mailer:
