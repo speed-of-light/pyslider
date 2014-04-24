@@ -1,5 +1,5 @@
 # system
-import os, glob, re, itertools, logging
+import os, glob, re, itertools, shutil, logging
 import logging.handlers
 from multiprocessing import Process, Queue, Lock
 from memory_profiler import memory_usage as mu
@@ -36,7 +36,7 @@ class ExpCommon():
     logger.setLevel(logging.INFO)
     logger.propagate = 0
     # FileHandler
-    fn = self.make_path('log', 'log', False, False)
+    fn = self.make_path('log', 'log', True, False)
     fnh = fn + "_fh"; cnh = fn + "_ch"
     if fnh not in [lh.name for lh in logger.handlers]:
       fh = logging.handlers.RotatingFileHandler(fn, maxBytes=10485760, backupCount=5)
@@ -65,7 +65,7 @@ class ExpCommon():
     return pd.HDFStore(sp, format='t', data_columns=True,
         complib='blosc', complevel=self.comp)
 
-  def make_path(self, resource='store', ext='h5', asure=True, root=False):
+  def make_path(self, resource='stores', ext='h5', asure=True, root=False):
     """
     resource: resource name in path
     ext: file extension for resource, if None then return only path
@@ -82,9 +82,9 @@ class ExpCommon():
     cn = self._underscore(self.__class__.__name__)
     pth = "data/{}/{}/{}".format( rt, pn, resource)
     if root: return pth
+    if asure: self._asure_path( pth)
     pth = "{}/{}".format(pth, cn)
     if ext is not None: pth = "{}.{}".format(pth, ext)
-    elif asure: self._asure_path( pth)
     return pth
 
   def store_path(self):
@@ -95,7 +95,12 @@ class ExpCommon():
 
   def delete_file(self, tar=[('store', 'h5', False)]):
     for res, ext, root in tar:
-      self.make_path(res, ext, False, root)
+      ph = self.make_path(res, ext, False, root)
+      print ph
+      if ext is None or root: # for whole directory
+        shutil.rmtree(ph)
+      else: # for a single file
+        if os.path.isfile(ph): os.remove(ph)
 
   def save(self, key, data):
     self.log.info('save key ==> {}'.format(key))
@@ -323,7 +328,7 @@ class Feats(ExpCommon):
     List combinations of each methods
     """
     kp_adp = ['', 'Grid', 'Pyramid']
-    kp_algo = ["FAST","STAR","SIFT","SURF","ORB","MSER","GFTT","HARRIS"]
+    kp_algo = ["FAST", "FASTX","STAR","SIFT","SURF","ORB","MSER","GFTT","HARRIS"]
     kps = [dd[0]+dd[1] for dd in itertools.product(kp_adp, kp_algo)]
     des_adp = ['', 'Opponent']
     des_algo = ["SIFT", "SURF", "BRIEF", "BRISK", "ORB", "FREAK"]
@@ -355,12 +360,15 @@ class Feats(ExpCommon):
 
   def run_all_slides(self, np=''):
     cfl = self.comb_fm_list()
-    self.log.info('here')
     with ht() as ts:
       for cc in cfl:
-        osl = self.o_slides(gray=True)
-        self.detect_with(img_iter=osl, img_type='slide',
-          mod=dict( kp_algo=cc[0], des_algo=cc[1]))
+        osl = self.o_slides(gray=('Opponent' not in cc[1]))
+        try:
+          self.detect_with(img_iter=osl, img_type='slide',
+            mod=dict( kp_algo=cc[0], des_algo=cc[1]))
+        except Exception as e:
+          self.log.error("<<{}-{}>>: {}".format(cc[0], cc[1], e))
+          continue
     with Emailer(config=dict(uname="speed.of.lightt@gmail.com", upass=np)) as mailer:
       mailer.send("Feats Job [{}][{}] Finished".format(self.root, self.name),
         "Time: {}".format(ts.tstr()), 'speed.of.lightt@gmail.com')
