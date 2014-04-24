@@ -1,5 +1,6 @@
 # system
 import os, glob, re, itertools, logging
+import logging.handlers
 from multiprocessing import Process, Queue, Lock
 from memory_profiler import memory_usage as mu
 # scientific
@@ -31,7 +32,7 @@ class ExpCommon():
     fmt = logging.Formatter(fmt= '%(asctime)s,%(levelname)s,'+
         '%(name)s,%(funcName)s,%(lineno)d, %(message)s',
         datefmt='%m/%d/%Y %H:%M:%S')
-    logger = logging.getLogger("{}.{}".format(__name__, cn))
+    logger = logging.getLogger("{}.{}.{}.{}".format(__name__, cn, self.root, self.name))
     logger.setLevel(logging.INFO)
     logger.propagate = 0
     # FileHandler
@@ -66,16 +67,40 @@ class ExpCommon():
     return pd.HDFStore(sp, format='t', data_columns=True,
         complib='blosc', complevel=self.comp)
 
-  def store_path(self):
+  def make_path(self, resource='store', ext='h5', asure=True, root=False):
+    """
+    resource: resource name in path
+    ext: file extension for resource, if None then return only path
+    asure: make sure the path exist
+    root: get only root path of given resource
+    usage:
+      # make simple log path, and make sure created
+      self.make_path('log', None)
+      # make path for log with log extension, and not check existence
+      self.make_path('log', 'log', False)
+    """
     rt = self.root
     pn = self.name
     cn = self._underscore(self.__class__.__name__)
-    return "data/{}/{}/stores/{}.h5".format( rt, pn, cn)
+    pth = "data/{}/{}/{}".format( rt, pn, resource)
+    if root: return pth
+    pth = "{}/{}".format(cn)
+    if asure: self._asure_path( pth)
+    if ext is not None: pth = "{}.{}".format(pth, ext)
+    return pth
 
-  def delete_file(self):
-    if os.path.isfile(self.store_path()): os.remove(self.store_path())
+  def store_path(self):
+    """
+    DEPRECATED, use make_path instead.
+    """
+    return self.make_path()
+
+  def delete_file(self, tar=[('store', 'h5')]):
+    for res, ext in tar:
+      self.make_path(res, ext, False, False)
 
   def save(self, key, data):
+    self.log.info('save key ==> {}'.format(key))
     sp = self.store_path()
     data.to_hdf(sp, key, mode='a', data_columns=True,
          format='t', complib='blosc', complevel=self.comp)
@@ -259,14 +284,13 @@ class Feats(ExpCommon):
     dkrk = self._df_key_root(mod, opts, img_type)
     dkrd = self._df_key_root(mod, opts, img_type, dtype='desc')
     dlog = pd.DataFrame(columns=['ms', 'kps']).convert_objects()
-    self.log.info("param path" + dkrk)
+    self.log.info("param path => " + dkrk)
     for im in img_iter:
       imid = im['index']
       img = im['img']
       with ht(verbose=0) as ts:
         kps = fd.detect(img, None)
         kps, des = de.compute(img, kps)
-      dlog = dlog.append( pd.DataFrame([[int(ts.msecs), len(des)]], columns=['ms', 'kps']))
       kdf = pd.DataFrame([[ kp.pt[0], kp.pt[1], kp.size, kp.angle,
         kp.response, kp.octave, kp.class_id] for kp in kps], columns = cols)
       ddf = pd.DataFrame(des)
@@ -274,6 +298,8 @@ class Feats(ExpCommon):
       ddf.columns = [("i_" + str(cc)) for cc in ddf.columns]
       self.save("{}/i{:03d}".format(dkrk, imid), kdf)
       self.save("{}/i{:03d}".format(dkrd, imid), ddf)
+      llog = pd.DataFrame([[int(ts.msecs), len(des)]], columns=['ms', 'kps'] )
+      dlog = dlog.append( llog)
       self.log.info(self.__str__("sid[{}] ".format(imid)) + str(ts.msecs) )
     dklg = self._df_key_root(mod, opts, img_type, dtype='log')
     dlog = dlog.reset_index()
