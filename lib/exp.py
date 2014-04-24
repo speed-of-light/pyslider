@@ -262,7 +262,6 @@ class Feats(ExpCommon):
     self.log.info("param path" + dkrk)
     for im in img_iter:
       imid = im['index']
-      if imid > 3: break
       img = im['img']
       with ht(verbose=0) as ts:
         kps = fd.detect(img, None)
@@ -330,7 +329,7 @@ class Feats(ExpCommon):
     va = ['Int', 'Bool', 'Double', 'Str', '-', '-', '-', '-', '-', '-', 'Short']
     return (va[dtype], v)
 
-  def run_all_default(self, np=''):
+  def run_all_slides(self, np=''):
     cfl = self.comb_fm_list()
     osl = self.o_slides(gray=True)
     self.log.info('here')
