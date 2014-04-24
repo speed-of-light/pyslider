@@ -12,6 +12,10 @@
 * Milestone: **0.2.5** 2014-04-22
   - Release basic `feats` class
 
+- `0.2.2`: 2014-04-24 Thu 11:16 PM
+  - handling long term process error
+  - make common class tool flexible
+
 - `0.2.1`: 2014-04-24 Thu 07:02 PM
   - deploy for computing slides feats
 
