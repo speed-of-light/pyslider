@@ -1,14 +1,19 @@
 # system
 import os, glob, re, itertools, logging
-# custom
-from matcher import PdfSlider
-from video import Video
+from multiprocessing import Process, Queue, Lock
+from memory_profiler import memory_usage as mu
 # scientific
 import cv2, cv
 import numpy as np
 import pandas as pd
 # plotting
 from matplotlib import offsetbox as ofb
+# custom
+from matcher import PdfSlider
+from video import Video
+from handy import HandyStore as hs
+from handy import HandyTimer as ht
+from emailer import Emailer
 
 class ExpCommon():
   def __init__(self, root, name):
@@ -46,7 +51,7 @@ class ExpCommon():
       ch.setFormatter(fmt)
       logger.addHandler(ch)
     logger.info(">>============== {} inited ================= <<".format(cn))
-    self.logger = logger
+    self.log = logger
 
   def slide_pages(self):
     ps = PdfSlider(self.name, self.root)
@@ -110,6 +115,9 @@ class ExpCommon():
 
   def _asure_path(self, path):
     if not os.path.exists(path): os.makedirs(path)
+
+
+#class ExpScheduler():
 
 
 class Refine:
@@ -251,9 +259,10 @@ class Feats(ExpCommon):
     dkrk = self._df_key_root(mod, opts, img_type)
     dkrd = self._df_key_root(mod, opts, img_type, dtype='desc')
     dlog = pd.DataFrame(columns=['ms', 'kps']).convert_objects()
-    self.logger.info("param path" + dkrk)
+    self.log.info("param path" + dkrk)
     for im in img_iter:
       imid = im['index']
+      if imid > 3: break
       img = im['img']
       with ht(verbose=0) as ts:
         kps = fd.detect(img, None)
@@ -266,13 +275,13 @@ class Feats(ExpCommon):
       ddf.columns = [("i_" + str(cc)) for cc in ddf.columns]
       self.save("{}/i{:03d}".format(dkrk, imid), kdf)
       self.save("{}/i{:03d}".format(dkrd, imid), ddf)
-      self.logger.info(self.__str__("sid[{}] ".format(imid)) + str(ts.msecs) )
+      self.log.info(self.__str__("sid[{}] ".format(imid)) + str(ts.msecs) )
     dklg = self._df_key_root(mod, opts, img_type, dtype='log')
     dlog = dlog.reset_index()
     del dlog['index']
     dlog[dlog.columns] = dlog[dlog.columns].astype(np.uint32)
     self.save(dklg, dlog)
-    self.logger.info("fn finished" + dkrk)
+    self.log.info("fn finished" + dkrk)
     return dlog
 
   def __str__(self, mn=None):
@@ -321,31 +330,27 @@ class Feats(ExpCommon):
     va = ['Int', 'Bool', 'Double', 'Str', '-', '-', '-', '-', '-', '-', 'Short']
     return (va[dtype], v)
 
-  def fast(self):
+  def run_all_default(self, np=''):
+    cfl = self.comb_fm_list()
+    osl = self.o_slides(gray=True)
+    self.log.info('here')
+    with ht() as ts:
+      for cc in cfl:
+        self.detect_with(img_iter=osl, img_type='slide',
+          mod=dict( kp_algo=cc[0], des_algo=cc[1]))
+    with Emailer(config=dict(uname="speed.of.lightt@gmail.com", upass=np)) as mailer:
+      mailer.send("Feats Job [{}][{}] Finished".format(self.root, self.name),
+        "Time: {}".format(ts.tstr()), 'speed.of.lightt@gmail.com')
+
+  def tmp(self):
     """
     http://docs.opencv.org/trunk/doc/py_tutorials/py_feature2d/py_fast/py_fast.html
-    """
-
-  def sift(self):
-    """
-    http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_feature2d/py_sift_intro/py_sift_intro.html
-    """
-
-  def surf(self):
-    """
-    http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_feature2d/py_surf_intro/py_surf_intro.html?highlight=surf
-    """
-
-  def brisk(self):
-    """
-    http://docs.opencv.org/trunk/modules/features2d/doc/feature_detection_and_description.html
+    sift http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_feature2d/py_sift_intro/py_sift_intro.html
+    surf http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_feature2d/py_surf_intro/py_surf_intro.html?highlight=surf
+    brisk http://docs.opencv.org/trunk/modules/features2d/doc/feature_detection_and_description.html
     """
 
 
-from multiprocessing import Process, Queue, Lock
-from lib.handy import HandyStore as hs
-from lib.handy import HandyTimer as ht
-from memory_profiler import memory_usage as mu
 class Prepare():
   def __init__(self, root, name):
     self.root = root
@@ -468,7 +473,6 @@ class Prepare():
           self.finq.put_nowait(dict(keys=par, name=fn.__name__,
             mem=mus[0], time=t.msecs))
       self.current_job = None
-
     if not self.idle():
       print "{} is working for {}".format( self.path, self.p.name)
       return
