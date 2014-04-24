@@ -14,7 +14,7 @@
 
 - `0.2.1`: 2014-04-24 Thu 07:02 PM
   - deploy for computing slides feats
-  
+
 - `0.2.0`: 2014-04-23
   - Add `ExpCommon` to support common operations
   - Develope `GroundTruth` class
