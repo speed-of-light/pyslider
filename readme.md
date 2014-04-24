@@ -12,7 +12,10 @@
 * Milestone: **0.2.5** 2014-04-22
   - Release basic `feats` class
 
-- `0.2.0`:
+- `0.2.1`: 2014-04-24 Thu 07:02 PM
+  - deploy for computing slides feats
+  
+- `0.2.0`: 2014-04-23
   - Add `ExpCommon` to support common operations
   - Develope `GroundTruth` class
   - `Feats` with `o_slides()`, `detect_with()` functions
