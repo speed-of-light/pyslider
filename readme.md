@@ -16,6 +16,7 @@
   - Add `ExpCommon` to support common operations
   - Develope `GroundTruth` class
   - `Feats` with `o_slides()`, `detect_with()` functions
+  - `Feats` with compute all defaults method
 
 - `0.1.6`: 2014-03-28 Fri 06:09 PM
   - add diff with average frames
