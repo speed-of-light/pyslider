@@ -12,6 +12,10 @@
 * Milestone: **0.2.5** 2014-04-22
   - Release basic `feats` class
 
+- `0.2.3`: 2014-04-26 Sat 09:33 PM
+  - Add reduce frame flow to `Prepare`
+  - Add `notify` to `ExpCommon`
+
 - `0.2.2`: 2014-04-24 Thu 11:16 PM
   - handling long term process error
   - make common class tool flexible
