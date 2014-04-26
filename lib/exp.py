@@ -1,5 +1,6 @@
 # system
 import os, glob, re, itertools, shutil, logging
+import datetime as dt
 import logging.handlers
 from multiprocessing import Process, Queue, Lock
 from memory_profiler import memory_usage as mu
@@ -25,6 +26,7 @@ class ExpCommon():
     self.root = root
     self.name = name
     self.comp = 6
+    self.upass = None
     self._init_logger()
 
   def _init_logger(self):
@@ -105,17 +107,8 @@ class ExpCommon():
   def save(self, key, data):
     self.log.info('save key ==> {}'.format(key))
     sp = self.store_path()
-    data.to_hdf(sp, key, mode='a', data_columns=True,
-         format='t', complib='blosc', complevel=self.comp)
-    kf = self.load('keys')
-    if kf is None: kf = pd.DataFrame([key], columns=['key'])
-    else:
-      kf = kf.append(pd.DataFrame([key], columns=['key']))
-      kf = kf.reset_index()
-      for rc in ['index', 'level']:
-        if rc in kf.columns: del kf[rc]
-    kf.to_hdf(sp, 'keys', mode='a', data_columns=True,
-        format='t', complib='blosc', complevel=self.comp)
+    data.to_hdf(sp, key, mode='a', data_columns=True, format='t', complib='blosc', complevel=self.comp)
+    self._save_key(key)
 
   def load(self, key):
     sp = self.store_path()
@@ -124,6 +117,16 @@ class ExpCommon():
     except KeyError, e:
       return None
     return df
+
+  def _save_key(self, key):
+    kf = self.load('keys')
+    if kf is None: kf = pd.DataFrame([key], columns=['key'])
+    else:
+      kf = kf.append(pd.DataFrame([key], columns=['key']))
+      kf = kf.reset_index()
+      for rc in ['index', 'level']:
+        if rc in kf.columns: del kf[rc]
+    kf.to_hdf(sp, 'keys', mode='a', data_columns=True, format='t', complib='blosc', complevel=self.comp)
 
   def _underscore(self, string):
     # move pre-compile out the loop to improve performance
@@ -143,6 +146,14 @@ class ExpCommon():
 
   def _asure_path(self, path):
     if not os.path.exists(path): os.makedirs(path)
+
+  def notify(self, text):
+    if self.upass = None: return
+    ps = self.upass
+    cn = self._underscore(self.__class__.__name__)
+    title = "Pyslider Job: {} <{}-{}> Finished".format(cn, self.root, self.name)
+    with Emailer(config=dict(uname="speed.of.lightt@gmail.com", upass=ps)) as mailer:
+      mailer.send( title, text, 'speed.of.lightt@gmail.com')
 
 
 #class ExpScheduler():
@@ -195,64 +206,29 @@ class Matching:
     ''
 
 
-class FeatsDesc:
-  def __init__(self, img):
+class FrameCan(ExpCommon):
+  def __init__(self, root, name):
     """
+    Get effective frame lists from prepared data
     """
-    self.img = img
+    ExpCommon.__init__(self, root, name)
 
   #binary
-  def brief(self):
+  def tmp(self):
     """
     http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_feature2d/py_brief/py_brief.html?highlight=brief
-    """
-
-  def orb(self):
-    """
     http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_feature2d/py_orb/py_orb.html?highlight=orb
-    """
-
-  # scale
-  def sift(self):
-    """
     http://stackoverflow.com/questions/20146570/opencv-python-dense-sift
-    """
-    ""
-
-  def surf(self):
-    ""
-
-  def freak(self):
-    """
     http://stackoverflow.com/questions/14588682/freak-descriptor-with-opencv-python
-    """
-    ""
-
-  # others
-  def color_hist(self):
-    """
-    """
-
-  def text_region(self):
-    """
-    """
-
-  def mser(self):
-    """
+    def color_hist(self):
+    def text_region(self):
     http://answers.opencv.org/question/19015/how-to-use-mser-in-python/
     """
 
   #matchers
   def bruteforce(self):
     """
-    """
-
-  def flann(self):
-    """
-    """
-
-  def ransac(self):
-    """
+    def flann(self):
     https://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
     """
 
@@ -369,9 +345,7 @@ class Feats(ExpCommon):
         except Exception as e:
           self.log.error("<<{}-{}>>: {}".format(cc[0], cc[1], e))
           continue
-    with Emailer(config=dict(uname="speed.of.lightt@gmail.com", upass=np)) as mailer:
-      mailer.send("Feats Job [{}][{}] Finished".format(self.root, self.name),
-        "Time: {}".format(ts.tstr()), 'speed.of.lightt@gmail.com')
+    self.notify("Time: {}".format(ts.tstr()))
 
   def tmp(self):
     """
@@ -382,15 +356,16 @@ class Feats(ExpCommon):
     """
 
 
-class Prepare():
+class Prepare(ExpCommon):
   def __init__(self, root, name):
     self.root = root
-    self.pj_name = name
+    self.name = name
     self.statq = self.cmdq = self.p = None
+    ExpCommon.__init__(self, root, name)
 
   def path(self):
     rt = self.root
-    pn = self.pj_name
+    pn = self.name
     return "./data/{}/{}/stores/prepare".format( rt, pn)
 
   def share_data(self, data):
@@ -558,8 +533,8 @@ class Prepare():
         boxcoords=('axes fraction', "axes fraction"), bboxprops=dict(boxstyle='round,pad=0.1', ec='g'),
         arrowprops=dict(arrowstyle="->", color='g'))
       ax.add_artist(ab)
-    vid = Video(self.root, self.pj_name)
-    slid = PdfSlider(self.pj_name, self.root)
+    vid = Video(self.root, self.name)
+    slid = PdfSlider(self.name, self.root)
     xlim = (ffrom, fto)
     # plot diff value
     ln_raw = ax.plot(raw, color='black')
@@ -590,6 +565,68 @@ class Prepare():
       ax.add_artist(ab)
       # last
       add_artist(ax, inx + 1, nov, (frac+0.05, .8))
+
+  def save_dfkeys(self):
+    ss = self.store()
+    sks = ss.keys()
+    ss.close()
+    kv = []
+    for sk in sks:
+      kv.append(self._args_from(sk))
+    cols = ['raw', 'method', 'arg1', 'arg2', 'arg3', 'arg4']
+    kdf = pd.DataFrame(data=kv, columns=cols)
+    sp = self.make_path('stores', 'h5', asure=True, root=False)
+    kdf.to_hdf(sp, 'keys', mode='a', data_columns=True, format='t', complib='blosc', complevel=self.comp)
+
+  def _args_from(self, key):
+    """
+    Split key string into list of array
+    """
+    va = [key]
+    for ks in key.split('/'):
+      if ks is '': continue
+      if 'diff' in ks: va.append(ks)
+      else: va.append(float(ks.split('_')[1]))
+    return va
+
+  def save_reduced_fr(self):
+    df = self.load('keys')
+    i = 0
+    with ht(verbose=0) as ts:
+      for key in df['raw'].values:
+        try:
+          adf = self.load(key)
+          bdf = adf[ adf['diff'].gt( adf['diff'].quantile(.75) ) ]
+          cdf = self._fr_reduce(bdf)
+          rk = '/reduce'+key
+          self.save(rk, cdf)
+          self.log.info("{}-{}, {}, {}, rate: {}".format(rk,
+            len(adf), len(bdf), len(cdf), len(adf)*1.0/len(cdf))
+          i += 1
+          if i > 8: break
+        except Exception e:
+          ddn = str(dt.datetime.now())
+          err = "At {}:\r\n {}".format(ddn, e)
+          self.notify(err)
+          self.log.error(err)
+    self.notify("Finished, spent time: {}".format(ts.tstr()))
+
+  def _fr_reduce(df):
+    igmax = -1; last_v = -1
+    for i, v in enumerate(df.index):
+      if i == 0:
+        igmax = v
+        continue
+      if (v - last_v) == 1: # check conti series max
+        if df.ix[igmax]['diff'] < df.ix[v]['diff']:
+          df = df.drop([igmax])
+          igmax = v
+        else:
+          df= df.drop([v])
+      else:
+        igmax = v
+      last_v = v
+    return df
 
 
 class Summary:
