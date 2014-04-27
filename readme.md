@@ -4,13 +4,15 @@
   - support latex generator for diagrams and tables for Prepare class
   - basic main flow
 
-* Milestone: **0.3.0** 2014-04-25
-  - have finish Feats class
+* Milestone: **0.4.0** 2014-04-29
   - have basic latex generator for diagrams and tables for Feats class
-  - have informatic data summary class
 
-* Milestone: **0.2.5** 2014-04-22
-  - Release basic `feats` class
+* Milestone: **0.3.5** 2014-04-25
+  - More informatic data summary class
+
+- `0.3.0`: 2014-04-28 Mon 06:29 AM
+  - Seperate exp into other submodules
+  - Add `set_match` to `Matcher` class
 
 - `0.2.3`: 2014-04-26 Sat 09:33 PM
   - Add reduce frame flow to `Prepare`

@@ -1,6 +1,8 @@
 lib/*.pyc
 log
 data
+old_data
 tmp
+jpg
 /test*.*
 .ipynb_checkpoints/
