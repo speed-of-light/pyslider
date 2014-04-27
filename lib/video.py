@@ -85,7 +85,7 @@ class Video:
       grabed, img = cap.read()
       if grabed:
         if gray: img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        yield(dict(img=img, fid=fid))
+        yield(dict(img=img, idx=fid))
 
   def get_frame(self, by='id', value=0):
     key = dict(time=cv.CV_CAP_PROP_POS_MSEC, id=cv.CV_CAP_PROP_POS_FRAMES)

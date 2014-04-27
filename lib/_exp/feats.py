@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from ..exp import ExpCommon
 from ..handy import HandyTimer as ht
+from ..video import Video
 from fetus import Summary
 
 class Feats(ExpCommon):
@@ -25,11 +26,14 @@ class Feats(ExpCommon):
     Get slide images collection
     """
     spm = self.slides_path(size='big')
-    slides = [spm+"/"+name for name in os.listdir(spm) if os.path.isfile(spm+"/"+name)]
-    for i, sp in enumerate(slides, 1):
+    su = Summary(); sin = su.info(self.root, self.name).iloc[0]
+    if resize == True: resize=(sin.v_width, sin.v_height)
+    for si in range(1, sin.n_slides+1):
+      sp = "{}/{:03d}.jpg".format(spm, si)
       if gray: img = cv2.imread(sp, cv2.COLOR_GRAY2BGR)
       else: img = cv2.imread(sp)
-      yield(dict(img=img, index=i))
+      if resize is not None: img = cv2.resize(img, resize)
+      yield(dict(img=img, idx=si))
 
   def comb_fm_list(self):
     """
@@ -62,7 +66,7 @@ class Feats(ExpCommon):
     dlog = pd.DataFrame(columns=['ms', 'kps']).convert_objects()
     self.log.info("param path => " + dkrk)
     for im in img_iter:
-      imid = im['index']
+      idx = im['idx']
       img = im['img']
       with ht(verbose=0) as ts:
         kps = fd.detect(img, None)
@@ -72,11 +76,11 @@ class Feats(ExpCommon):
       ddf = pd.DataFrame(des)
       kdf[kdf.columns] = kdf[kdf.columns].astype(kdf['x'].dtype)
       ddf.columns = [("i_" + str(cc)) for cc in ddf.columns]
-      self.save("{}/i{:03d}".format(dkrk, imid), kdf)
-      self.save("{}/i{:03d}".format(dkrd, imid), ddf)
+      self.save("{}/i{:03d}".format(dkrk, idx), kdf)
+      self.save("{}/i{:03d}".format(dkrd, idx), ddf)
       llog = pd.DataFrame([[int(ts.msecs), len(des)]], columns=['ms', 'kps'] )
       dlog = dlog.append( llog)
-      self.log.info(self.__str__("sid[{}] ".format(imid)) + str(ts.msecs) )
+      self.log.info(self.__str__("sid[{}] ".format(idx)) + str(ts.msecs) )
     dklg = self._df_key_root(mod, opts, img_type, dtype='log')
     dlog = dlog.reset_index()
     del dlog['index']
@@ -163,18 +167,34 @@ class Feats(ExpCommon):
 
   def load_feats(self,
       mod=dict(kp_algo='FAST', des_algo='SIFT')):
-    su = Summary()
-    n_slid = su.info(self.root, self.name)['n_slides']
+    su = Summary(); sin = su.info(self.root, self.name).iloc[0]
+    ns = sin.n_slides
     key_root = "/{kp_algo}/{des_algo}/slide".format(**mod)
     sfd = []
-    for ns in range(1, n_slid+1):
-      kk = key_root + "/kp/i{:03d}".format(ns)
-      dk = key_root + "/desc/i{:03d}".format(ns)
+    for si in range(1, ns+1):
+      kk = key_root + "/kp/i{:03d}".format(si)
+      dk = key_root + "/desc/i{:03d}".format(si)
       kps = self._unpickle_keypoints( self.load(kk) )
       des = self.load(dk)
       des = None if des is None else des.values
-      sfd.append(dict(idx=ns, kps=kps, des=des))
+      sfd.append(dict(idx=si, kps=kps, des=des))
     return sfd
+
+  def feats_set(self, ilist=[],
+      mod=dict(kp_algo='FAST', des_algo='SIFT')):
+    """self.o_slides(gray=True, resize=True)
+    """
+    fd = cv2.FeatureDetector_create(mod['kp_algo'])
+    de = cv2.DescriptorExtractor_create(mod['des_algo'])
+    res = []
+    for si in ilist:
+      img = si['img']
+      with ht(verbose=0) as ts:
+        ks = fd.detect(img);
+        ks2, ds = de.compute(img, ks)
+      res.append(dict(idx=si['idx'], kps=ks2, des=ds,
+        oklen=len(ks), ts=ts.msecs))
+    return res
 
   def single_feats(self, img,
       mod=dict(kp_algo='FAST', des_algo='SIFT')):
@@ -191,6 +211,28 @@ class Matcher(ExpCommon):
     Get effective frame lists from prepared data
     """
     ExpCommon.__init__(self, root, name)
+
+  def set_match(self, fids=[], mtype="BruteForce", thres=.9,
+      mod=dict(kp_algo='FAST', des_algo='SIFT')):
+    sr = self.root; sn = self.name
+    ff = Feats(sr, sn); isl = ff.o_slides(gray=True, resize=True)
+    vv = Video(sr, sn); ivl = vv.get_frames(ids=fids, gray=True)
+    sfs = ff.feats_set(isl, mod=mod); vfs = ff.feats_set(ivl, mod=mod)
+    res = []
+    for qf in vfs:
+      frs = []
+      for tf in sfs:
+        infostr= "sid:{}, fid:{}, mod:{}-{}, mtype:{},thres:{}".format(tf['idx'], qf['idx'], mod['kp_algo'], mod['des_algo'], mtype, thres)
+        self.log.info(infostr)
+        with ht(verbose=0) as ts:
+          mr = self.single_match(qf['des'], tf['des'], mtype, thres)
+        mt = ts.msecs+tf['ts']+qf['ts']
+        dr = dict(sid=tf['idx'], fid=qf['idx'], ts=mt, mr=mr)
+        frs.append(dr)
+      ds = self._dist_stat(frs)
+      vr = self._voting(ds)
+      res.append(dict(res=frs, vr=vr))
+    return res, sfs, vfs
 
   def single_match(self, dquery, dtrain, mtype="BruteForce", thres=.5):
     """
@@ -211,6 +253,28 @@ class Matcher(ExpCommon):
     else:
       return pd.DataFrame(mra, columns=['qix', 'tix', 'iix', 'dt'])
 
+  def _voting(self, df):
+    vk = []
+    for cc in df.columns:
+      if cc in ['sid', 'fid']: continue
+      vr = df[df[cc].eq(df[cc].min())]
+      if len(vr) > 0: vk.append(int(vr.iloc[0].sid))
+      else: vk.append(None)
+    return vk
+
+  def _dist_stat(self, fres):
+    ary = []
+    for fk in fres:
+      mr = fk['mr']
+      m3 = mr[mr.dt.gt(mr.dt.quantile(.9))].dt.mean()
+      mm = mr[mr.dt.lt(mr.dt.quantile(.8)) & mr.dt.gt(mr.dt.quantile(.2))].dt.mean()
+      m1 = mr[mr.dt.lt(mr.dt.quantile(.1))].dt.mean()
+      M = mr.dt.max()
+      m = mr.dt.min()
+      ary.append([fk['fid'], fk['sid'], m3, mm, m1, m1/m3, M, m, m/M])
+    cols = ['fid', 'sid', 'm3', 'mm', 'm1', 'm31', 'M', 'm', 'mM']
+    return pd.DataFrame(ary, columns=cols)
+
   #binary
   def tmp(self):
     """
@@ -224,7 +288,7 @@ class Matcher(ExpCommon):
     https://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
     """
 
-  def plot_match(self, qimg, qkp, timg, tkp, match):
+  def _plot_match(self, qimg, qkp, timg, tkp, match):
     h1, w1 = qimg.shape[:2]; h2, w2 = timg.shape[:2]
     view = np.zeros((max(h1, h2), w1 + w2, 3), np.uint8)
     view[:h1, :w1] = qimg; view[:h2, w1:] = timg
@@ -235,3 +299,15 @@ class Matcher(ExpCommon):
       tmp = (int(tkp[tix].pt[0] + w1), int(tkp[tix].pt[1]))
       cv2.line(view, qmp, tmp, color)
     return view
+
+  def _plot_single_match(self, fid, fkp, sid, skp, mresult):
+    vv = Video(self.root, self.name)
+    fimg = vv.get_frames(ids=[fid]).next()['img']
+    spm = self.slides_path(size='big')
+    simg = cv2.imread('{}/{:03d}.jpg'.format(spm, sid))
+    su = Summary(); sin = su.info(self.root, self.name).iloc[0]
+    simg = cv2.resize(simg, (sin.v_width, sin.v_height))
+    vimg = self.plot_match( fimg, fkp, simg, skp, mresult)
+    return vimg
+    #cv2.imwrite('jpg/test.jpg', vimg)
+
