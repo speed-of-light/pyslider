@@ -231,7 +231,7 @@ class Matcher(ExpCommon):
         frs.append(dr)
       ds = self._dist_stat(frs)
       vr = self._voting(ds)
-      res.append(dict(res=frs, vr=vr))
+      res.append(dict(feats=frs, vr=vr))
     return res, sfs, vfs
 
   def single_match(self, dquery, dtrain, mtype="BruteForce", thres=.5):

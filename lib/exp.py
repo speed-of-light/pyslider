@@ -158,5 +158,6 @@ from _exp.feats import *
 class Feats(Feats): pass
 class Matcher(Matcher): pass
 
-from _exp.fetus import Summary
+from _exp.fetus import *
 class Summary(Summary): pass
+class GroundTruth(GroundTruth): pass

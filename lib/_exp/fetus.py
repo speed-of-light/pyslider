@@ -131,7 +131,7 @@ class GroundTruth(ExpCommon):
         cols = [int(x) for x in ln.split(',')]
         coll.append(cols)
     gf = pd.DataFrame(data=coll, columns=['fid', 'sid', 'slide_type', 'cam_status'])
-    gcf = self._aggregate(gf.clone())
+    gcf = self._aggregate(gf.copy())
     return gcf
 
   def _aggregate(self, df):

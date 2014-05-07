@@ -1,4 +1,4 @@
-lib/*.pyc
+lib/**/*.pyc
 log
 data
 old_data
