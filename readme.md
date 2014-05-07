@@ -10,6 +10,9 @@
 * Milestone: **0.3.5** 2014-04-25
   - More informatic data summary class
 
+- `0.3.5`: 2014-05-07 Wed 10:42 PM
+  - Add simple matching flow with groundtruth check
+
 - `0.3.0`: 2014-04-28 Mon 06:29 AM
   - Seperate exp into other submodules
   - Add `set_match` to `Matcher` class
