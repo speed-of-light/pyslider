@@ -10,6 +10,9 @@
 * Milestone: **0.3.5** 2014-04-25
   - More informatic data summary class
 
+- `0.3.6`: 2014-05-10 Sat 04:28 PM
+  - release for using github flow
+
 - `0.3.5`: 2014-05-07 Wed 10:42 PM
   - Add simple matching flow with groundtruth check
 
