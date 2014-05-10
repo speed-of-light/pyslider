@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/speed-of-light/pyslider.png?label=ready&title=Ready)](https://waffle.io/speed-of-light/pyslider)
 # Release Notes
 
 * Milestone: **0.5.0** 2014-04-30
