@@ -156,6 +156,8 @@ class Prepare(Prepare): pass
 
 from _exp.feats import *
 class Feats(Feats): pass
+
+from _exp.matching import *
 class Matcher(Matcher): pass
 
 from _exp.fetus import *
