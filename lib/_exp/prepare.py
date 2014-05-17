@@ -7,8 +7,7 @@ import pandas as pd
 from matplotlib import offsetbox as ofb
 # core
 from ..exp import ExpCommon
-from ..matcher import PdfSlider
-from ..video import Video
+from ..data import *
 from ..handy import HandyTimer as ht
 
 

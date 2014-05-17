@@ -117,7 +117,7 @@ class Video:
     return df[df.isum.gt(iqr)]
 
 
-from lib._exp.fetus import Summary
+from lib._exp.summary import Summary
 from PyPDF2 import PdfFileReader
 import shutil
 #from wand.image import Image, Color

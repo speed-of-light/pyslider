@@ -4,9 +4,9 @@ import cv2
 import pandas as pd
 import numpy as np
 from sklearn import mixture
-from ..exp import ExpCommon
+from summary import Summary
 from ..data import *
-from fetus import Summary
+from ..exp import ExpCommon
 
 class Matcher(ExpCommon):
   def __init__(self, root, name):

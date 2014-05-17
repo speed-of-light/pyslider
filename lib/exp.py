@@ -7,8 +7,7 @@ import cv2
 import numpy as np
 import pandas as pd
 # custom
-from matcher import PdfSlider
-from video import Video
+from data import *
 from handy import HandyTimer as ht
 from emailer import Emailer
 
@@ -123,7 +122,7 @@ class ExpCommon():
         if rc in kf.columns: del kf[rc]
     kf.to_hdf(fpath, 'keys', mode='a', data_columns=True, format='t', complib='blosc', complevel=self.comp)
 
-  def _underscore(self, string):
+  def _underscore(self, string=''):
     # move pre-compile out the loop to improve performance
     first_cap_re = re.compile('(.)([A-Z][a-z]+)')
     all_cap_re = re.compile('([a-z0-9])([A-Z])')
