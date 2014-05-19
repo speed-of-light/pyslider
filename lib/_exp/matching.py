@@ -5,8 +5,10 @@ import pandas as pd
 import numpy as np
 from sklearn import mixture
 from summary import Summary
-from ..data import *
-from ..exp import ExpCommon
+from feats   import Feats
+from ..data  import *
+from ..handy import HandyTimer as ht
+from ..exp   import ExpCommon
 
 class Matcher(ExpCommon):
   def __init__(self, root, name):
