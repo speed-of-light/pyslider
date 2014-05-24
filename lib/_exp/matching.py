@@ -30,7 +30,7 @@ class Matcher(ExpCommon):
         infostr= "sid:{}, fid:{}, mod:{}-{}, mtype:{},thres:{}".format(tf['idx'], qf['idx'], mod['kp_algo'], mod['des_algo'], mtype, thres)
         self.log.info(infostr)
         with ht(verbose=0) as ts:
-          mr = self.single_match(qf['des'], tf['des'], mtype, thres)
+          mr = self._match_desc(qf['des'], tf['des'], mtype, thres)
         mt = ts.msecs+tf['ts']+qf['ts']
         dr = dict(sid=tf['idx'], fid=qf['idx'], ts=mt, mr=mr)
         frs.append(dr)
@@ -39,7 +39,7 @@ class Matcher(ExpCommon):
       res.append(dict(feats=frs, vr=vr))
     return res, sfs, vfs
 
-  def single_match(self, dquery, dtrain, mtype="BruteForce", thres=.5):
+  def _match_desc(self, dquery, dtrain, mtype="BruteForce", thres=.5):
     """
     BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
     """
@@ -57,6 +57,41 @@ class Matcher(ExpCommon):
       return pd.DataFrame(columns=['qix', 'tix', 'iix', 'dt'])
     else:
       return pd.DataFrame(mra, columns=['qix', 'tix', 'iix', 'dt'])
+
+  def _filter_matches(self, matches, thres=.5):
+    mre = []
+    for m,n in matches:
+      if m.distance < n.distance*thres:
+        mre.append(m)
+    return mre
+
+  def _pickle_matches(self, matches):
+    mra = []
+    for m in matches:
+      mra.append([m.queryIdx, m.trainIdx, m.imgIdx, m.distance])
+    return mra
+
+  def single_match(self, fid, sid, mtype="BruteForce",
+      mod=dict(kp_algo='FAST', des_algo='SIFT')):
+    """
+    BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
+    """
+    sr = self.root; sn = self.name
+    vv = Video(sr, sn); vi = vv.get_frames([fid]).next()
+    ss = PdfSlider(sn, sr); ff = Feats(sr, sn);
+    si = ss.get_slides( [sid], gray=True, resize=True).next()
+    sif = ff.feats_set( [si], mod=mod)[0]
+    vif = ff.feats_set( [vi], mod=mod)[0]
+    mat = cv2.DescriptorMatcher_create(mtype)
+    mra = mat.knnMatch(sif['des'], vif['des'], k=2)
+    mra = self._filter_matches(mra, .9)
+    col = ['qix', 'tix', 'iix', 'dt']
+    if len(mra) is 0:
+      res = pd.DataFrame(columns=col)
+    else:
+      mra = self._pickle_matches(mra)
+      res = pd.DataFrame(mra, columns=col)
+    return dict(matches=res, sif=sif, vif=vif)
 
   def _voting(self, df):
     vk = []
@@ -250,4 +285,41 @@ class Matcher(ExpCommon):
           simg = slid.get_slide(data.ix[fi].sid, resize=True)
           self._ano_img_box(ax, vimg, simg, data.ix[fi], si)
       return ax
+
+  def ransac(self, res):
+    ra = self.Ransac()
+    ra.compute()
+
+  class Ransac():
+    def __init__(self):
+      pass
+
+    def _matched_points(self, kps, mps):
+      rr = [ kps[m].pt for m in mps ]
+      return np.float32( rr ).reshape(-1,1,2)
+
+    def compute(self, data, min_matches=10):
+      """
+      data is a dict contained columns:
+        [ 'kp_train', 'kp_test', 'matches']
+      Methods:
+        0 - a regular method using all the points
+        CV_RANSAC - RANSAC-based robust method
+        CV_LMEDS - Least-Median robust method
+      """
+      good = data['matches']
+      kpq = data['sif']['kps']; kpt = data['vif']['kps']
+      if len(good) >= min_matches:
+        qpts = self._matched_points( kpq, good.qix )
+        tpts = self._matched_points( kpt, good.tix )
+        M, mask = cv2.findHomography(qpts, tpts, method=cv2.RANSAC, ransacReprojThreshold=5.0)
+        return M, mask
+      return None
+
+    def get_bound_img(self, fimg, timg, homo):
+      h,w,z = fimg.shape
+      bnd = np.float32([ [0,0], [0,h-1], [w-1,h-1], [w-1,0] ]).reshape(-1,1,2)
+      bound = cv2.perspectiveTransform(bnd, homo)
+      rimg = cv2.polylines( timg, [np.int32(bound)], True, (0, 255, 0), 3)
+      return rimg
 

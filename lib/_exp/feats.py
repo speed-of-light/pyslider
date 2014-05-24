@@ -191,7 +191,7 @@ class Feats(ExpCommon):
         ks = fd.detect(img);
         ks2, ds = de.compute(img, ks)
       res.append(dict(idx=si['idx'], kps=ks2, des=ds,
-        oklen=len(ks), ts=ts.msecs))
+        kplen=len(ks), ts=ts.msecs))
     return res
 
   def single_feats(self, img,
