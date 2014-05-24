@@ -7,3 +7,8 @@ jpg
 /test*.*
 *.ipynb_checkpoints/
 *.ipynb
+
+# for vim
+**/*.(h5|mpg|jpg|mpeg|pyc)
+./data
+./jpg
