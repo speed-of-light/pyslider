@@ -1,14 +1,18 @@
 [![Stories in Ready](https://badge.waffle.io/speed-of-light/pyslider.png?label=ready&title=Ready)](https://waffle.io/speed-of-light/pyslider)
 # Release Notes
 
-* Milestone: **0.5.0** 2014-04-30
+* Milestone: **0.6.0** 2014-05-30
   - support latex generator for diagrams and tables for Prepare class
-  - basic main flow
+  - integrated extended main flow
 
-* Milestone: **0.4.0** 2014-04-29
-  - have basic latex generator for diagrams and tables for Feats class
+* Milestone: **0.5.0** 2014-05-27
+  - clean code (PEP8, pyflask)
+  - improve1: ransac, slope
+  - imporve2: dynamic time wrapping
+  - improve3: color, shape adjust
+  - improve plotting
+  - recollect data
 
-* Milestone: **0.3.5** 2014-04-25
 
 - `0.4.0`: 2014-05-12 Mon 12:21 PM
 
