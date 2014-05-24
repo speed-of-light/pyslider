@@ -217,14 +217,18 @@ class Matcher(ExpCommon):
   # binary
   def tmp(self):
     """
-    http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_feature2d/py_brief/py_brief.html?highlight=brief
-    http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_feature2d/py_orb/py_orb.html?highlight=orb
+    http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/
+      py_feature2d/py_brief/py_brief.html?highlight=brief
+    http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/
+      py_feature2d/py_orb/py_orb.html?highlight=orb
     http://stackoverflow.com/questions/20146570/opencv-python-dense-sift
-    http://stackoverflow.com/questions/14588682/freak-descriptor-with-opencv-python
+    http://stackoverflow.com/questions/14588682/
+      freak-descriptor-with-opencv-python
     def color_hist(self):
     def text_region(self):
     http://answers.opencv.org/question/19015/how-to-use-mser-in-python/
-    https://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
+    https://opencv-code.com/tutorials/
+      automatic-perspective-correction-for-quadrilateral-objects/
     """
     pass
 
@@ -238,7 +242,7 @@ class Matcher(ExpCommon):
     hita: combined hit and nonhit result withou nan/none
     """
     mp = self.Plotter(self.root, self.name)
-    mp.plot_hitf(data, show=show, predict=predict, hints=hints)
+    mp.plot_matches(data, show=show, predict=predict, hints=hints)
 
   class Plotter():
     def __init__(self, root, name):
@@ -287,7 +291,7 @@ class Matcher(ExpCommon):
       font = dict(family='serif', color='blue', weight='normal', size=16)
       ax.text(xpos, mean+3, "{:.3f}".format(mean), fontdict=font)
 
-    def plot_hitf(self, data, **kwargs):
+    def plot_matches(self, data, **kwargs):
       """
       data(dataframe) should contain columns:
       ['fid', 'sid', 'vr', 'hit', 'nonhit', 'hita']

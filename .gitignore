@@ -5,5 +5,5 @@ old_data
 tmp
 jpg
 /test*.*
-.ipynb_checkpoints/
+*.ipynb_checkpoints/
 *.ipynb
