@@ -1,8 +1,12 @@
-import cv2, cv
-import collections, os, os.path
+import cv2
+import cv
+import collections
+import os
+import os.path
 import numpy as np
 import pandas as pd
 import glob
+
 
 class Video:
   """
@@ -20,19 +24,19 @@ class Video:
 
   @property
   def cap(self):
-    if self.stream_path == "":
-      return ""
-    else:
-      cap = cv2.VideoCapture(self.stream_path)
-      fps = cap.get(cv.CV_CAP_PROP_FPS)
-      frs = cap.get(cv.CV_CAP_PROP_FRAME_COUNT)
-      ret = {
-        "cap": cap,
-        "fps": fps,
-        "frames": frs,
-        "seconds": frs/fps
-      }
-      return ret
+      if self.stream_path == "":
+          return ""
+      else:
+          cap = cv2.VideoCapture(self.stream_path)
+          fps = cap.get(cv.CV_CAP_PROP_FPS)
+          frs = cap.get(cv.CV_CAP_PROP_FRAME_COUNT)
+          ret = {
+              "cap": cap,
+              "fps": fps,
+              "frames": frs,
+              "seconds": frs/fps
+          }
+          return ret
 
   @classmethod
   def from_path(self, stream_path=""):
@@ -58,25 +62,28 @@ class Video:
     Image and it's timestamp in milliseconds
     """
 
-    if self.cap == "": yield None, None
+    if self.cap == "":
+        yield None, None
     capr = self.cap
     cap = capr['cap']
     i = 0 if start < 0 else start
     fin = capr['seconds'] if (end == -1 or end > capr['seconds']) else end
-    fin = fin* 1000 #time range in ms
+    fin = fin * 1000  # time range in ms
     iset = collections.deque([])
     while True:
-      k = i*time_span
-      if k > fin: break
-      cap.set(cv.CV_CAP_PROP_POS_MSEC, k)
-      grabed, img = cap.read()
-      if grabed:
-        iset.append( dict(img=img,
-          fn=cap.get(cv.CV_CAP_PROP_POS_FRAMES),
-          ms=cap.get(cv.CV_CAP_PROP_POS_MSEC)) )
-        if len(iset) > size: iset.popleft()
-        yield(iset)
-      i += 1
+        k = i*time_span
+        if k > fin:
+            break
+        cap.set(cv.CV_CAP_PROP_POS_MSEC, k)
+        grabed, img = cap.read()
+        if grabed:
+            iset.append(dict(img=img,
+                        fn=cap.get(cv.CV_CAP_PROP_POS_FRAMES),
+                        ms=cap.get(cv.CV_CAP_PROP_POS_MSEC)))
+            if len(iset) > size:
+                iset.popleft()
+            yield(iset)
+        i += 1
 
   def get_frames(self, ids=[], gray=False):
     cap = self.cap['cap']
@@ -209,27 +216,36 @@ class PdfSlider():
     Get slide images collection
     """
     sp = self.slides_path(size='big')
-    su = Summary(); sin = su.info(self.root, self.name).iloc[0]
-    if ids is None: ids = range(1, sin.n_slides+1)
-    if resize == True: resize=(sin.v_width, sin.v_height)
+    su = Summary()
+    sin = su.info(self.root, self.name).iloc[0]
+    if ids is None:
+        ids = range(1, sin.n_slides+1)
+    if resize is True:
+        resize = (sin.v_width, sin.v_height)
     for si in ids:
-      sp = self._img_path(sp, si)
-      if self._is_valid_sid(si, sin.n_slides):
-        if gray: img = cv2.imread(sp, cv2.COLOR_GRAY2BGR)
-        else: img = cv2.imread(sp)
-      else:
-        img = self._blank_slide()
-        img = img[0] if gray else img
-      if resize is not None: img = cv2.resize(img, resize)
-      yield(dict(img=img, idx=si))
+        sp = self._img_path(sp, si)
+        if self._is_valid_sid(si, sin.n_slides):
+          if gray:
+              img = cv2.imread(sp, cv2.COLOR_GRAY2BGR)
+          else:
+              img = cv2.imread(sp)
+        else:
+            img = self._blank_slide()
+            img = img[0] if gray else img
+        if resize is not None:
+            img = cv2.resize(img, resize)
+        yield(dict(img=img, idx=si))
 
   def get_slide(self, index=1, resize=None):
-    su = Summary(); sin = su.info(self.root, self.name).iloc[0]
-    if resize == True: resize=(sin.v_width, sin.v_height)
+    su = Summary()
+    sin = su.info(self.root, self.name).iloc[0]
+    if resize is True:
+        resize = (sin.v_width, sin.v_height)
     if self._is_valid_sid(index, sin.n_slides):
-      spb = self.slides_path('big')
-      img = cv2.imread(self._img_path(spb, index))
+        spb = self.slides_path('big')
+        img = cv2.imread(self._img_path(spb, index))
     else:
-      img = self._blank_slide()
-    if resize is not None: img = cv2.resize(img, resize)
-    return img[:,:,[2,1,0]]  #convert for matplotlib
+        img = self._blank_slide()
+    if resize is not None:
+        img = cv2.resize(img, resize)
+    return img[:, :, [2, 1, 0]]  # convert for matplotlib
