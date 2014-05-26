@@ -16,6 +16,47 @@ class Feats(ExpCommon):
     if mn is not None: ret += " - {}".format(mn)
     return ret
 
+  def _df_key_root(self, mod, opt, set_name='slide', dtype='kp'):
+    hdfk = "/{}/{}".format(mod['kp_algo'], mod['des_algo'])
+    us = self._ustr_dict(opt)
+    fik = "{}{}/{}/{}".format(hdfk, us, set_name, dtype)
+    return fik
+
+  def _set_extractor(self, exc, opts={}):
+    def set_value(exc, name, value):
+      dtype = exc.paramType(name)
+      if dtype == 0 or dtype==10: exc.setInt(name, int(value))
+      elif dtype == 1: exc.setBool(name, bool(value))
+      elif dtype == 2: exc.setDouble(name, double(value))
+      elif dtype == 3: exc.setString(name, str(value))
+    for dk in opts.keys():
+      set_value(exc, dk, opts[dk])
+    if 0:
+      for p in de.getParams():
+        res = get_value(de, p)
+        print p, res
+
+  def _get_exc_value(self, exc, name):
+    dtype = exc.paramType(name)
+    if dtype == 0 or dtype==10: v = exc.getInt(name)
+    elif dtype == 1: v = exc.getBool(name)
+    elif dtype == 2: v = exc.getDouble(name)
+    elif dtype == 3: v = exc.getString(name)
+    va = ['Int', 'Bool', 'Double', 'Str', '-', '-', '-', '-', '-', '-', 'Short']
+    return (va[dtype], v)
+
+  def _unpickle_keypoints(self, kdf):
+    if kdf is None: return None
+    kps = []
+    for ki in kdf.index:
+      kd = kdf.ix[ki]
+      ktmp = cv2.KeyPoint(x=kd['x'], y=kd['y'],
+          _size=kd['size'], _angle=kd['angle'],
+          _response=kd['response'], _octave=int(kd['octave']),
+          _class_id=int(kd['class_id']))
+      kps.append(ktmp)
+    return kps
+
   def o_frames(self, gray=False):
     pass
 
@@ -100,35 +141,6 @@ class Feats(ExpCommon):
           continue
     self.notify("Time: {}".format(ts.tstr()))
 
-  def _df_key_root(self, mod, opt, set_name='slide', dtype='kp'):
-    hdfk = "/{}/{}".format(mod['kp_algo'], mod['des_algo'])
-    us = self._ustr_dict(opt)
-    fik = "{}{}/{}/{}".format(hdfk, us, set_name, dtype)
-    return fik
-
-  def _set_extractor(self, exc, opts={}):
-    def set_value(exc, name, value):
-      dtype = exc.paramType(name)
-      if dtype == 0 or dtype==10: exc.setInt(name, int(value))
-      elif dtype == 1: exc.setBool(name, bool(value))
-      elif dtype == 2: exc.setDouble(name, double(value))
-      elif dtype == 3: exc.setString(name, str(value))
-    for dk in opts.keys():
-      set_value(exc, dk, opts[dk])
-    if 0:
-      for p in de.getParams():
-        res = get_value(de, p)
-        print p, res
-
-  def _get_exc_value(self, exc, name):
-    dtype = exc.paramType(name)
-    if dtype == 0 or dtype==10: v = exc.getInt(name)
-    elif dtype == 1: v = exc.getBool(name)
-    elif dtype == 2: v = exc.getDouble(name)
-    elif dtype == 3: v = exc.getString(name)
-    va = ['Int', 'Bool', 'Double', 'Str', '-', '-', '-', '-', '-', '-', 'Short']
-    return (va[dtype], v)
-
   def detect_match_with(self, fr_list=[],
       mod=dict(kp_algo='FAST', des_algo='SIFT')):
     """
@@ -141,18 +153,6 @@ class Feats(ExpCommon):
       with ht(verbose=0) as ts:
         kps = fd.detect(img, None)
         kps, des = de.compute(img, kps)
-
-  def _unpickle_keypoints(self, kdf):
-    if kdf is None: return None
-    kps = []
-    for ki in kdf.index:
-      kd = kdf.ix[ki]
-      ktmp = cv2.KeyPoint(x=kd['x'], y=kd['y'],
-          _size=kd['size'], _angle=kd['angle'],
-          _response=kd['response'], _octave=int(kd['octave']),
-          _class_id=int(kd['class_id']))
-      kps.append(ktmp)
-    return kps
 
   def resrc(self):
     """
