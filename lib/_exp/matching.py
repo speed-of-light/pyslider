@@ -20,33 +20,40 @@ class Ransac():
       return np.float32(rr).reshape(-1, 1, 2)
 
     def compute(self, data, min_matches=10):
-      """
-      data is a dict contained columns:
-      [ 'kp_train', 'kp_test', 'matches']
-      Methods:
-        0 - a regular method using all the points
-        CV_RANSAC - RANSAC-based robust method
-        CV_LMEDS - Least-Median robust method
-      """
-      good = data['matches']
-      kpq = data['sif']['kps']
-      kpt = data['vif']['kps']
-      if len(good) >= min_matches:
-        qpts = self._matched_points(kpq, good.qix)
-        tpts = self._matched_points(kpt, good.tix)
-        M, mask = cv2.findHomography(qpts, tpts, method=cv2.RANSAC,
-                                     ransacReprojThreshold=5.0)
-        return M, mask
-      return None
+        """
+        data is a dict contained columns:
+        [ 'kp_train', 'kp_test', 'matches']
+        Methods:
+          0 - a regular method using all the points
+          CV_RANSAC - RANSAC-based robust method
+          CV_LMEDS - Least-Median robust method
+        """
+        good = data['matches']
+        kpq = data['sif']['kps']
+        kpt = data['vif']['kps']
+        if len(good) >= min_matches:
+          qpts = self._matched_points(kpq, good.qix)
+          tpts = self._matched_points(kpt, good.tix)
+          M, mask = cv2.findHomography(qpts, tpts, method=cv2.RANSAC,
+                                       ransacReprojThreshold=5.0)
+          return M, mask
+        return None
 
     def get_bound_img(self, fid, sid, homo):
-      fimg, simg = self._image_pair(fid, sid)
-      h, w, z = fimg.shape
-      bnd = np.float32([[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]). \
-          reshape(-1, 1, 2)
-      bound = cv2.perspectiveTransform(bnd, homo)
-      rimg = cv2.polylines(simg, [np.int32(bound)], True, (0, 255, 0), 3)
-      return rimg
+        """
+        Return homographic array of image result
+        Params:
+            fid: id of frames
+            sid: id of slide
+            homo: transformation matrix (usually 9*9)
+        """
+        fimg, simg = self._image_pair(fid, sid)
+        h, w, z = fimg.shape
+        bnd = np.float32([[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]). \
+            reshape(-1, 1, 2)
+        bound = cv2.perspectiveTransform(bnd, homo)
+        rimg = cv2.polylines(simg, [np.int32(bound)], True, (0, 255, 0), 3)
+        return rimg
 
 
 class Matcher(ExpCommon):
@@ -89,23 +96,23 @@ class Matcher(ExpCommon):
             return res, sfs, vfs
 
     def _match_desc(self, dquery, dtrain, mtype="BruteForce", thres=.5):
-      """
-      BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
-      """
-      mat = cv2.DescriptorMatcher_create(mtype)
-      # mre = mat.match(dquery, dtrain)
-      mra = mat.knnMatch(dquery, dtrain, k=2)
-      mre = []
-      for m, n in mra:
-        if m.distance < n.distance*thres:
-          mre.append(m)
-          mra = []
-          for re in mre:
-            mra.append([re.queryIdx, re.trainIdx, re.imgIdx, re.distance])
-            if len(mra) is 0:
-              return pd.DataFrame(columns=['qix', 'tix', 'iix', 'dt'])
-            else:
-              return pd.DataFrame(mra, columns=['qix', 'tix', 'iix', 'dt'])
+        """
+        BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
+        """
+        mat = cv2.DescriptorMatcher_create(mtype)
+        # mre = mat.match(dquery, dtrain)
+        mra = mat.knnMatch(dquery, dtrain, k=2)
+        mre = []
+        for m, n in mra:
+          if m.distance < n.distance*thres:
+            mre.append(m)
+            mra = []
+            for re in mre:
+              mra.append([re.queryIdx, re.trainIdx, re.imgIdx, re.distance])
+              if len(mra) is 0:
+                return pd.DataFrame(columns=['qix', 'tix', 'iix', 'dt'])
+              else:
+                return pd.DataFrame(mra, columns=['qix', 'tix', 'iix', 'dt'])
 
     def _filter_matches(self, matches, thres=.5):
       mre = []
@@ -131,23 +138,23 @@ class Matcher(ExpCommon):
 
     def single_match(self, fid, sid, mtype="BruteForce",
                      mod=dict(kp_algo='FAST', des_algo='SIFT')):
-      """
-      BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
-      """
-      fimg, simg = self._image_pair(fid, sid)
-      ff = Feats(self.root, self.name)
-      sif = ff.feats_set([simg], mod=mod)[0]
-      vif = ff.feats_set([fimg], mod=mod)[0]
-      mat = cv2.DescriptorMatcher_create(mtype)
-      mra = mat.knnMatch(sif['des'], vif['des'], k=2)
-      mra = self._filter_matches(mra, .9)
-      col = ['qix', 'tix', 'iix', 'dt']
-      if len(mra) is 0:
-        res = pd.DataFrame(columns=col)
-      else:
-        mra = self._pickle_matches(mra)
-        res = pd.DataFrame(mra, columns=col)
-        return dict(matches=res, sif=sif, vif=vif)
+        """
+        BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
+        """
+        fimg, simg = self._image_pair(fid, sid)
+        ff = Feats(self.root, self.name)
+        sif = ff.feats_set([simg], mod=mod)[0]
+        vif = ff.feats_set([fimg], mod=mod)[0]
+        mat = cv2.DescriptorMatcher_create(mtype)
+        mra = mat.knnMatch(sif['des'], vif['des'], k=2)
+        mra = self._filter_matches(mra, .9)
+        col = ['qix', 'tix', 'iix', 'dt']
+        if len(mra) is 0:
+          res = pd.DataFrame(columns=col)
+        else:
+          mra = self._pickle_matches(mra)
+          res = pd.DataFrame(mra, columns=col)
+          return dict(matches=res, sif=sif, vif=vif)
 
     def _voting(self, df):
       vk = []
@@ -203,19 +210,19 @@ class Matcher(ExpCommon):
     # cv2.imwrite('jpg/test.jpg', vimg)
 
     def _reorder(self, old, li=[]):
-      """
-      Generate reordered list
-      ex:
-        aa= [9,3,6]; li = [1,0,0,0,0,2,0,1]
-        by product: bb = { 0: 1, 1:2, 2:0}
-        return: [2, 1, 1, 1, 1, 0, 1, 2]
-      """
-      tmp = old[:]
-      tmp.sort()
-      bb = {}
-      for i, t in enumerate(tmp):
-        bb[i] = old.index(t)
-        return [bb[ll] for ll in li]
+        """
+        Generate reordered list
+        ex:
+          aa= [9,3,6]; li = [1,0,0,0,0,2,0,1]
+          by product: bb = { 0: 1, 1:2, 2:0}
+          return: [2, 1, 1, 1, 1, 0, 1, 2]
+        """
+        tmp = old[:]
+        tmp.sort()
+        bb = {}
+        for i, t in enumerate(tmp):
+          bb[i] = old.index(t)
+          return [bb[ll] for ll in li]
 
     def _basic_result(self, data, mm=2):
       clf = mixture.GMM(n_components=mm, covariance_type='full')
@@ -224,51 +231,51 @@ class Matcher(ExpCommon):
       return np.array(self._reorder(clf.means_.tolist(), pr))
 
     def regroup(self, df, smres):
-      """
-      `df` Ground-truths dataframe, columns are:
-      'fid', 'sid', 'slide_type', 'cam_status'
-      `smres` Comes from method set_match and its res value
-      """
-      hita = []
-      for r in smres:
-        fid = r['feats'][0]['fid']  # 0 is ok, all the same
-        qry = df[(df['fid'] <= fid)]
-        if len(qry) > 0:
-          qv = qry.values[-1][1]
-          mr = r['feats'][qv-1]['mr']
-          tmean = mr[mr.dt.lt(mr.dt.quantile(.1))].dt.mean()
-          if qv > 0:  # has sid
-            hita.append([fid, qv, r['vr'], tmean, None, tmean])
-          elif len(r['feats'][qv-1]['mr']) > 0:  # has matched result
-            hita.append([fid, qv, r['vr'], None, tmean, tmean])
-          else:
-            print 'never goes here'
-            hitf = pd.DataFrame(hita,
-                                columns=['fid', 'sid', 'vr', 'hit',
-                                         'nonhit', 'hita'])
-            hitf = hitf.set_index('fid')
-            hitf['pr'] = self._basic_result(hitf.hita.values, 2)
-            return hitf
-       # self.plot_hitf(hitf,
-       #         show=[1482, 16427, 28957, 35469, 46755, 47461,66385,70360])
+        """
+        `df` Ground-truths dataframe, columns are:
+        'fid', 'sid', 'slide_type', 'cam_status'
+        `smres` Comes from method set_match and its res value
+        """
+        hita = []
+        for r in smres:
+          fid = r['feats'][0]['fid']  # 0 is ok, all the same
+          qry = df[(df['fid'] <= fid)]
+          if len(qry) > 0:
+            qv = qry.values[-1][1]
+            mr = r['feats'][qv-1]['mr']
+            tmean = mr[mr.dt.lt(mr.dt.quantile(.1))].dt.mean()
+            if qv > 0:  # has sid
+              hita.append([fid, qv, r['vr'], tmean, None, tmean])
+            elif len(r['feats'][qv-1]['mr']) > 0:  # has matched result
+              hita.append([fid, qv, r['vr'], None, tmean, tmean])
+            else:
+              print 'never goes here'
+              hitf = pd.DataFrame(hita,
+                                  columns=['fid', 'sid', 'vr', 'hit',
+                                           'nonhit', 'hita'])
+              hitf = hitf.set_index('fid')
+              hitf['pr'] = self._basic_result(hitf.hita.values, 2)
+              return hitf
+         # self.plot_hitf(hitf,
+         #         show=[1482, 16427, 28957, 35469, 46755, 47461,66385,70360])
 
     # binary
     def tmp(self):
-      """
-      http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/
-        py_feature2d/py_brief/py_brief.html?highlight=brief
-      http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/
-        py_feature2d/py_orb/py_orb.html?highlight=orb
-      http://stackoverflow.com/questions/20146570/opencv-python-dense-sift
-      http://stackoverflow.com/questions/14588682/
-        freak-descriptor-with-opencv-python
-      def color_hist(self):
-      def text_region(self):
-      http://answers.opencv.org/question/19015/how-to-use-mser-in-python/
-      https://opencv-code.com/tutorials/
-        automatic-perspective-correction-for-quadrilateral-objects/
-      """
-      pass
+        """
+        http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/
+          py_feature2d/py_brief/py_brief.html?highlight=brief
+        http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/
+          py_feature2d/py_orb/py_orb.html?highlight=orb
+        http://stackoverflow.com/questions/20146570/opencv-python-dense-sift
+        http://stackoverflow.com/questions/14588682/
+          freak-descriptor-with-opencv-python
+        def color_hist(self):
+        def text_region(self):
+        http://answers.opencv.org/question/19015/how-to-use-mser-in-python/
+        https://opencv-code.com/tutorials/
+          automatic-perspective-correction-for-quadrilateral-objects/
+        """
+        pass
 
     def ransac(self, fid, sid, res, plot=False):
       ra = self.Ransac()
@@ -278,18 +285,18 @@ class Matcher(ExpCommon):
         ra.compute()
 
     def plot_hitf(self, data, show=[], predict=False, hints=False):
-      """
-      data(dataframe) should contain columns:
-      ['fid', 'sid', 'vr', 'hit', 'nonhit', 'hita']
-      vr: voted result ( not necessary)
-      hit: similarity or confidence for true
-      nonhit: similarity or confidence for false(wrong match)
-      hita: combined hit and nonhit result withou nan/none
-      """
-      mp = self.Plotter(self.root, self.name)
-      mp.plot_matches(data, show=show, predict=predict, hints=hints)
+        """
+        data(dataframe) should contain columns:
+        ['fid', 'sid', 'vr', 'hit', 'nonhit', 'hita']
+        vr: voted result ( not necessary)
+        hit: similarity or confidence for true
+        nonhit: similarity or confidence for false(wrong match)
+        hita: combined hit and nonhit result withou nan/none
+        """
+        mp = self.Plotter(self.root, self.name)
+        mp.plot_matches(data, show=show, predict=predict, hints=hints)
 
-    def plot_ransac(self):
+    def plot_ransac(self, ):
         pass
 
     class Plotter():
