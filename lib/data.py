@@ -215,7 +215,7 @@ class PdfSlider():
     return img
 
   def _is_valid_sid(self, index, count):
-    return (index > 0 or index < count+1)
+    return (index > 0 and index < count+1)
 
   def _img_path(self, root, idx):
     return "{}/{:03d}.jpg".format(root, idx)

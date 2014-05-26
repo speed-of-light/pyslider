@@ -34,7 +34,7 @@ class Ransac():
             src = self._matched_points(kpq, good.qix)
             des = self._matched_points(kpt, good.tix)
             M, mask = cv2. \
-                findHomography(des, src,
+                findHomography(src, des,
                                method=cv2.RANSAC,
                                ransacReprojThreshold=5.0)
             return M, mask
@@ -49,8 +49,8 @@ class Ransac():
             homo: transformation matrix (usually 9*9)
         """
         h, w, z = simg.shape
-        bnd = np.float32([[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]). \
-            reshape(-1, 1, 2)
+        pos = [[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]
+        bnd = np.float32(pos).reshape(-1, 1, 2)
         bound = cv2.perspectiveTransform(bnd, homo)
         rimg = fimg[:]
         cv2.polylines(rimg, [np.int32(bound)], True, (0, 255, 0), 3)
@@ -238,10 +238,10 @@ class Matcher(ExpCommon):
                     hita.append([fid, qv, r['vr'], None, tmean, tmean])
             else:
                 print 'never goes here'
-                cols = ['fid', 'sid', 'vr', 'hit', 'nonhit', 'hita']
-                hitf = pd.DataFrame(hita, columns=cols)
-                hitf = hitf.set_index('fid')
-                hitf['pr'] = self._basic_result(hitf.hita.values, 2)
+        cols = ['fid', 'sid', 'vr', 'hit', 'nonhit', 'hita']
+        hitf = pd.DataFrame(hita, columns=cols)
+        hitf = hitf.set_index('fid')
+        hitf['pr'] = self._basic_result(hitf.hita.values, 2)
         return hitf
         # self.plot_hitf(hitf,
         #         show=[1482, 16427, 28957, 35469, 46755, 47461,66385,70360])
@@ -289,6 +289,12 @@ class Matcher(ExpCommon):
         return view
 
     def plot_id_match(self, fin, sin, fkp, skp, matches):
+        """
+        Example:
+            hv = mm.plot_id_match(him, sid,
+                ret['vif']['kps'], ret['sif']['kps'],
+                ret['matches'])[:,:,[2,1,0]]
+        """
         if isinstance(sin, int):
             ss = PdfSlider(self.name, self.root)
             simg = ss.get_slides([sin], gray=False, resize=True).next()['img']
@@ -332,7 +338,7 @@ class Matcher(ExpCommon):
           hv = 0 if math.isnan(hitc.hit) else hitc.hit
           hv = hv if math.isnan(hitc.nonhit) else hitc.nonhit
           sip = 0.1 if sid % 2 is 0 else 0.9
-          stimg = self._stich_imgs(simg, vimg[:, :, [2, 1, 0]])
+          stimg = self.stich_imgs(simg, vimg[:, :, [2, 1, 0]])
           oft = ofb.OffsetImage(stimg, zoom=0.1)
           ab = ofb. \
               AnnotationBbox(oft, (hitc.name, hv), xycoords='data',

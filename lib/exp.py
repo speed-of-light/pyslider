@@ -172,7 +172,8 @@ class ExpCommon():
 from _exp.prepare import Prepare
 from _exp.feats import Feats
 from _exp.matching import Matcher
-from _exp.fetus import Summary, GroundTruth
+from _exp.fetus import GroundTruth
+from _exp.summary import Summary
 
 
 class Prepare(Prepare):
