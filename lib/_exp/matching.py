@@ -321,6 +321,15 @@ class Matcher(ExpCommon):
         mp = self.Plotter(self.root, self.name)
         mp.plot_matches(data, show=show, predict=predict, hints=hints)
 
+    def plot_match_homo(self, fid, sid, thres=.9):
+        # raw matching
+        ret = self.single_match(fid, sid, thres=thres)
+        him = self.plot_homo_boundary(fid, sid, ret)  # [:,:,[2,1,0]]
+        hv = self.\
+            plot_id_match(him, sid, ret['vif']['kps'], ret['sif']['kps'],
+                          ret['matches'])[:, :, [2, 1, 0]]
+        return hv
+
     class Plotter():
         def __init__(self, root, name):
           self.root = root
