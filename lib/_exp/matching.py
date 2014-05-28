@@ -79,6 +79,8 @@ class Matcher(ExpCommon):
         """
         BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
         """
+        if len(dtrain) is 0 or len(dquery) is 0:
+            return pd.DataFrame(columns=['qix', 'tix', 'iix', 'dt'])
         mat = cv2.DescriptorMatcher_create(mtype)
         # mre = mat.match(dquery, dtrain)
         mra = mat.knnMatch(dquery, dtrain, k=2)
