@@ -151,7 +151,7 @@ class Matcher(ExpCommon):
         """
         Generate reordered list
         ex:
-          aa= [9,3,6]; li = [1,0,0,0,0,2,0,1]
+          old= [9,3,6]; li = [1,0,0,0,0,2,0,1]
           by product: bb = { 0: 1, 1:2, 2:0}
           return: [2, 1, 1, 1, 1, 0, 1, 2]
         """
