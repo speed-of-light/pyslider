@@ -185,7 +185,12 @@ class Matcher(ExpCommon):
             res = pd.DataFrame(mra, columns=col)
         return dict(matches=res, sif=sif, vif=vif)
 
-    def set_match(self, fids=[], thres=.9):
+    def set_match(self, fids=[], ransac=0, thres=.9):
+        """
+        ransac:
+            0, no ransac
+            1, use ransac
+        """
         mod = dict(kp_algo=self.algorithm['keypoint'],
                    des_algo=self.algorithm['descriptor'])
         mtype = self.algorithm['matching']
@@ -206,6 +211,10 @@ class Matcher(ExpCommon):
                 self.log.info(_info)
                 with ht(verbose=0) as ts:
                     mr = self._match_desc(qf['des'], tf['des'], mtype, thres)
+                    if ransac is True:
+                        ra = Ransac()
+                        homo, mask = ra.compute(mr, tf['kps'], qf['kps'])
+                        mr = mr[mask[mr.index] == 1]
                 mt = ts.msecs+tf['ts']+qf['ts']
                 dr = dict(sid=tf['idx'], fid=qf['idx'], ts=mt, mr=mr)
                 frs.append(dr)
@@ -271,7 +280,7 @@ class Matcher(ExpCommon):
             compute(res['matches'], res['sif']['kps'], res['vif']['kps'])
         fp, sp = self._image_pair(fid, sid, gray=False)
         himg = ra.get_bound_img(fp['img'], sp['img'], homo)
-        return himg
+        return himg, mask
 
     def plot_img_match(self, qimg, timg, qkp, tkp, match):
         pl = self.Plotter(self.root, self.name)
@@ -322,11 +331,14 @@ class Matcher(ExpCommon):
     def plot_match_homo(self, fid, sid, thres=.9):
         # raw matching
         ret = self.single_match(fid, sid, thres=thres)
-        him = self.plot_homo_boundary(fid, sid, ret)  # [:,:,[2,1,0]]
+        him, mask = self.plot_homo_boundary(fid, sid, ret)  # [:,:,[2,1,0]]
+        good = ret['matches']
+        good = good[mask[good.index] == 1]
+        vkp = ret['vif']['kps']
+        skp = ret['sif']['kps']
         hv = self.\
-            plot_id_match(him, sid, ret['vif']['kps'], ret['sif']['kps'],
-                          ret['matches'])[:, :, [2, 1, 0]]
-        return hv
+            plot_id_match(him, sid, vkp, skp, good)[:, :, [2, 1, 0]]
+        return hv, good
 
     class Plotter():
         def __init__(self, root, name):
