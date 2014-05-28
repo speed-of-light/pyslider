@@ -211,7 +211,7 @@ class Matcher(ExpCommon):
                 self.log.info(_info)
                 with ht(verbose=0) as ts:
                     mr = self._match_desc(qf['des'], tf['des'], mtype, thres)
-                    if ransac is True:
+                    if ransac is True and len(mr) > 0:
                         ra = Ransac()
                         homo, mask = ra.compute(mr, tf['kps'], qf['kps'])
                         mr = mr[mask[mr.index] == 1]
