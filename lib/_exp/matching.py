@@ -18,7 +18,7 @@ class Ransac():
       rr = [kps[m].pt for m in mps]
       return np.float32(rr).reshape(-1, 1, 2)
 
-    def compute(self, data, min_matches=10):
+    def compute(self, good, skp, vkp, min_matches=10):
         """
         data is a dict contained columns:
         [ 'kp_train', 'kp_test', 'matches']
@@ -27,12 +27,9 @@ class Ransac():
           CV_RANSAC - RANSAC-based robust method
           CV_LMEDS - Least-Median robust method
         """
-        good = data['matches']
-        kpq = data['sif']['kps']
-        kpt = data['vif']['kps']
         if len(good) >= min_matches:
-            src = self._matched_points(kpq, good.qix)
-            des = self._matched_points(kpt, good.tix)
+            src = self._matched_points(skp, good.qix)
+            des = self._matched_points(vkp, good.tix)
             M, mask = cv2. \
                 findHomography(src, des,
                                method=cv2.RANSAC,
@@ -266,11 +263,12 @@ class Matcher(ExpCommon):
 
     def ransac(self, res):
         ra = Ransac()
-        ra.compute(res)
+        ra.compute(res['matches'], res['sif']['kps'], res['vif']['kps'])
 
     def plot_homo_boundary(self, fid, sid, res):
         ra = Ransac()
-        homo, mask = ra.compute(res)
+        homo, mask = ra.\
+            compute(res['matches'], res['sif']['kps'], res['vif']['kps'])
         fp, sp = self._image_pair(fid, sid, gray=False)
         himg = ra.get_bound_img(fp['img'], sp['img'], homo)
         return himg
