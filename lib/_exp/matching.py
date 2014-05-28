@@ -75,10 +75,15 @@ class Matcher(ExpCommon):
            .format(sid, fid, kalg, dalg, mtype, thres)
       return rs
 
+    def _no_desc(self, _list):
+        return _list is None or len(_list) is 0
+
     def _match_desc(self, dquery, dtrain, mtype="BruteForce", thres=.5):
         """
         BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
         """
+        if self._no_desc(dquery) or self._no_desc(dtrain):
+            return pd.DataFrame(columns=['qix', 'tix', 'iix', 'dt'])
         mat = cv2.DescriptorMatcher_create(mtype)
         # mre = mat.match(dquery, dtrain)
         mra = mat.knnMatch(dquery, dtrain, k=2)
