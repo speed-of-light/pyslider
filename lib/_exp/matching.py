@@ -205,18 +205,18 @@ class Matcher(ExpCommon):
         res = []
         for qf in vfs:
             frs = []
-            for tf in sfs:
-                _info = self._match_info(tf['idx'], qf['idx'], mod['kp_algo'],
+            for sf in sfs:
+                _info = self._match_info(sf['idx'], qf['idx'], mod['kp_algo'],
                                          mod['des_algo'], mtype, thres)
                 self.log.info(_info)
                 with ht(verbose=0) as ts:
-                    mr = self._match_desc(qf['des'], tf['des'], mtype, thres)
+                    mr = self._match_desc(sf['des'], qf['des'], mtype, thres)
                     if ransac is True and len(mr) > 0:
                         ra = Ransac()
-                        homo, mask = ra.compute(mr, tf['kps'], qf['kps'])
+                        homo, mask = ra.compute(mr, sf['kps'], qf['kps'])
                         mr = mr[mask[mr.index] == 1]
-                mt = ts.msecs+tf['ts']+qf['ts']
-                dr = dict(sid=tf['idx'], fid=qf['idx'], ts=mt, mr=mr)
+                mt = ts.msecs+sf['ts']+qf['ts']
+                dr = dict(sid=sf['idx'], fid=qf['idx'], ts=mt, mr=mr)
                 frs.append(dr)
             ds = self._dist_stat(frs)
             vr = self._voting(ds)
