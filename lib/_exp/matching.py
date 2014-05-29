@@ -149,7 +149,7 @@ class Matcher(ExpCommon):
 
     def _reorder(self, old, li=[]):
         """
-        Generate reordered list
+        Generate reordered list by sorted old list values
         ex:
           old= [9,3,6]; li = [1,0,0,0,0,2,0,1]
           by product: bb = { 0: 1, 1:2, 2:0}
