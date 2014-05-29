@@ -10,9 +10,26 @@ from ..handy import HandyTimer as ht
 from ..exp import ExpCommon
 
 
-class Ransac():
+class Sloper(object):
+    """
+    Compute slopes to filter out bad results
+    """
     def __init__(self):
-      pass
+        pass
+
+    def get_slopes(self, skp, vkp):
+        pass
+
+    def gridise(self):
+        """
+        Use gridize image to determine matched pairs
+        """
+        pass
+
+
+class Ransac(object):
+    def __init__(self):
+        pass
 
     def _matched_points(self, kps, mps):
       rr = [kps[m].pt for m in mps]
@@ -287,17 +304,19 @@ class Matcher(ExpCommon):
         himg = ra.get_bound_img(fp['img'], sp['img'], homo)
         return himg, mask
 
-    def plot_img_match(self, qimg, timg, qkp, tkp, match):
+    def plot_img_match(self, simg, fimg, skp, fkp, match):
         pl = self.Plotter(self.root, self.name)
-        view = pl.stich_imgs(qimg, timg)
+        view = pl.stich_imgs(simg, fimg)
         for mi in match.index:
-            tix = int(match.ix[mi].tix)
-            qix = int(match.ix[mi].qix)
-            qmp = (int(qkp[qix].pt[0]), int(qkp[qix].pt[1]))
-            tmp = (int(tkp[tix].pt[0] + qimg.shape[1]), int(tkp[tix].pt[1]))
+            six = int(match.ix[mi].qix)
+            fix = int(match.ix[mi].tix)
+            smp = (int(skp[six].pt[0]), int(skp[six].pt[1]))
+            fmp = (int(fkp[fix].pt[0] + simg.shape[1]), int(fkp[fix].pt[1]))
             color = (100+mi*10, 100, 255)
             # tuple([np.random.randint(0, 255) for _ in xrange(3)])
-            cv2.line(view, qmp, tmp, color, thickness=2)
+            cv2.line(view, smp, fmp, color, thickness=2)
+            cv2.putText(view, "{},{}".format(six, fix), smp,
+                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 230, 0), 2)
         return view
 
     def plot_id_match(self, fin, sin, fkp, skp, matches):
@@ -343,7 +362,7 @@ class Matcher(ExpCommon):
         skp = ret['sif']['kps']
         hv = self.\
             plot_id_match(him, sid, vkp, skp, good)[:, :, [2, 1, 0]]
-        return hv, good
+        return hv, ret
 
     class Plotter():
         def __init__(self, root, name):
