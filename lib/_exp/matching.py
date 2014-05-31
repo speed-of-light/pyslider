@@ -45,6 +45,16 @@ class Sloper(object):
             ret['sif']['kps'], ret['vif']['kps'], matches), axis=1)
         return good
 
+    def result(self, good, sigma=.5):
+        """
+        sigma: tolerance of input slopes
+        """
+        smean = good.slope.mean()
+        sstd = good.slope.std()*sigma
+        bot = smean - sstd
+        top = smean + sstd
+        return good[(good['slope'] >= bot) & (good['slope'] <= top)]
+
     def gridise(self):
         """
         Use gridize image to determine matched pairs
