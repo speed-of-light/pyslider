@@ -25,25 +25,25 @@ class Sloper(object):
         dy = fpt[1] - spt[1]
         return dy*1.0/dx
 
-    def _slopes(self, skp, fkp, good):
+    def _slopes(self, skps, fkps, good):
         """
         Getting matches slope list
         skp: slide keypoints
         fkp: frame keypoints
         """
-        ma = []
-        for gi in good.index:
-            gg = good.ix[gi]
-            ss = self._slope(skp[int(gg.qix)].pt, fkp[int(gg.tix)].pt)
-            ma.append(ss)
-        return ma
+        fpt = fkps[int(good.tix)].pt
+        spt = skps[int(good.qix)].pt
+        ss = self._slope(spt, fpt)
+        return ss
 
     def get_slopes(self, ret):
         """
         ret is dict contains: [matches, sif, vif]
         """
         good = ret['matches']
-        return self._slope(ret['sif']['kps'], ret['vif']['kps'], good)
+        good['slope'] = good.apply(lambda matches: self._slopes(
+            ret['sif']['kps'], ret['vif']['kps'], matches), axis=1)
+        return good
 
     def gridise(self):
         """
