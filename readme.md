@@ -22,3 +22,7 @@ For more information, please refer to [docs][docs].
 [docs]: https://github.com/speed-of-light/pyslider/tree/master/docs
 
 ## License
+
+This project use [GNU AFFERO GPL][license] license.
+
+[license]:
