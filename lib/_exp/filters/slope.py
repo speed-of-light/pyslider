@@ -46,6 +46,7 @@ class Slope(KpFilter):
         top = smean + sstd
         return good[(good['slope'] >= bot) & (good['slope'] <= top)]
 
+    # TODO: add gridize filter result
     def gridise(self):
         """
         Use gridize image to determine matched pairs
