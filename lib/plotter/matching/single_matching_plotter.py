@@ -87,6 +87,15 @@ class SingleMatchingPlotter(Plotter):
             #            cv2.FONT_HERSHEY_PLAIN, 1, (0, 230, 0), 2)
         return view
 
+    def __add_pos(self, view, from_, to_):
+        for fi, ti in zip(from_, to_):
+            spt = self.data['sif']['kps'][fi].pt
+            smp = (int(spt[0]), int(spt[1]))
+            color = (0, 230, 5)
+            cv2.putText(view, "{},{}".format(fi, ti), smp,
+                        cv2.FONT_HERSHEY_PLAIN, 1, color, 2)
+        return view
+
     def __get_view(self):
         simg = self.__slide_image()
         fimg = self.__frame_image()
@@ -101,7 +110,7 @@ class SingleMatchingPlotter(Plotter):
         bound = self.__get_homo_bound(simg, fimg, homo)
         return self.__add_homo(bound, simg.shape[1], view)
 
-    def matched_lines(self, view):
+    def matched_item(self, item, view):
         """
         Return image array
         """
@@ -109,7 +118,10 @@ class SingleMatchingPlotter(Plotter):
         good = self.data['matches']
         flist = [int(good.ix[mi].qix) for mi in good.index]
         tlist = [int(good.ix[mi].tix) for mi in good.index]
-        view = self.__add_lines(view, flist, tlist, simg.shape[1])
+        if item is 'lines':
+            view = self.__add_lines(view, flist, tlist, simg.shape[1])
+        if item is 'position':
+            view = self.__add_pos(view, flist, tlist)
         return view
 
     def layering(self, homo, names=[]):
@@ -120,8 +132,8 @@ class SingleMatchingPlotter(Plotter):
         """
         view = self.__get_view()
         for nn in names:
-            if nn is 'lines':
-                view = self.matched_lines(view)
+            if nn in ['lines', 'position']:
+                view = self.matched_item(nn, view)
             if nn is 'homo':
                 view = self.homography(homo, view)
         return view
