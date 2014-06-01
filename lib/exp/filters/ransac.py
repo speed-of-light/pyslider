@@ -27,10 +27,12 @@ class Ransac(object):
                                method=cv2.RANSAC,
                                ransacReprojThreshold=5.0)
             return M, mask
-        return None
+        return None, None
 
     def compute(self, min_matches=10):
         good = self.data['matches']
         skp = self.data['sif']['kps']
         fkp = self.data['vif']['kps']
-        return self.__compute(good, skp, fkp, min_matches=min_matches)
+        M, mask = self.__compute(good, skp, fkp, min_matches=min_matches)
+        self.data['matches']['keep'] = mask
+        return M
