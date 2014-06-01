@@ -7,7 +7,7 @@ import logging.handlers
 # scientific
 import pandas as pd
 # custom
-from data import PdfSlider
+from summary import Slider
 from emailer import Emailer
 
 
@@ -88,11 +88,11 @@ class ExpCommon(object):
       os.makedirs(path)
 
   def slide_pages(self):
-    ps = PdfSlider(self.name, self.root)
+    ps = Slider(self.root, self.name)
     return ps.pages()
 
   def slides_path(self, size='mid'):
-    ps = PdfSlider(self.name, self.root)
+    ps = Slider(self.root, self.name)
     return ps.slides_path(size)
 
   def store(self):
