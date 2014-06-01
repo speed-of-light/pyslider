@@ -7,8 +7,7 @@ import logging.handlers
 # scientific
 import pandas as pd
 # custom
-from summary import Slider
-from emailer import Emailer
+from ..emailer import Emailer
 
 
 class ExpCommon(object):
@@ -86,14 +85,6 @@ class ExpCommon(object):
   def _asure_path(self, path):
     if not os.path.exists(path):
       os.makedirs(path)
-
-  def slide_pages(self):
-    ps = Slider(self.root, self.name)
-    return ps.pages()
-
-  def slides_path(self, size='mid'):
-    ps = Slider(self.root, self.name)
-    return ps.slides_path(size)
 
   def store(self):
     sp = self.store_path()
