@@ -5,7 +5,8 @@ import pandas as pd
 import numpy as np
 from sklearn import mixture
 from feats import Feats
-from ..data import Video, PdfSlider
+from summary import Slider
+from ..data import Video
 from ..handy import HandyTimer as ht
 from ..exp import ExpCommon
 from filters import Ransac
@@ -74,7 +75,7 @@ class Matcher(ExpCommon):
         sn = self.name
         vv = Video(sr, sn)
         fi = vv.get_frames([fid], gray=gray).next()
-        ss = PdfSlider(sn, sr)
+        ss = Slider(sr, sn)
         si = ss.get_slides([sid], gray=gray, resize=True).next()
         return fi, si
 
@@ -267,7 +268,7 @@ class Matcher(ExpCommon):
                 ret['matches'])[:,:,[2,1,0]]
         """
         if isinstance(sin, int):
-            ss = PdfSlider(self.name, self.root)
+            ss = Slider(self.root, self.name)
             simg = ss.get_slides([sin], gray=False, resize=True).next()['img']
         else:
             simg = sin
@@ -387,7 +388,7 @@ class Matcher(ExpCommon):
               # Others
           if len(show) > 0:
               vid = Video(self.root, self.name)
-              slid = PdfSlider(self.name, self.root)
+              slid = Slider(self.root, self.name)
               for si, fi in enumerate(show):
                   vimg = vid.get_frames([fi]).next()['img']
                   simg = slid.get_slide(data.ix[fi].sid, resize=True)
