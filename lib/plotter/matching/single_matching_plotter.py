@@ -56,6 +56,25 @@ class SingleMatchingPlotter(Plotter):
         view[:h2, w1:] = right
         return view
 
+    def __get_homo_bound(self, simg, fimg, homo):
+        """
+        Return bound(x, y):
+            (top left), (bottom left), (bottom right), (top, right)
+        """
+        h, w, z = simg.shape
+        pos = [[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]
+        bnd = np.float32(pos).reshape(-1, 1, 2)
+        bound = cv2.perspectiveTransform(bnd, homo)
+        # rimg = fimg[:]
+        # cv2.polylines(rimg, [np.int32(bound)], True, (0, 255, 0), 3)
+        return [np.int32(bound)]
+
+    def __add_homo(self, bound, dx, on_img):
+        rimg = on_img[:]
+        dxa = np.array([[[dx, 0]]]*4)
+        cv2.polylines(rimg, bound+dxa, True, (0, 255, 0), 3)
+        return rimg
+
     def __add_lines(self, view, from_, to_, dx):
         for fi, ti in zip(from_, to_):
             spt = self.data['sif']['kps'][fi].pt
@@ -68,16 +87,41 @@ class SingleMatchingPlotter(Plotter):
             #            cv2.FONT_HERSHEY_PLAIN, 1, (0, 230, 0), 2)
         return view
 
-    def matched_lines(self):
+    def __get_view(self):
+        simg = self.__slide_image()
+        fimg = self.__frame_image()
+        view = self.__stiched_view(simg, fimg)
+        return view
+
+    def homography(self, homo, view=None):
+        simg = self.__slide_image()
+        fimg = self.__frame_image()
+        if view is None:
+            view = self.__stiched_view(simg, fimg)
+        bound = self.__get_homo_bound(simg, fimg, homo)
+        return self.__add_homo(bound, simg.shape[1], view)
+
+    def matched_lines(self, view):
         """
         Return image array
         """
         simg = self.__slide_image()
-        fimg = self.__frame_image()
-        view = self.__stiched_view(simg, fimg)
-        # add lines
         good = self.data['matches']
         flist = [int(good.ix[mi].qix) for mi in good.index]
         tlist = [int(good.ix[mi].tix) for mi in good.index]
         view = self.__add_lines(view, flist, tlist, simg.shape[1])
+        return view
+
+    def layering(self, homo, names=[]):
+        """
+        Return image rendered with input ordered name layers
+        Currently supported:
+            `lines`, `homography`, `position`, `grid`
+        """
+        view = self.__get_view()
+        for nn in names:
+            if nn is 'lines':
+                view = self.matched_lines(view)
+            if nn is 'homo':
+                view = self.homography(homo, view)
         return view
