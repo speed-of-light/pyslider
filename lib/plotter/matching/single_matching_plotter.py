@@ -75,23 +75,26 @@ class SingleMatchingPlotter(Plotter):
         cv2.polylines(rimg, bound+dxa, True, (0, 255, 0), 3)
         return rimg
 
-    def __add_lines(self, view, from_, to_, dx):
-        for fi, ti in zip(from_, to_):
+    def __filtered_goods(self, good, mask):
+        lg = good[mask]
+        f_ = [int(lg.ix[mi].qix) for mi in lg.index]
+        t_ = [int(lg.ix[mi].tix) for mi in lg.index]
+        return zip(f_, t_)
+
+    def __add_lines(self, view, good, mask, dx,
+                    color=(100, 100, 255)):
+        for fi, ti in self.__filtered_goods(good, mask):
             spt = self.data['sif']['kps'][fi].pt
             fpt = self.data['vif']['kps'][ti].pt
             smp = (int(spt[0]), int(spt[1]))
             fmp = (int(fpt[0] + dx), int(fpt[1]))
-            color = (100, 100, 255)
             cv2.line(view, smp, fmp, color, thickness=2)
-            # cv2.putText(view, "{},{}".format(six, fix), smp,
-            #            cv2.FONT_HERSHEY_PLAIN, 1, (0, 230, 0), 2)
         return view
 
-    def __add_pos(self, view, from_, to_):
-        for fi, ti in zip(from_, to_):
+    def __add_pos(self, view, good, mask, color=(100, 100, 255)):
+        for fi, ti in self.__filtered_goods(good, mask):
             spt = self.data['sif']['kps'][fi].pt
             smp = (int(spt[0]), int(spt[1]))
-            color = (0, 230, 5)
             cv2.putText(view, "{},{}".format(fi, ti), smp,
                         cv2.FONT_HERSHEY_PLAIN, 1, color, 2)
         return view
@@ -101,6 +104,21 @@ class SingleMatchingPlotter(Plotter):
         fimg = self.__frame_image()
         view = self.__stiched_view(simg, fimg)
         return view
+
+    def __get_mask(self, good, key):
+        mask = None
+        fmap = dict(filtered=0, keep=1)
+        if len(key) > 0:
+            mask = (good.keep == fmap[key])
+        return mask
+
+    def __get_color(self, key):
+        color = (0, 200, 100)
+        cmap = dict(filtered=(240, 160, 250),
+                    keep=(100, 120, 230))
+        if len(key) > 0:
+            color = cmap[key]
+        return color
 
     def homography(self, homo, view=None):
         simg = self.__slide_image()
@@ -112,19 +130,23 @@ class SingleMatchingPlotter(Plotter):
 
     def matched_item(self, item, view):
         """
+        view: stiched images from frame and slides
+        item: should be form as `filtered_lines`, `keep_position`, etc...
         Return image array
         """
         simg = self.__slide_image()
         good = self.data['matches']
-        flist = [int(good.ix[mi].qix) for mi in good.index]
-        tlist = [int(good.ix[mi].tix) for mi in good.index]
-        if item is 'lines':
-            view = self.__add_lines(view, flist, tlist, simg.shape[1])
-        if item is 'position':
-            view = self.__add_pos(view, flist, tlist)
+        si = item.split("_")
+        mask = self.__get_mask(good, si[0])
+        color = self.__get_color(si[0])
+        if si[1] == 'lines':
+            view = self.__add_lines(view, good, mask,
+                                    simg.shape[1], color=color)
+        if si[1] == 'position':
+            view = self.__add_pos(view, good, mask, (0, 235, 20))
         return view
 
-    def layering(self, homo, names=[]):
+    def layering(self, names=[], homo=None):
         """
         Return image rendered with input ordered name layers
         Currently supported:
@@ -132,8 +154,9 @@ class SingleMatchingPlotter(Plotter):
         """
         view = self.__get_view()
         for nn in names:
-            if nn in ['lines', 'position']:
+            sn = nn.split("_")
+            if sn[1] in ['lines', 'position']:
                 view = self.matched_item(nn, view)
-            if nn is 'homo':
+            if sn[1] == 'homo':
                 view = self.homography(homo, view)
         return view
