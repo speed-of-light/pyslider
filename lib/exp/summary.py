@@ -33,7 +33,7 @@ class Summary:
 
     def ps_list(self):
       data = self.summary
-      for pn in data[['n_name', 'n_root']].values:
+      for pn in data[['n_rootl', 'n_name']].values:
         ps = PdfReader(pn[0], pn[1])
         yield ps
 
@@ -89,7 +89,6 @@ class Slider(ExpCommon):
     def __init__(self, root="", name=""):
         self.root = root
         self.name = name
-        self.ps = PdfReader(name, root)
 
     def _blank_slide(self):
         sp = self.slides_path()
@@ -117,7 +116,7 @@ class Slider(ExpCommon):
         return ps.pages()
 
     def slides_path(self, size='mid'):
-        ps = Slider(self.root, self.name)
+        ps = PdfReader(self.root, self.name)
         return ps.slides_path(size)
 
     def get_slides(self, ids=[], gray=False, resize=None):
