@@ -11,7 +11,7 @@ from data import PdfSlider
 from emailer import Emailer
 
 
-class ExpCommon():
+class ExpCommon(object):
   def __init__(self, root, name):
     """
     `root`: file root
@@ -51,6 +51,41 @@ class ExpCommon():
       logger.addHandler(ch)
     logger.info(">>============== {} inited ================= <<".format(cn))
     self.log = logger
+
+  def _save_key(self, fpath, key):
+    kf = self.load('keys')
+    if kf is None:
+      kf = pd.DataFrame([key], columns=['key'])
+    else:
+      kf = kf.append(pd.DataFrame([key], columns=['key']))
+      kf = kf.reset_index()
+      for rc in ['index', 'level']:
+        if rc in kf.columns:
+          del kf[rc]
+    kf.to_hdf(fpath, 'keys', mode='a', data_columns=True,
+              format='t', complib='blosc', complevel=self.comp)
+
+  def _underscore(self, string=''):
+    # move pre-compile out the loop to improve performance
+    first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+    all_cap_re = re.compile('([a-z0-9])([A-Z])')
+    s1 = first_cap_re.sub(r'\1_\2', string)
+    return all_cap_re.sub(r'\1_\2', s1).lower()
+
+  def _ustr_dict(self, di):
+    """
+    Make dict keys underscore for saving to hdfs
+    """
+    s = ""
+    ks = di.keys()
+    ks.sort()
+    for k in ks:
+      s += "/{}_{}".format(k, di[k])
+    return s
+
+  def _asure_path(self, path):
+    if not os.path.exists(path):
+      os.makedirs(path)
 
   def slide_pages(self):
     ps = PdfSlider(self.name, self.root)
@@ -122,41 +157,6 @@ class ExpCommon():
       return None
     return df
 
-  def _save_key(self, fpath, key):
-    kf = self.load('keys')
-    if kf is None:
-      kf = pd.DataFrame([key], columns=['key'])
-    else:
-      kf = kf.append(pd.DataFrame([key], columns=['key']))
-      kf = kf.reset_index()
-      for rc in ['index', 'level']:
-        if rc in kf.columns:
-          del kf[rc]
-    kf.to_hdf(fpath, 'keys', mode='a', data_columns=True,
-              format='t', complib='blosc', complevel=self.comp)
-
-  def _underscore(self, string=''):
-    # move pre-compile out the loop to improve performance
-    first_cap_re = re.compile('(.)([A-Z][a-z]+)')
-    all_cap_re = re.compile('([a-z0-9])([A-Z])')
-    s1 = first_cap_re.sub(r'\1_\2', string)
-    return all_cap_re.sub(r'\1_\2', s1).lower()
-
-  def _ustr_dict(self, di):
-    """
-    Make dict keys underscore for saving to hdfs
-    """
-    s = ""
-    ks = di.keys()
-    ks.sort()
-    for k in ks:
-      s += "/{}_{}".format(k, di[k])
-    return s
-
-  def _asure_path(self, path):
-    if not os.path.exists(path):
-      os.makedirs(path)
-
   def notify(self, summary):
     if self.upass is None:
         return
@@ -167,30 +167,3 @@ class ExpCommon():
     me = "speed.of.lightt@gmail.com"
     with Emailer(config=dict(uname=me, upass=ps)) as mailer:
       mailer.send(title, summary, ['speed.of.lightt@gmail.com'])
-
-
-from _exp.prepare import Prepare
-from _exp.feats import Feats
-from _exp.matching import Matcher
-from _exp.fetus import GroundTruth
-from _exp.summary import Summary
-
-
-class Prepare(Prepare):
-    pass
-
-
-class Feats(Feats):
-    pass
-
-
-class Matcher(Matcher):
-    pass
-
-
-class Summary(Summary):
-    pass
-
-
-class GroundTruth(GroundTruth):
-    pass

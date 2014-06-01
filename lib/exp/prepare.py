@@ -6,8 +6,8 @@ import pandas as pd
 # plotting
 from matplotlib import offsetbox as ofb
 # core
+from summary import Slider
 from ..exp import ExpCommon
-from ..data import *
 from ..handy import HandyTimer as ht
 
 
@@ -20,8 +20,10 @@ class Prepare(ExpCommon):
 
   def share_data(self, data):
     sq = self.statq
-    if sq is None: return
-    if sq.full(): sq.get()
+    if sq is None:
+        return
+    if sq.full():
+        sq.get()
     sq.put_nowait(data)
 
   def get_cmd(self):
@@ -151,7 +153,7 @@ class Prepare(ExpCommon):
         arrowprops=dict(arrowstyle="->", color='g'))
       ax.add_artist(ab)
     vid = Video(self.root, self.name)
-    slid = PdfSlider(self.name, self.root)
+    slid = Slider(self.name, self.root)
     xlim = (ffrom, fto)
     # plot diff value
     ln_raw = ax.plot(raw, color='black')
