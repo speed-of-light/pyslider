@@ -112,6 +112,14 @@ class Slider(ExpCommon):
     def _img_path(self, root, idx):
         return "{}/{:03d}.jpg".format(root, idx)
 
+    def slide_pages(self):
+        ps = Slider(self.root, self.name)
+        return ps.pages()
+
+    def slides_path(self, size='mid'):
+        ps = Slider(self.root, self.name)
+        return ps.slides_path(size)
+
     def get_slides(self, ids=[], gray=False, resize=None):
         """
         Get slide images collection
