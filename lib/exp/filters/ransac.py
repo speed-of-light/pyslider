@@ -30,6 +30,9 @@ class Ransac(object):
         return None, None
 
     def compute(self, min_matches=10):
+        """
+        Returned by-product: M, the homography boundary
+        """
         good = self.data['matches']
         skp = self.data['sif']['kps']
         fkp = self.data['vif']['kps']
