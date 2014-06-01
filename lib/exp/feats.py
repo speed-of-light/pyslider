@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import itertools
 from summary import Summary
-from exp_common import ExpCommon
+from base import ExpCommon
 from ..handy import HandyTimer as ht
 
 
