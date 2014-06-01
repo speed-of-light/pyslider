@@ -1,6 +1,7 @@
 [![Stories in Ready](https://badge.waffle.io/speed-of-light/pyslider.png?label=ready&title=Ready)](https://waffle.io/speed-of-light/pyslider)
-[![Stories in Ready](https://badge.waffle.io/speed-of-light/pyslider.png?label=done&title=Done)](https://waffle.io/speed-of-light/pyslider)
-[![Stories in Ready](https://badge.waffle.io/speed-of-light/pyslider.png?label=in_progress&title=Progressing)](https://waffle.io/speed-of-light/pyslider)
+[![Stories in Ready](https://badge.waffle.io/speed-of-light/pyslider.png?label=issues&title=Issues)](https://waffle.io/speed-of-light/pyslider)
+[![Stories in Ready](https://badge.waffle.io/speed-of-light/pyslider.png?label=in+progress&title=Progressing)](https://waffle.io/speed-of-light/pyslider)
+[![Stories in Ready](https://badge.waffle.io/speed-of-light/pyslider.png?state=closed&title=Done)](https://waffle.io/speed-of-light/pyslider)
 
 
 # A Cool Slide Matcher.

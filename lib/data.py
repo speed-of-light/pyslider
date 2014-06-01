@@ -125,7 +125,6 @@ class Video:
     return df[df.isum.gt(iqr)]
 
 
-from lib._exp.summary import Summary
 from PyPDF2 import PdfFileReader
 import shutil
 # from wand.image import Image, Color
@@ -133,128 +132,62 @@ from pgmagick import Image
 from PIL import Image as pimg
 
 
-class PdfSlider():
-  """
-  Author: speed-of-light
-  Purpose: Operations on pdf files
-  """
-  def slides_path(self, size="mid"):
-    """The root of converted slide images
+class PdfReader(object):
     """
-    rt = self.root if self.root == "" else "{}/".format(self.root)
-    return "./data/{1}{0}/slides/{2}".format(self.name, rt, size)
-
-  @property
-  def pdf_path(self):
-    """The root of converted slide images
+    Author: speed-of-light
+    Purpose: Operations on pdf files
     """
-    rt = self.root if self.root == "" else "{}/".format(self.root)
-    return "./data/{1}{0}/{0}.pdf".format(self.name, rt)
+    def __init__(self, root="", name=""):
+        """ Init data with project name and root dir
+        root: base dir of pdf and video data
+        """
+        self.root = root
+        self.name = name
+        self.pages = None
+        if os.path.isfile(self.pdf_path):
+            pdf = PdfFileReader(self.pdf_path)
+            self.pages = pdf.getNumPages()
 
-  @property
-  def pages(self):
-    """The root of slide images
-    """
-    return self.pages
+    def slides_path(self, size="mid"):
+        """The root of converted slide images
+        """
+        rt = self.root if self.root == "" else "{}/".format(self.root)
+        return "./data/{1}{0}/slides/{2}".format(self.name, rt, size)
 
-  def __init__(self, name="", root=""):
-    """ Init data with project name and root dir
-      root: base dir of pdf and video data
-    """
-    self.root = root
-    self.name = name
-    self.pages = None
-    if os.path.isfile(self.pdf_path):
-      pdf = PdfFileReader(self.pdf_path)
-      self.pages = pdf.getNumPages()
+    @property
+    def pdf_path(self):
+        """The root of converted slide images
+        """
+        rt = self.root if self.root == "" else "{}/".format(self.root)
+        return "./data/{1}{0}/{0}.pdf".format(self.name, rt)
 
-  def png_jpg(self, path):
-    png = "{}.png".format(path)
-    jpg = "{}.jpg".format(path)
-    pimg.open(png).convert('RGB').save(jpg)
-    os.remove(png)
+    def png_jpg(self, path):
+        png = "{}.png".format(path)
+        jpg = "{}.jpg".format(path)
+        pimg.open(png).convert('RGB').save(jpg)
+        os.remove(png)
 
-  def to_jpgs(self, size='mid', pages=None):
-      """ Convert pdf to jpeg images
-        pages: array for pages, None for extract all
-      """
-      dendic = dict(thumb=40, mid=100, big=150)
-      density = dendic[size]
-      pages = np.arange(0, self.pages, 1) if pages is None else pages
-      if len(pages) < 1:
-          return
-      sp = self.slides_path(size)
-      if os.path.exists(sp):
-          shutil.rmtree(sp)
-      os.makedirs(sp)
-      img = Image()
-      img.density("{}".format(density))
-      for page in pages:
-          if page > self.pages or page < 0:
-              continue
-          pdf = "{}[{}]".format(self.pdf_path, page)
-          slid = "{}/{:03d}".format(sp, page)
-          img.read(pdf)
-          img.write("{}.jpg".format(slid))
-      # break
-      # self.png_jpg('test.png')
-
-  def _blank_slide(self):
-    sp = self.slides_path()
-    img = cv2.imread("{}/{:03d}.jpg".format(sp, 1))
-    img[:] = (255, 255, 255)  # fill white
-    # red cross
-    red = (0, 0, 255)
-    line_width = int(0.1*img.shape[0])
-    topL = (0, 0)
-    botR = (img.shape[1], img.shape[0])
-    topR = (0, img.shape[0])
-    botL = (img.shape[1], 0)
-    cv2.line(img, topL, botR, red, line_width)
-    cv2.line(img, topR, botL, red, line_width)
-    return img
-
-  def _is_valid_sid(self, index, count):
-    return (index > 0 and index < count+1)
-
-  def _img_path(self, root, idx):
-    return "{}/{:03d}.jpg".format(root, idx)
-
-  def get_slides(self, ids=[], gray=False, resize=None):
-    """
-    Get slide images collection
-    """
-    sp = self.slides_path(size='big')
-    su = Summary()
-    sin = su.info(self.root, self.name).iloc[0]
-    if ids is None:
-        ids = range(1, sin.n_slides+1)
-    if resize is True:
-        resize = (sin.v_width, sin.v_height)
-    for si in ids:
-        sp = self._img_path(sp, si)
-        if self._is_valid_sid(si, sin.n_slides):
-          if gray:
-              img = cv2.imread(sp, cv2.COLOR_GRAY2BGR)
-          else:
-              img = cv2.imread(sp)
-        else:
-            img = self._blank_slide()
-            img = img[0] if gray else img
-        if resize is not None:
-            img = cv2.resize(img, resize)
-        yield(dict(img=img, idx=si))
-
-  def get_slide(self, index=1, resize=None):
-    su = Summary()
-    sin = su.info(self.root, self.name).iloc[0]
-    if resize is True:
-        resize = (sin.v_width, sin.v_height)
-    if self._is_valid_sid(index, sin.n_slides):
-        spb = self.slides_path('big')
-        img = cv2.imread(self._img_path(spb, index))
-    else:
-        img = self._blank_slide()
-    if resize is not None:
-        img = cv2.resize(img, resize)
-    return img[:, :, [2, 1, 0]]  # convert for matplotlib
+    def to_jpgs(self, size='mid', pages=None):
+        """ Convert pdf to jpeg images
+          pages: array for pages, None for extract all
+        """
+        dendic = dict(thumb=40, mid=100, big=150)
+        density = dendic[size]
+        pages = np.arange(0, self.pages, 1) if pages is None else pages
+        if len(pages) < 1:
+            return
+        sp = self.slides_path(size)
+        if os.path.exists(sp):
+            shutil.rmtree(sp)
+        os.makedirs(sp)
+        img = Image()
+        img.density("{}".format(density))
+        for page in pages:
+            if page > self.pages or page < 0:
+                continue
+            pdf = "{}[{}]".format(self.pdf_path, page)
+            slid = "{}/{:03d}".format(sp, page)
+            img.read(pdf)
+            img.write("{}.jpg".format(slid))
+        # break
+        # self.png_jpg('test.png')
