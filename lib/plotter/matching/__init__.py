@@ -1,1 +1,1 @@
-__all__ = ["single"]
+__all__ = ["single_matching_plotter"]
