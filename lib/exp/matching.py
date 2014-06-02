@@ -237,50 +237,6 @@ class Matcher(ExpCommon):
         ra = Ransac()
         ra.compute(res['matches'], res['sif']['kps'], res['vif']['kps'])
 
-    def plot_homo_boundary(self, fid, sid, res):
-        ra = Ransac()
-        homo, mask = ra.\
-            compute(res['matches'], res['sif']['kps'], res['vif']['kps'])
-        fp, sp = self._image_pair(fid, sid, gray=False)
-        himg = ra.get_bound_img(fp['img'], sp['img'], homo)
-        return himg, mask
-
-    def plot_img_match(self, simg, fimg, skp, fkp, match):
-        pl = self.Plotter(self.root, self.name)
-        view = pl.stich_imgs(simg, fimg)
-        for mi in match.index:
-            six = int(match.ix[mi].qix)
-            fix = int(match.ix[mi].tix)
-            smp = (int(skp[six].pt[0]), int(skp[six].pt[1]))
-            fmp = (int(fkp[fix].pt[0] + simg.shape[1]), int(fkp[fix].pt[1]))
-            color = (100+mi*10, 100, 255)
-            # tuple([np.random.randint(0, 255) for _ in xrange(3)])
-            cv2.line(view, smp, fmp, color, thickness=2)
-            cv2.putText(view, "{},{}".format(six, fix), smp,
-                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 230, 0), 2)
-        return view
-
-    def plot_id_match(self, fin, sin, fkp, skp, matches):
-        """
-        Example:
-            hv = mm.plot_id_match(him, sid,
-                ret['vif']['kps'], ret['sif']['kps'],
-                ret['matches'])[:,:,[2,1,0]]
-        """
-        if isinstance(sin, int):
-            ss = Slider(self.root, self.name)
-            simg = ss.get_slides([sin], gray=False, resize=True).next()['img']
-        else:
-            simg = sin
-        if isinstance(fin, int):
-            vv = Video(self.root, self.name)
-            fimg = vv.get_frames([fin], gray=False).next()['img']
-        else:
-            fimg = fin
-        vimg = self.plot_img_match(simg, fimg, skp, fkp, matches)
-        return vimg
-    # cv2.imwrite('jpg/test.jpg', vimg)
-
     def plot_hitf(self, data, show=[], predict=False, hints=False):
         """
         data(dataframe) should contain columns:
@@ -292,18 +248,6 @@ class Matcher(ExpCommon):
         """
         mp = self.Plotter(self.root, self.name)
         mp.plot_matches(data, show=show, predict=predict, hints=hints)
-
-    def plot_match_homo(self, fid, sid, thres=.9):
-        # raw matching
-        ret = self.single_match(fid, sid, thres=thres)
-        him, mask = self.plot_homo_boundary(fid, sid, ret)  # [:,:,[2,1,0]]
-        good = ret['matches']
-        good = good[mask[good.index] == 1]
-        vkp = ret['vif']['kps']
-        skp = ret['sif']['kps']
-        hv = self.\
-            plot_id_match(him, sid, vkp, skp, good)[:, :, [2, 1, 0]]
-        return hv, ret
 
     class Plotter():
         def __init__(self, root, name):
