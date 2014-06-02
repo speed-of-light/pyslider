@@ -13,6 +13,17 @@ class SingleMatchingPlotter(Plotter):
         Plotter.__init__(self, root, name, data)
         self.fid = fid
         self.sid = sid
+        self.__load_colors()
+
+    def __load_colors(self):
+        cs = [(255, 24, 122), (249, 252, 157), (255, 232, 18),
+              (3, 171, 85), (21, 159, 215), (217, 178, 255),
+              (240, 250, 185), (200, 230, 155), (200, 200, 200)]
+        self.rcolors = []
+        for cc in cs:
+            white = np.array((255, 255, 255))
+            self.rcolors.append(white - np.array(cc))
+        self.colors = cs
 
     def set_matched_pair(self, fid=None, sid=None):
         """
@@ -129,13 +140,28 @@ class SingleMatchingPlotter(Plotter):
             mask = (good.keep == fmap[key])
         return mask
 
-    def __get_color(self, key):
-        color = (0, 200, 100)
-        cmap = dict(filtered=(240, 160, 250),
-                    keep=(100, 120, 230))
+    def __get_color(self, key, roi=0):
+        loi = roi % len(self.colors)
+        color = self.colors[loi]
+        cmap = dict(filtered=self.colors[loi],
+                    keep=self.rcolors[loi])
         if len(key) > 0:
             color = cmap[key]
         return color
+
+    def __mpair_on_view(self, view, good, key='', roi=0):
+        color = self.__get_color(key, roi+5)
+        mask = self.__get_mask(good, key)
+        view = self.__add_pos(view, good, mask, color)
+        return view
+
+    def __lines_on_view(self, view, good, key='', roi=0):
+        y = 1
+        qsize = self.data['qsize']
+        color = self.__get_color(key, roi)
+        mask = self.__get_mask(good, key)
+        view = self.__add_lines(view, good, mask, qsize[y], color)
+        return view
 
     def _hash_from_roi(self, rois):
         """
@@ -155,22 +181,26 @@ class SingleMatchingPlotter(Plotter):
         bound = self.__get_homo_bound(simg, fimg, homo)
         return self.__add_poly(bound, simg.shape[1], view)
 
-    def matched_item(self, item, view):
+    def matched_item(self, item, view, roi=False):
         """
         view: stiched images from frame and slides
         item: should be form as `filtered_lines`, `keep_position`, etc...
         Return image array
         """
-        simg = self.__slide_image()
         good = self.data['matches']
         si = item.split("_")
-        mask = self.__get_mask(good, si[0])
-        color = self.__get_color(si[0])
         if si[1] == 'lines':
-            view = self.__add_lines(view, good, mask,
-                                    simg.shape[1], color=color)
+            if roi:
+                for rv, fg in good.groupby('roi'):
+                    view = self.__lines_on_view(view, fg, si[0], int(rv))
+            else:
+                view = self.__lines_on_view(view, good, si[0])
         if si[1] == 'position':
-            view = self.__add_pos(view, good, mask, (0, 235, 20))
+            if roi:
+                for rv, fg in good.groupby('roi'):
+                    view = self.__mpair_on_view(view, fg, si[0], int(rv))
+            else:
+                view = self.__mpair_on_view(view, good, si[0])
         return view
 
     def hash_grid(self, view, hashes):
@@ -182,7 +212,7 @@ class SingleMatchingPlotter(Plotter):
         view = self.__add_hash(view, hashes, simg.shape)
         return view
 
-    def layering(self, names=[], homo=None, hashes=None):
+    def layering(self, names=[], homo=None, hashes=None, roi=False):
         """
         Return image rendered with input ordered name layers
         Currently supported:
@@ -192,7 +222,7 @@ class SingleMatchingPlotter(Plotter):
         for nn in names:
             sn = nn.split("_")
             if sn[1] in ['lines', 'position']:
-                view = self.matched_item(nn, view)
+                view = self.matched_item(nn, view, roi)
             if sn[1] == 'homo':
                 view = self.homography(homo, view)
             if sn[1] == 'hash':
