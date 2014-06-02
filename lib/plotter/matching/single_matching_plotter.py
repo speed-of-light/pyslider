@@ -164,12 +164,12 @@ class SingleMatchingPlotter(Plotter):
         return view
 
     def __roi_items(self, item, view, good):
-        si = item.split("_")
         for rv, fg in good.groupby('roi'):
-            view = self.__all_items(si[0], si[1], view, fg, int(rv))
+            view = self.__all_items(item, view, fg, int(rv))
         return view
 
-    def __all_items(self, key, ktype, view, good, roi=0):
+    def __all_items(self, item, view, good, roi=0):
+        key, ktype= item.split("_")
         if ktype == 'lines':
             view = self.__lines_on_view(view, good, key, roi)
         elif ktype == 'position':
