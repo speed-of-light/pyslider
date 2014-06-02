@@ -99,6 +99,23 @@ class SingleMatchingPlotter(Plotter):
                         cv2.FONT_HERSHEY_PLAIN, 1, color, 2)
         return view
 
+    def __cross_on_point(self, view, point, bound, color=(20, 230, 20)):
+        x = 0
+        y = 1
+        cv2.line(view, (point[x], 0), (point[x], bound[0]), color, thickness=2)
+        cv2.line(view, (0, point[y]), (bound[1], point[y]), color, thickness=2)
+
+    def __add_hash(self, view, hash_, bound):
+        """
+        view: input image
+        hash: four cross points of a hash (Quadrant rule)
+        dx: delta x for left of the hash
+        bound: max value of x and y
+        """
+        self.__cross_on_point(view, hash_[0], bound)
+        self.__cross_on_point(view, hash_[2], bound)
+        return view
+
     def __get_view(self):
         simg = self.__slide_image()
         fimg = self.__frame_image()
@@ -146,7 +163,16 @@ class SingleMatchingPlotter(Plotter):
             view = self.__add_pos(view, good, mask, (0, 235, 20))
         return view
 
-    def layering(self, names=[], homo=None):
+    def hash_grid(self, view, hashes):
+        """
+        hashes example (origin at top left):
+            [(500, 150),(200, 150),(200, 350), (500,350)]
+        """
+        simg = self.__slide_image()
+        view = self.__add_hash(view, hashes, simg.shape)
+        return view
+
+    def layering(self, names=[], homo=None, hashes=None):
         """
         Return image rendered with input ordered name layers
         Currently supported:
@@ -159,4 +185,6 @@ class SingleMatchingPlotter(Plotter):
                 view = self.matched_item(nn, view)
             if sn[1] == 'homo':
                 view = self.homography(homo, view)
+            if sn[1] == 'hash':
+                view = self.hash_grid(view, hashes)
         return view
