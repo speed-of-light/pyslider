@@ -69,7 +69,7 @@ class SingleMatchingPlotter(Plotter):
         # cv2.polylines(rimg, [np.int32(bound)], True, (0, 255, 0), 3)
         return [np.int32(bound)]
 
-    def __add_homo(self, bound, dx, on_img):
+    def __add_poly(self, bound, dx, on_img):
         rimg = on_img[:]
         dxa = np.array([[[dx, 0]]]*4)
         cv2.polylines(rimg, bound+dxa, True, (0, 255, 0), 3)
@@ -143,7 +143,7 @@ class SingleMatchingPlotter(Plotter):
         if view is None:
             view = self.__stiched_view(simg, fimg)
         bound = self.__get_homo_bound(simg, fimg, homo)
-        return self.__add_homo(bound, simg.shape[1], view)
+        return self.__add_poly(bound, simg.shape[1], view)
 
     def matched_item(self, item, view):
         """
