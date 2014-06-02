@@ -146,7 +146,8 @@ class Matcher(ExpCommon):
         else:
             mra = self._pickle_matches(mra)
             res = pd.DataFrame(mra, columns=col)
-        return dict(matches=res, sif=sif, vif=vif, qsize=simg.shape)
+        return dict(matches=res, sif=sif, vif=vif,
+                    qsize=simg['img'].shape)
 
     def set_match(self, fids=[], ransac=0, thres=.9):
         """
