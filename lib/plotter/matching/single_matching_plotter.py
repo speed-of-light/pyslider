@@ -137,6 +137,16 @@ class SingleMatchingPlotter(Plotter):
             color = cmap[key]
         return color
 
+    def _hash_from_roi(self, rois):
+        """
+        Development use:
+            Plot only on simg
+        """
+        simg = self.__slide_image()
+        for roi in rois:
+            simg = self.__add_poly(roi, 0, simg)
+        return simg
+
     def homography(self, homo, view=None):
         simg = self.__slide_image()
         fimg = self.__frame_image()
