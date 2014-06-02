@@ -163,6 +163,19 @@ class SingleMatchingPlotter(Plotter):
         view = self.__add_lines(view, good, mask, qsize[y], color)
         return view
 
+    def __roi_items(self, item, view, good):
+        si = item.split("_")
+        for rv, fg in good.groupby('roi'):
+            view = self.__all_items(si[0], si[1], view, fg, int(rv))
+        return view
+
+    def __all_items(self, key, ktype, view, good, roi=0):
+        if ktype == 'lines':
+            view = self.__lines_on_view(view, good, key, roi)
+        elif ktype == 'position':
+            view = self.__mpair_on_view(view, good, key, roi)
+        return view
+
     def _hash_from_roi(self, rois):
         """
         Development use:
@@ -188,19 +201,10 @@ class SingleMatchingPlotter(Plotter):
         Return image array
         """
         good = self.data['matches']
-        si = item.split("_")
-        if si[1] == 'lines':
-            if roi:
-                for rv, fg in good.groupby('roi'):
-                    view = self.__lines_on_view(view, fg, si[0], int(rv))
-            else:
-                view = self.__lines_on_view(view, good, si[0])
-        if si[1] == 'position':
-            if roi:
-                for rv, fg in good.groupby('roi'):
-                    view = self.__mpair_on_view(view, fg, si[0], int(rv))
-            else:
-                view = self.__mpair_on_view(view, good, si[0])
+        if roi:
+            view = self.__roi_items(item, view, good)
+        else:
+            view = self.__all_items(item, view, good)
         return view
 
     def hash_grid(self, view, hashes):
