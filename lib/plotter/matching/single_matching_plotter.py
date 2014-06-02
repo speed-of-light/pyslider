@@ -123,7 +123,7 @@ class SingleMatchingPlotter(Plotter):
         return view
 
     def __get_mask(self, good, key):
-        mask = None
+        mask = [True] * len(good)
         fmap = dict(filtered=0, keep=1)
         if len(key) > 0:
             mask = (good.keep == fmap[key])
