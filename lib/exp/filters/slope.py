@@ -1,3 +1,4 @@
+import cv2
 from core import KpFilter
 
 
@@ -54,9 +55,31 @@ class Slope(KpFilter):
         bl = (tl[x], br[y])
         return (tr, tl, bl, br)
 
-    def get_rois(self, img_shape, hash_cross):
+    def __unknown_roi(self, roi):
+        return (roi is None) or (roi == -1)
+
+    def __mark_roi(self, row, ii, roi):
         """
-        img_shape: size of input image
+        keep if point is inside or on the edge of roi
+        """
+        kps = self.data['sif']['kps']
+        pt = kps[row.qix].pt
+        ppr = cv2.pointPolygonTest(roi, pt, measureDist=False)
+        roid = -1
+        if ppr >= 0 and self.__unknown_roi(row.roi):
+            roid = ii
+        return roid
+
+    def __get_slope_range(self, slopes, sigma):
+        mean = slopes.mean()
+        sstd = slopes.std()*sigma
+        bot = mean - sstd
+        top = mean + sstd
+        return bot, top
+
+    def get_rois(self, hash_cross):
+        """
+        qsize: size of input image (slide)
         hash_cross: four cross points of a hash (Quadrant order)
         return roi:
            _0_|_3_|_6_
@@ -65,8 +88,9 @@ class Slope(KpFilter):
         """
         x = 0
         y = 1
-        xmax = img_shape[x]
-        ymax = img_shape[y]
+        qsize = self.data['qsize']
+        xmax = qsize[x]
+        ymax = qsize[y]
         hc = hash_cross
         roi = []
         roi.append(self.__roi((0, 0), hc[1]))
@@ -77,24 +101,18 @@ class Slope(KpFilter):
         roi.append(self.__roi(hc[2], (hc[3][x], ymax)))
         roi.append(self.__roi((hc[0][x], 0), (xmax, hc[0][y])))
         roi.append(self.__roi(hc[0], (xmax, hc[3][y])))
-        roi.append(self.__roi(hc[3], img_shape))
+        roi.append(self.__roi(hc[3], qsize))
         return roi
 
-    def __is_in_roi(self, row, roi, kps):
-        pt = kps[row.qix].pt
-        return cv2.pointPolygonTest(roi, pt, measureDist=False)
-
-    def filter(self, good, rois, sigma=.5):
+    def filter_(self, rois, sigma=.5):
         """
         sigma: tolerance of input slopes
         roi: a set of regions to be check
         Return original dataframe with a `keep` column to indicate keep data
         or not.
         """
-        smean = good.slope.mean()
-        sstd = good.slope.std()*sigma
-        bot = smean - sstd
-        top = smean + sstd
+        good = self.data['matches']
+        bot, top = self.__get_slope_range(good.slope, sigma)
         if rois is None:
             fl = lambda row: self.__keeper(row, bot, top)
             good['keep'] = good.apply(fl, axis=1)
