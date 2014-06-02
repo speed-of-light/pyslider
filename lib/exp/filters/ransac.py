@@ -34,7 +34,7 @@ class Ransac(KpFilter):
         """
         Returned by-product: M, the homography boundary
         """
-        good, skp, fkp = KpFilter.filter_()
+        good, skp, fkp = KpFilter.filter_(self)
         M, mask = self.__compute(good, skp, fkp, min_matches=min_matches)
         self.data['matches']['keep'] = mask
         return M
