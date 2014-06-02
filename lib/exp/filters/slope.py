@@ -5,8 +5,8 @@ class Slope(KpFilter):
     """
     Use matching pair slopes distribution to filter out bad results
     """
-    def __init__(self):
-        pass
+    def __init__(self, data):
+        KpFilter.__init__(self, data)
 
     def __slope(self, spt, fpt):
         """
@@ -44,9 +44,50 @@ class Slope(KpFilter):
             ret['sif']['kps'], ret['vif']['kps'], matches), axis=1)
         return good
 
-    def filter(self, good, sigma=.5):
+    def __roi(self, tl, br):
+        """
+        Return quadrant order rectangle
+        """
+        y = 1
+        x = 0
+        tr = (tl[y], br[x])
+        bl = (tl[x], br[y])
+        return (tr, tl, bl, br)
+
+    def get_rois(self, img_shape, hash_cross):
+        """
+        img_shape: size of input image
+        hash_cross: four cross points of a hash (Quadrant order)
+        return roi:
+           _0_|_3_|_6_
+           _1_|_4_|_7_
+            2 | 5 | 8
+        """
+        x = 0
+        y = 1
+        xmax = img_shape[x]
+        ymax = img_shape[y]
+        hc = hash_cross
+        roi = []
+        roi.append(self.__roi((0, 0), hc[1]))
+        roi.append(self.__roi((0, hc[1][y]), hc[2]))
+        roi.append(self.__roi((0, hc[2][y]), (hc[2][x], ymax)))
+        roi.append(self.__roi((hc[1][x], 0), hc[0]))
+        roi.append(self.__roi(hc[1], hc[3]))
+        roi.append(self.__roi(hc[2], (hc[3][x], ymax)))
+        roi.append(self.__roi((hc[0][x], 0), (xmax, hc[0][y])))
+        roi.append(self.__roi(hc[0], (xmax, hc[3][y])))
+        roi.append(self.__roi(hc[3], img_shape))
+        return roi
+
+    def __is_in_roi(self, row, roi, kps):
+        pt = kps[row.qix].pt
+        return cv2.pointPolygonTest(roi, pt, measureDist=False)
+
+    def filter(self, good, rois, sigma=.5):
         """
         sigma: tolerance of input slopes
+        roi: a set of regions to be check
         Return original dataframe with a `keep` column to indicate keep data
         or not.
         """
@@ -54,8 +95,13 @@ class Slope(KpFilter):
         sstd = good.slope.std()*sigma
         bot = smean - sstd
         top = smean + sstd
-        good['keep'] = good.apply(lambda row:
-                                  self.__keeper(row, bot, top), axis=1)
+        if rois is None:
+            fl = lambda row: self.__keeper(row, bot, top)
+            good['keep'] = good.apply(fl, axis=1)
+        elif isinstance(rois, list):
+            for roi in rois:
+                fl = lambda row: self.__is_in_roi(row, roi)
+                good['keep'] = good.apply(fl, axis=1)
         return good
 
     # TODO: add gridize filter result
