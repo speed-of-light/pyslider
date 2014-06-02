@@ -140,12 +140,15 @@ class Slope(KpFilter):
         if rois is None:
             self.__good_keeper(good, sigma)
         elif isinstance(rois, list):
+            if 'roi' in good.columns:
+                del good['roi']
             for ii, roi in enumerate(rois):
                 fl = lambda row: self.__mark_roi(row, ii, roi)
                 good["roi"] = good.apply(fl, axis=1)
             for rv, fg in good.groupby('roi'):
                 self.__good_keeper(fg, sigma)
                 good.loc[good.index.isin(fg.index), "keep"] = fg.keep
+                print rv, len(fg)
         return good
 
     def __martin(self, margin):
@@ -160,27 +163,29 @@ class Slope(KpFilter):
         """
         margin: top right bottom left, but in !!ratio!!
         """
-        x = 1
-        y = 0
         mt = self.__martin(margin)
         qsize = self.data['qsize']
+        qx = qsize[1]
+        qy = qsize[0]
         hcs = []
-        hcs.append((qsize[x]*mt[1], qsize[y]*mt[0]))
-        hcs.append((qsize[x]*mt[3], qsize[y]*mt[0]))
-        hcs.append((qsize[x]*mt[3], qsize[y]*mt[2]))
-        hcs.append((qsize[x]*mt[1], qsize[y]*mt[2]))
+        hcs.append((int(qx*mt[1]), int(qy*mt[0])))
+        hcs.append((int(qx*mt[3]), int(qy*mt[0])))
+        hcs.append((int(qx*mt[3]), int(qy*mt[2])))
+        hcs.append((int(qx*mt[1]), int(qy*mt[2])))
         return hcs
 
     def gridise(self, htype='tri'):
         """
         Use gridize image to determine matched pairs
         htype: the split ratio of cross points for a hash.
-            use a four tuple to custom cross region
+            use a four elements array to custom cross region
+        Return `hashes` for plot use, `rois` for filtering use
         """
         if htype == 'tri':
-            hashes = self.__hash_margin((1.0/3)*4)
-        elif htpye == 'main':
-            hashes = self.__hash_margin((.15, .15, .15, .15))
+            hashes = self.__hash_margin([1.0/3]*4)
+        elif htype == 'main':
+            hashes = self.__hash_margin([.15, .15, .15, .15])
         else:  # custom
             hashes = self.__hash_margin(htype)
         rois = self.__get_rois(hashes)
+        return hashes, rois
