@@ -1,10 +1,11 @@
 import numpy as np
 import cv2
+from core import KpFilter
 
 
-class Ransac(object):
+class Ransac(KpFilter):
     def __init__(self, data):
-        self.data = data
+        KpFilter.__init__(self, data)
 
     def __good_pts(self, kps, mps):
         rr = [kps[m].pt for m in mps]
@@ -29,13 +30,11 @@ class Ransac(object):
             return M, mask
         return None, None
 
-    def compute(self, min_matches=10):
+    def filter_(self, min_matches=10):
         """
         Returned by-product: M, the homography boundary
         """
-        good = self.data['matches']
-        skp = self.data['sif']['kps']
-        fkp = self.data['vif']['kps']
+        good, skp, fkp = KpFilter.filter_(self)
         M, mask = self.__compute(good, skp, fkp, min_matches=min_matches)
         self.data['matches']['keep'] = mask
         return M
