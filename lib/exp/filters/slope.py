@@ -35,7 +35,7 @@ class Slope(KpFilter):
             val = 0
         return val
 
-    def get_slopes(self, ret):
+    def __get_slopes(self, ret):
         """
         ret is dict contains: [matches, sif, vif]
         """
@@ -44,7 +44,7 @@ class Slope(KpFilter):
             ret['sif']['kps'], ret['vif']['kps'], matches), axis=1)
         return good
 
-    def result(self, good, sigma=.5):
+    def filter(self, good, sigma=.5):
         """
         sigma: tolerance of input slopes
         Return original dataframe with a `keep` column to indicate keep data
