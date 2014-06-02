@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 from core import KpFilter
 
 
@@ -8,6 +9,7 @@ class Slope(KpFilter):
     """
     def __init__(self, data):
         KpFilter.__init__(self, data)
+        self.__update_matches()
 
     def __slope(self, spt, fpt):
         """
@@ -36,13 +38,20 @@ class Slope(KpFilter):
             val = 0
         return val
 
-    def __get_slopes(self, ret):
+    def __update_matches(self):
+        good = self.data['matches']
+        self.__get_slopes(good)
+        self.data['matches'] = good
+
+    def __get_slopes(self, good, update=True):
         """
         ret is dict contains: [matches, sif, vif]
         """
-        good = ret['matches']
-        good['slope'] = good.apply(lambda matches: self.__slopes(
-            ret['sif']['kps'], ret['vif']['kps'], matches), axis=1)
+        if update:
+            skp = self.data['sif']['kps']
+            fkp = self.data['vif']['kps']
+            lm = lambda matches: self.__slopes(skp, fkp, matches)
+            good['slope'] = good.apply(lm, axis=1)
         return good
 
     def __roi(self, tl, br):
@@ -55,19 +64,23 @@ class Slope(KpFilter):
         bl = (tl[x], br[y])
         return (tr, tl, bl, br)
 
-    def __unknown_roi(self, roi):
-        return (roi is None) or (roi == -1)
+    def __unknown_roi(self, row):
+        return ('roi' not in row.keys()) or (row.roi is None) or (row.roi == -1)
 
     def __mark_roi(self, row, ii, roi):
         """
         keep if point is inside or on the edge of roi
         """
         kps = self.data['sif']['kps']
-        pt = kps[row.qix].pt
-        ppr = cv2.pointPolygonTest(roi, pt, measureDist=False)
-        roid = -1
-        if ppr >= 0 and self.__unknown_roi(row.roi):
-            roid = ii
+        pt = kps[int(row.qix)].pt
+        nroi = np.array(roi)
+        ppr = cv2.pointPolygonTest(nroi, pt, measureDist=False)
+        if self.__unknown_roi(row):
+            roid = -1
+            if ppr >= 0:
+                roid = ii
+        else:
+            roid = row.roi
         return roid
 
     def __get_slope_range(self, slopes, sigma):
@@ -77,7 +90,19 @@ class Slope(KpFilter):
         top = mean + sstd
         return bot, top
 
-    def get_rois(self, hash_cross):
+    def __good_keeper(self, good, sigma):
+        bot, top = self.__get_slope_range(good.slope, sigma)
+        fl = lambda row: self.__keeper(row, bot, top)
+        good['keep'] = good.apply(fl, axis=1)
+        return good
+
+    def __check_slope(self):
+        good = self.data['matches']
+        if 'slope' not in good.columns:
+            good = self.__get_slopes(good, True)
+        return good
+
+    def __get_rois(self, hash_cross):
         """
         qsize: size of input image (slide)
         hash_cross: four cross points of a hash (Quadrant order)
@@ -104,27 +129,58 @@ class Slope(KpFilter):
         roi.append(self.__roi(hc[3], (xmax, ymax)))
         return roi
 
-    def filter_(self, rois, sigma=.5):
+    def filter_(self, rois=None, sigma=.5):
         """
         sigma: tolerance of input slopes
         roi: a set of regions to be check
         Return original dataframe with a `keep` column to indicate keep data
         or not.
         """
-        good = self.data['matches']
-        bot, top = self.__get_slope_range(good.slope, sigma)
+        good = self.__check_slope()
         if rois is None:
-            fl = lambda row: self.__keeper(row, bot, top)
-            good['keep'] = good.apply(fl, axis=1)
+            self.__good_keeper(good, sigma)
         elif isinstance(rois, list):
             for ii, roi in enumerate(rois):
                 fl = lambda row: self.__mark_roi(row, ii, roi)
                 good["roi"] = good.apply(fl, axis=1)
+            for rv, fg in good.groupby('roi'):
+                self.__good_keeper(fg, sigma)
+                good.loc[good.index.isin(fg.index), "keep"] = fg.keep
         return good
 
-    # TODO: add gridize filter result
-    def gridise(self):
+    def __martin(self, margin):
+        """
+        Transform original margin to computed easier values
+        """
+        margin[1] = 1 - margin[1]
+        margin[2] = 1 - margin[2]
+        return margin
+
+    def __hash_margin(self, margin):
+        """
+        margin: top right bottom left, but in !!ratio!!
+        """
+        x = 1
+        y = 0
+        mt = self.__martin(margin)
+        qsize = self.data['qsize']
+        hcs = []
+        hcs.append((qsize[x]*mt[1], qsize[y]*mt[0]))
+        hcs.append((qsize[x]*mt[3], qsize[y]*mt[0]))
+        hcs.append((qsize[x]*mt[3], qsize[y]*mt[2]))
+        hcs.append((qsize[x]*mt[1], qsize[y]*mt[2]))
+        return hcs
+
+    def gridise(self, htype='tri'):
         """
         Use gridize image to determine matched pairs
+        htype: the split ratio of cross points for a hash.
+            use a four tuple to custom cross region
         """
-        pass
+        if htype == 'tri':
+            hashes = self.__hash_margin((1.0/3)*4)
+        elif htpye == 'main':
+            hashes = self.__hash_margin((.15, .15, .15, .15))
+        else:  # custom
+            hashes = self.__hash_margin(htype)
+        rois = self.__get_rois(hashes)
