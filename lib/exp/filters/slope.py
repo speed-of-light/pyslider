@@ -51,7 +51,7 @@ class Slope(KpFilter):
         """
         y = 1
         x = 0
-        tr = (tl[y], br[x])
+        tr = (br[x], tl[y])
         bl = (tl[x], br[y])
         return (tr, tl, bl, br)
 
@@ -89,8 +89,8 @@ class Slope(KpFilter):
         x = 0
         y = 1
         qsize = self.data['qsize']
-        xmax = qsize[x]
-        ymax = qsize[y]
+        xmax = qsize[y]
+        ymax = qsize[x]
         hc = hash_cross
         roi = []
         roi.append(self.__roi((0, 0), hc[1]))
@@ -101,7 +101,7 @@ class Slope(KpFilter):
         roi.append(self.__roi(hc[2], (hc[3][x], ymax)))
         roi.append(self.__roi((hc[0][x], 0), (xmax, hc[0][y])))
         roi.append(self.__roi(hc[0], (xmax, hc[3][y])))
-        roi.append(self.__roi(hc[3], qsize))
+        roi.append(self.__roi(hc[3], (xmax, ymax)))
         return roi
 
     def filter_(self, rois, sigma=.5):
@@ -117,9 +117,9 @@ class Slope(KpFilter):
             fl = lambda row: self.__keeper(row, bot, top)
             good['keep'] = good.apply(fl, axis=1)
         elif isinstance(rois, list):
-            for roi in rois:
-                fl = lambda row: self.__is_in_roi(row, roi)
-                good['keep'] = good.apply(fl, axis=1)
+            for ii, roi in enumerate(rois):
+                fl = lambda row: self.__mark_roi(row, ii, roi)
+                good["roi"] = good.apply(fl, axis=1)
         return good
 
     # TODO: add gridize filter result
