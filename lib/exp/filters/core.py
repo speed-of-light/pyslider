@@ -9,5 +9,11 @@ class KpFilter(object):
         """
         self.data = data
 
-    def filter(self):
-        print "Should implement methods to compute and filter matched result"
+    def filter_(self):
+        """
+        Return common need data pointers
+        """
+        good = self.data['matches']
+        skp = self.data['sif']['kps']
+        fkp = self.data['vif']['kps']
+        return good, skp, fkp
