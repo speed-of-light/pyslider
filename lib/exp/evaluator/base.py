@@ -14,7 +14,8 @@ class Evaluator(object):
         recall = tp*1.0/(tp+fn)
         accuracy = (tp+tn)*1.0/(tp+tn+fp+fn)
         fmeasure = self.fbeta(precision, recall, .5)
-        print self.__praf_str(precision, recall, accuracy, fmeasure)
+        # print self.__praf_str(precision, recall, accuracy, fmeasure)
+        return (precision, recall, accuracy, fmeasure)
 
     def __praf_str(self, p, r, a, f):
         aa = []
