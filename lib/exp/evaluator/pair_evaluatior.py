@@ -57,6 +57,19 @@ class PairEvaluator(Evaluator):
             print 'should never goes here'
         return data
 
+    def __frame_gnd_tag(res, gnd):
+        """
+        Deprecated check_hist method
+        """
+        candi = []
+        for di in res.index:
+            qry = gnd[(gnd['fid'] <= di)]
+            if len(qry) > 0:
+                candi.append(qry.values[-1][1])
+            else:
+                candi.append(-1)
+        res['ground_sid'] = candi
+
     def pairing(self):
         """
         Generate the pair result with `hit` and `non-hit` marks
