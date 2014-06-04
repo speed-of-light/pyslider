@@ -77,12 +77,12 @@ class PairEvaluator(Evaluator):
 
     def hitd_praf(self, hitd):
         hvr = [v[2] for v in hitd['vr'].values]
-        ges_slide = hitd['pair'] == 0
-        gnd_slide = hitd['sid'] == hvr
-        tp = len(hitd[gnd_slide & ges_slide])
-        fp = len(hitd[gnd_slide & ~ges_slide])
-        tn = len(hitd[(hitd['pr'] == 1) & (hitd['sid'] <= 0)])
-        fn = len(hitd[(hitd['pr'] == 1) & (hitd['sid'] > 0)])
+        g_slid = hvr > 0
+        r_slid = hitd['sid'] == hvr
+        tp = len(hitd[g_slid & r_slid])
+        fp = len(hitd[g_slid & ~r_slid])
+        tn = len(hitd[~g_slid & ~r_slid])
+        fn = len(hitd[~g_slid & r_slid])
         return self.praf(tp, fp, tn, fn)
 
     def evaluation(self):
