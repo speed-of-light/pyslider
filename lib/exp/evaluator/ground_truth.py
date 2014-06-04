@@ -15,10 +15,10 @@ class GroundTruth(ExpCommon):
                 coll.append(cols)
         gf = pd.DataFrame(data=coll,
                           columns=['fid', 'sid', 'slide_type', 'cam_status'])
-        gcf = self._aggregate(gf.copy())
+        gcf = self.__aggregate(gf.copy())
         return gcf
 
-    def _aggregate(self, df):
+    def __aggregate(self, df):
         f_slid = -1
         f_keep = -1
         f_cnt = 1
