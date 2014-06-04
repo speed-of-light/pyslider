@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 from sklearn import mixture
+from base import Evaluator
 
 
-class PairEvaluator(object):
+class PairEvaluator(Evaluator):
     def __init__(self, pair_result, ground):
         """
         `matches`: Comes from matched result and containing keys as:
@@ -13,7 +14,6 @@ class PairEvaluator(object):
         """
         self.pre = pair_result
         self.gnd = ground
-
 
     def __reorder(self, old, li=[]):
         """
@@ -70,10 +70,20 @@ class PairEvaluator(object):
             fid = pfeats[0]['fid']  # 0 is ok, all the same
             hita.append(self.__check_hits(fid, pfeats, r['vr']))
         cols = ['fid', 'sid', 'vr', 'dist']
-        hitf = pd.DataFrame(hita, columns=cols)
-        hitf = hitf.set_index('fid')
-        hitf['pair'] = self.__gmm_result(hitf.dist.values, 2)
-        return hitf
+        hitd = pd.DataFrame(hita, columns=cols)
+        hitd = hitd.set_index('fid')
+        hitd['pair'] = self.__gmm_result(hitd.dist.values, 2)
+        return hitd
+
+    def hitd_praf(self, hitd):
+        hvr = [v[2] for v in hitd['vr'].values]
+        ges_slide = hitd['pair'] == 0
+        gnd_slide = hitd['sid'] == hvr
+        tp = len(hitd[gnd_slide & ges_slide])
+        fp = len(hitd[gnd_slide & ~ges_slide])
+        tn = len(hitd[(hitd['pr'] == 1) & (hitd['sid'] <= 0)])
+        fn = len(hitd[(hitd['pr'] == 1) & (hitd['sid'] > 0)])
+        return self.praf(tp, fp, tn, fn)
 
     def evaluation(self):
         pass
