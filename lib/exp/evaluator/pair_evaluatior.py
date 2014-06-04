@@ -14,11 +14,27 @@ class PairEvaluator(object):
         self.pre = pair_result
         self.gnd = ground
 
+
+    def __reorder(self, old, li=[]):
+        """
+        Generate reordered list by sorted old list values
+        ex:
+          old= [9,3,6]; li = [1,0,0,0,0,2,0,1]
+          by product: bb = { 0: 1, 1:2, 2:0}
+          return: [2, 1, 1, 1, 1, 0, 1, 2]
+        """
+        tmp = old[:]
+        tmp.sort()
+        bb = {}
+        for i, t in enumerate(tmp):
+            bb[i] = old.index(t)
+        return [bb[ll] for ll in li]
+
     def __gmm_result(self, data, mm=2):
       clf = mixture.GMM(n_components=mm, covariance_type='full')
       clf.fit(data)
       pr = clf.predict(data)
-      return np.array(self._reorder(clf.means_.tolist(), pr))
+      return np.array(self.__reorder(clf.means_.tolist(), pr))
 
     def __check_hits(self, fid, feats, votes):
         """
@@ -58,3 +74,6 @@ class PairEvaluator(object):
         hitf = hitf.set_index('fid')
         hitf['pair'] = self.__gmm_result(hitf.dist.values, 2)
         return hitf
+
+    def evaluation(self):
+        pass
