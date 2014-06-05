@@ -1,5 +1,5 @@
 import pandas as pd
-from ..base import ExpCommon
+from lib.exp.base import ExpCommon
 
 
 class GroundTruth(ExpCommon):
@@ -7,6 +7,9 @@ class GroundTruth(ExpCommon):
         ExpCommon.__init__(self, root, name)
 
     def univ_df(self):
+        """
+        Convert univ_df raw ground_truth to dataframe
+        """
         coll = []
         gnd = "data/{}/{}/ground_truth".format(self.root, self.name)
         with open(gnd, 'r') as f:
@@ -19,6 +22,9 @@ class GroundTruth(ExpCommon):
         return gcf
 
     def __aggregate(self, df):
+        """
+        Get the univ aggregated result
+        """
         f_slid = -1
         f_keep = -1
         f_cnt = 1
@@ -40,12 +46,43 @@ class GroundTruth(ExpCommon):
                 continue
         return df
 
-    def frame_gnd_tag(res, gnd):
-        candi = []
-        for di in res.index:
-            qry = gnd[(gnd['fid'] <= di)]
-            if len(qry) > 0:
-                candi.append(qry.values[-1][1])
-            else:
-                candi.append(-1)
-        res['ground_sid'] = candi
+    def __ftyping(self, fsid, feid, ftype):
+        if ftype == "duration":
+            return feid - fsid
+        elif ftype == "end":
+            return feid
+
+    def __ftuple(self, stat, ftp, gnd, ftype):
+        ftv = self.__ftyping(ftp[0], gnd.fid, ftype)
+        if (stat == "init") or (stat == "singular"):
+            return [gnd.fid, ftv, gnd.sid]
+        elif stat == "found_pair":
+            ftp[1] = ftv
+            return ftp
+
+    def segments(self, df, ftype="duration"):
+        """
+        ftype: control the return data with "duration"(default) or
+            just "end" frame id
+        Return ground truth of segments, should return a list of
+            [fstart, duration, sid]
+        """
+        f_start = -1
+        seg = []  # segment for global use
+        flp = [df.iloc[0].fid]  # segment for local use
+        for si in df.index:
+            gnd = df.ix[si]
+            if f_start < 0:
+                flp = self.__ftuple("init", flp, gnd, ftype)
+                f_start = gnd.sid
+            elif f_start == gnd.sid:
+                flp = self.__ftuple("found_pair", flp, gnd, ftype)
+                seg.append(flp[:])
+                f_start = -1
+            else:  # single point
+                seg.append(flp[:])
+                flp = self.__ftuple("singular", flp, gnd, ftype)
+                f_start = gnd.sid
+        if flp is not None:
+            seg.append(flp[:])
+        return seg
