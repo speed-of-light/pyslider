@@ -105,27 +105,6 @@ class Matcher(ExpCommon):
         cols = ['fid', 'sid', 'm3', 'mm', 'm1', 'm31', 'M', 'm', 'mM']
       return pd.DataFrame(ary, columns=cols)
 
-    def _reorder(self, old, li=[]):
-        """
-        Generate reordered list by sorted old list values
-        ex:
-          old= [9,3,6]; li = [1,0,0,0,0,2,0,1]
-          by product: bb = { 0: 1, 1:2, 2:0}
-          return: [2, 1, 1, 1, 1, 0, 1, 2]
-        """
-        tmp = old[:]
-        tmp.sort()
-        bb = {}
-        for i, t in enumerate(tmp):
-            bb[i] = old.index(t)
-        return [bb[ll] for ll in li]
-
-    def _basic_result(self, data, mm=2):
-      clf = mixture.GMM(n_components=mm, covariance_type='full')
-      clf.fit(data)
-      pr = clf.predict(data)
-      return np.array(self._reorder(clf.means_.tolist(), pr))
-
     def single_match(self, fid, sid, thres=0.9):
         """
         BruteForce-L1 BruteForce-Hamming BruteForce-Hamming(2) FlannBased
@@ -186,35 +165,6 @@ class Matcher(ExpCommon):
             vr = self._voting(ds)
             res.append(dict(feats=frs, vr=vr))
         return res, sfs, vfs
-
-    def regroup(self, df, smres):
-        """
-        `df` Ground-truths dataframe, columns are:
-        'fid', 'sid', 'slide_type', 'cam_status'
-        `smres` Comes from method set_match and its res value
-        """
-        hita = []
-        for r in smres:
-            fid = r['feats'][0]['fid']  # 0 is ok, all the same
-            qry = df[(df['fid'] <= fid)]
-            if len(qry) > 0:
-                qv = qry.values[-1][1]
-                mr = r['feats'][qv-1]['mr']
-                tmean = mr[mr.dt.lt(mr.dt.quantile(.1))].dt.mean()
-                if qv > 0:  # has sid
-                    hita.append([fid, qv, r['vr'], tmean, None, tmean])
-                elif len(r['feats'][qv-1]['mr']) > 0:
-                    # has matched result
-                    hita.append([fid, qv, r['vr'], None, tmean, tmean])
-            else:
-                print 'never goes here'
-        cols = ['fid', 'sid', 'vr', 'hit', 'nonhit', 'hita']
-        hitf = pd.DataFrame(hita, columns=cols)
-        hitf = hitf.set_index('fid')
-        hitf['pr'] = self._basic_result(hitf.hita.values, 2)
-        return hitf
-        # self.plot_hitf(hitf,
-        #         show=[1482, 16427, 28957, 35469, 46755, 47461,66385,70360])
 
     # binary
     def tmp(self):
