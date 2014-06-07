@@ -89,3 +89,24 @@ class GroundTruth(ExpCommon, Summary):
         if flp is not None:
             seg.append(flp[:])
         return seg
+
+    def shrink(self, df):
+        """
+        df: `fid`, `sid` pairs
+        Get shrink data from original matched pairs
+        Return a cloned copy of original input
+        example:
+            df.sid = [1, 1,  1,  1,  2,  2,  3,  3,  4,  4]
+            return should be [1, 2, 3, 4]
+        """
+        f_sid = -1
+        ret = df.copy(deep=True)
+        for di, dd in df.iterrows():
+            if f_sid < 0:  # init
+                f_sid = dd.sid
+            elif f_sid == dd.sid:
+                ret = ret.drop(di)
+                continue
+            elif f_sid != dd.sid:
+                f_sid = dd.sid
+        return ret
