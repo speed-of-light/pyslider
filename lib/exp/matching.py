@@ -3,10 +3,9 @@ import math
 import cv2
 import pandas as pd
 import numpy as np
-from sklearn import mixture
 from base import ExpCommon
+from base import Slider
 from feats import Feats
-from summary import Slider
 from ..data import Video
 from ..handy import HandyTimer as ht
 from filters.ransac import Ransac
