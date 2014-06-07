@@ -1,10 +1,12 @@
 import pandas as pd
-from lib.exp.base import ExpCommon
+from ..base import ExpCommon
+from ..summary import Summary
 
 
-class GroundTruth(ExpCommon):
+class GroundTruth(ExpCommon, Summary):
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)
+        Summary.__init__(self)
 
     def univ_df(self):
         """
