@@ -1,1 +1,1 @@
-__all__ = ["segments"]
+__all__ = ["segments", "direct_match"]
