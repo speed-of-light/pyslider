@@ -86,6 +86,9 @@ class Summary:
 
 
 class Slider(ExpCommon):
+    """
+    A class to handle slide data
+    """
     def __init__(self, root="", name=""):
         self.root = root
         self.name = name
