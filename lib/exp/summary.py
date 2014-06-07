@@ -6,7 +6,7 @@ from ..data import PdfReader, Video
 from base import ExpCommon
 
 
-class Summary:
+class Summary(object):
     def __init__(self):
         self.sp = 'data/store.h5'
         self.load()
