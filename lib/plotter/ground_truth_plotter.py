@@ -11,9 +11,7 @@ class GroundTruthPlotter(GtSegments):
         """
         Here should put some plot configurations
         """
-        cmap = mcm.Paired
-        GtSegments.__init__(self, cmap)
-        pass
+        GtSegments.__init__(self, cmap=mcm.Paired)
 
     def plot(self):
         """

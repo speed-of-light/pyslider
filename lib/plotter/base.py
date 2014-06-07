@@ -1,14 +1,29 @@
+import matplotlib.cm as mcm
+from pylab import imread
+from matplotlib.offsetbox import OffsetImage as ofb
+from matplotlib.offsetbox import AnnotationBbox as abb
+
+
 class Plotter(object):
     """
     Plotter base
     """
-    def __init__(self):
-        pass
+    def __init__(self, cmap=mcm.Paired):
+        self.cmap = cmap
+        self.seg_height = 10
+        self.img_base = None
 
     def chunks(self, li, n):
         """ Yield successive n-sized chunks from li.  """
         for i in xrange(0, len(li), n):
             yield li[i:i+n]
+
+    def image_box(self, path, loc, xyb, zoom=.1):
+        img = imread(path)
+        imb = ofb(img, zoom=zoom)
+        ab = abb(imb, loc, xybox=xyb, pad=0,
+            xycoords="data", boxcoords="data")
+        return ab
 
 
 class SegLocator(object):

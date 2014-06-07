@@ -3,10 +3,8 @@ from ..base import SegLocator
 
 
 class GtSegments(Plotter):
-    def __init__(self, cmap):
-        Plotter.__init__(self)
-        self.cmap = cmap
-        self.seg_height = 10
+    def __init__(self, **kwargs):
+        Plotter.__init__(self, **kwargs)
 
     def __ano_sid(self, ax, gnd, seg_locator, tag_at):
         """
@@ -14,15 +12,14 @@ class GtSegments(Plotter):
         """
         txt_pos = seg_locator.txt_pos(gnd, tag_at)
         data_pos = seg_locator.data_pos(gnd)
-        arp = dict(facecolor=(.5, .9, .5), shrink=0.05)
+        arp = dict(arrowstyle="-")
         ax.annotate(gnd[2], xy=data_pos, xytext=txt_pos,
                     xycoords='data', textcoords='data',
-                    horizontalalignment='center',
-                    arrowprops=arp)
+                    horizontalalignment='center')
 
     def __ano_sids(self, ax, gnds, seg_locator):
         for gi, gnd in enumerate(gnds):
-            self.__ano_sid(ax, gnd, seg_locator, (gi % 3+1)*.05 + .55)
+            self.__ano_sid(ax, gnd, seg_locator, .7)
 
     def __seg_xy(self, segl):
         segs = [(dd[0], dd[1]) for dd in segl]
@@ -45,20 +42,28 @@ class GtSegments(Plotter):
         ax.spines['bottom'].set_position(('data', self.seg_height*aid))
         self.__set_ax_ymax(ax, ymax)
 
+    def __ano_imgs(self, ax, segments, segl):
+        for sg in segments:
+          imp = "{}/{:03d}.jpg".format(self.img_base, sg[2])
+          pos = segl.data_pos(sg[:2])
+          art = Plotter.image_box(self, imp, pos, pos, .10)
+          ax.add_artist(art)
+
     def segmentize_ax(self, ax, segments, segid=0):
         """
         Add segmented plot for input ground truth data
         """
-        max_x_lim = 0
         segl = SegLocator(segid, height=self.seg_height)
         segs, segv = self.__seg_xy(segments)
-        ax.broken_barh(segs, segl.yrange(), facecolors=segv)
+        col = ax.broken_barh(segs, segl.yrange(), facecolors=segv, antialiased=True)
+        if self.img_base is not None:
+            self.__ano_imgs(ax, segments, segl)
         self.__ano_sids(ax, segments, segl)
         # from last frame id plus duration
-        max_x_lim = max(max_x_lim, (segments[-1][0]+segments[-1][1]))
+        max_x_lim = max(0, (segments[-1][0]+segments[-1][1]))
         xlim = ax.get_xlim()
         ax.set_xlim(xlim[0]*.99, max_x_lim*1.01)
-        return ax
+        return col
 
     def segmentize_fig(self, fig, segments_list):
         ax = fig.add_subplot(111)
