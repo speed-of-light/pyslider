@@ -1,6 +1,6 @@
 # Release Notes
 
-Please refer to [here][milestones].
+Above `0.4.0`, Please refer to [here][milestones].
 
 [milestones]: https://github.com/speed-of-light/pyslider/issues/milestones?state=closed "Mile Stone"
 

@@ -1,1 +1,1 @@
-__all__ = ["matching.*"]
+__all__ = ["matching", "ground_truth_plotter"]

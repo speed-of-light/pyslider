@@ -13,11 +13,17 @@ For more information, please refer to [docs][docs].
 
 # Working flow
 
+  - TODO
+
 # Structure
 
-## Any contribution is welcome!
+  - `lib.exp`: Experimental core
+  - `lib.plotter`: Plotting toolset
+  - `lib.emailer`: email notifications
 
-[docs](./docs)
+## [docs](./docs)
+
+## Any contribution is welcome!
 
 ## License
 

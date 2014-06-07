@@ -6,5 +6,5 @@ tmp
 jpg
 /test*.*
 *.ipynb_checkpoints/
-*.ipynb
-
+/*.ipynb
+/doc*.py

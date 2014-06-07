@@ -53,10 +53,11 @@ class GroundTruth(ExpCommon):
             return feid
 
     def __ftuple(self, stat, ftp, gnd, ftype):
-        ftv = self.__ftyping(ftp[0], gnd.fid, ftype)
         if (stat == "init") or (stat == "singular"):
+            ftv = self.__ftyping(gnd.fid, gnd.fid, ftype)
             return [gnd.fid, ftv, gnd.sid]
         elif stat == "found_pair":
+            ftv = self.__ftyping(ftp[0], gnd.fid, ftype)
             ftp[1] = ftv
             return ftp
 
