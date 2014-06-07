@@ -7,9 +7,9 @@ import time
 # plotting
 from matplotlib import offsetbox as ofb
 # core
-from summary import Slider
 from ..data import Video
-from ..exp import ExpCommon
+from ..base import ExpCommon
+from ..base import Slider
 from ..handy import HandyTimer as ht
 
 

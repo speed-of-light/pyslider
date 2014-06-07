@@ -1,9 +1,10 @@
 import matplotlib.cm as mcm
 from base import Plotter
 from ground_truth.segments import GtSegments
+from ground_truth.direct_match import GtDirectMatch
 
 
-class GroundTruthPlotter(GtSegments):
+class GroundTruthPlotter(GtSegments, GtDirectMatch):
     """
     Plot Ground truth segmented data
     """
@@ -12,10 +13,3 @@ class GroundTruthPlotter(GtSegments):
         Here should put some plot configurations
         """
         GtSegments.__init__(self, cmap=mcm.Paired)
-
-    def plot(self):
-        """
-        Plot segments annotates
-        """
-        pass
-

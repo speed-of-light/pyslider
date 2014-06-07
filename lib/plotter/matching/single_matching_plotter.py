@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from ...data import Video
-from ...exp.summary import Slider
+from ...exp.base import Slider
 from ...plotter.base import Plotter
 
 
@@ -169,7 +169,7 @@ class SingleMatchingPlotter(Plotter):
         return view
 
     def __all_items(self, item, view, good, roi=0):
-        key, ktype= item.split("_")
+        key, ktype = item.split("_")
         if ktype == 'lines':
             view = self.__lines_on_view(view, good, key, roi)
         elif ktype == 'position':
