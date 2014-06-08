@@ -87,3 +87,10 @@ class GroundTruth(ExpCommon):
         if flp is not None:
             seg.append(flp[:])
         return seg
+
+    def pairs(self):
+        """
+        TODO add this
+        """
+        self.save
+        pass
