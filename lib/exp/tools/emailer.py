@@ -32,12 +32,10 @@ class Emailer(object):
         self.upass = upass
 
     def __enter__(self):
-        self.log.info("Start session for {}".format(self.config['uname']))
         return self
 
     def __exit__(self, type, value, traceback):
         self.session.quit()
-        self.log.info("close session for {}".format(self.config['uname']))
 
     def send(self, subj="Subject", text="--Content--", rcpts=[]):
         msg = MIMEMultipart()
