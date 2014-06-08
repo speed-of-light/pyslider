@@ -3,10 +3,9 @@ import email
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 # see also: https://pypi.python.org/pypi/mailer/ ##
-from logger import Explog
 
 
-class Emailer(Explog):
+class Emailer(object):
     def __init__(self, uname='', upass=''):
         """
         Usage:
