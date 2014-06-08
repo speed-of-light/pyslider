@@ -62,9 +62,9 @@ class ExpCommon(PathMaker, Explog):
         Save key to hstore
         """
         sp = self.make('stores', 'h5', asure=True, root=False)
-        self.log.info('save key [{}] to path: {}'.format(key, sp))
         data.to_hdf(sp, key, mode='a', data_columns=True, format='t',
                     complib='blosc', complevel=self.comp)
+        self.elog.info('Key [{}] saved to path: {}'.format(key, sp))
         self.__save_key(sp, key)
 
     def load(self, key):
@@ -73,8 +73,8 @@ class ExpCommon(PathMaker, Explog):
             df = pd.read_hdf(sp, key, format='t')
         except KeyError, e:
             print e
-            self.log.error('load key [{}] from path: {}'.format(key, sp))
-            self.log.error('  >> Error: {}'.format(e))
+            self.elog.error('load key [{}] from path: {}'.format(key, sp))
+            self.elog.error('  >> Error: {}'.format(e))
             return None
         return df
 
