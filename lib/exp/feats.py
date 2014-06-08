@@ -2,8 +2,8 @@ import cv2
 import pandas as pd
 import numpy as np
 import itertools
-from summary import Summary
 from base import ExpCommon
+from summary import Summary
 from ..handy import HandyTimer as ht
 
 
