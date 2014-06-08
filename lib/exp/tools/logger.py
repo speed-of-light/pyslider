@@ -1,7 +1,7 @@
 import logging
 import logging.handlers
-from tools import ToolHelper as TH
-from tools.path_maker import PathMaker
+from . import ToolHelper as TH
+from path_maker import PathMaker
 
 
 class Explog(PathMaker):
@@ -30,7 +30,7 @@ class Explog(PathMaker):
         """
         fmts = self.__format_str()
         fmt = logging.Formatter(**fmts)
-        fn = self.make_path('log', 'log', True, False)
+        fn = self.make('log', 'log', True, False)
         self.__add_file_handler(fn, fmt)
         if self.enable_stream:
             self.__add_stream_handler(fn, fmt)
@@ -46,7 +46,7 @@ class Explog(PathMaker):
             self.elog.addHandler(fh)
 
     def __done(self):
-        cn = TH._underscore(self.__class__.__name__)
+        cn = TH.underscore(self.__class__.__name__)
         raw = ">> ===== {} inited ===== <<".format(cn)
         self.elog.info(raw)
 
@@ -58,9 +58,9 @@ class Explog(PathMaker):
         return dict(fmt=fmt, datefmt=dft)
 
     def __get_logger(self):
-        cn = TH._underscore(self.__class__.__name__)
-        lgn = "{}.{}.{}.{}".format(self.root, self.name, __name__, cn)
-        print "debug: from logger: {}".format(lgn)
+        cn = TH.underscore(self.__class__.__name__)
+        lgn = "{}|{}|{}|{}".format(self.root, self.name, cn, __name__)
+        #print "debug: from logger: {}".format(lgn)
         logger = logging.getLogger(lgn)
         return logger
 
