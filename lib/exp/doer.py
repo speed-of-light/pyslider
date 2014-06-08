@@ -3,9 +3,13 @@ from base import ExpCommon
 from prepare import Prepare
 from matching import Matcher
 from evaluator.ground_truth import GroundTruth
+from evaluator.pair_evaluator import PairEvaluator
 
 
 class Doer(ExpCommon):
+    """
+    Provide a simple way to rundown
+    """
     def __init__(self, root, name):
         self.root = root
         self.name = name
@@ -30,6 +34,17 @@ class Doer(ExpCommon):
     def __matching(self, fids, thres):
         mm = Matcher(self.root, self.name)
         res, sfs, vfs = mm.set_match(fids, ransac=False, thres=0.9)
+        return res
+
+    def __evaluation(self, res, gnd):
+        pe = PairEvaluator(res, gnd)
+        er = pe.pairing()
+        praf = pe.hitd_praf(er)
+        return praf
 
     def rundown(self):
-        pass
+        fids = self.__reduced_frames()
+        gnd = self.__gnd_mpairs()
+        mre = self.__matching(fids, .9)
+        praf = self.__evaluation(mre, gnd)
+        print praf
