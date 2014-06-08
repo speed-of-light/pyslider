@@ -133,18 +133,23 @@ class ExpCommon(object):
           os.remove(ph)
 
   def save(self, key, data):
-    self.log.info('save key ==> {}'.format(key))
+    """
+    Save key to hstore
+    """
     sp = self.make_path('stores', 'h5', asure=True, root=False)
+    self.log.info('save key [{}] to path: {}'.format(key, sp))
     data.to_hdf(sp, key, mode='a', data_columns=True, format='t',
                 complib='blosc', complevel=self.comp)
     self._save_key(sp, key)
 
   def load(self, key):
-    sp = self.store_path()
+    sp = self.make_path(asure=False)
     try:
       df = pd.read_hdf(sp, key, format='t')
     except KeyError, e:
       print e
+      self.log.error('load key [{}] from path: {}'.format(key, sp))
+      self.log.error('  >> Error: {}'.format(e))
       return None
     return df
 
