@@ -124,7 +124,7 @@ class Feats(ExpCommon):
         dkrk = self._df_key_root(mod, opts, img_type)
         dkrd = self._df_key_root(mod, opts, img_type, dtype='desc')
         dlog = pd.DataFrame(columns=['ms', 'kps']).convert_objects()
-        self.log.info("param path => " + dkrk)
+        self.elog.info("param path => " + dkrk)
         for im in img_iter:
             idx = im['idx']
             img = im['img']
@@ -142,13 +142,14 @@ class Feats(ExpCommon):
             llog = pd.DataFrame([[int(ts.msecs), len(des)]],
                                 columns=['ms', 'kps'])
             dlog = dlog.append(llog)
-            self.log.info(self.__str__("sid[{}] ".format(idx)) + str(ts.msecs))
+            logstr = self.__str__("sid[{}] ".format(idx)) + str(ts.msecs)
+            self.elog.info(logstr)
         dklg = self._df_key_root(mod, opts, img_type, dtype='log')
         dlog = dlog.reset_index()
         del dlog['index']
         dlog[dlog.columns] = dlog[dlog.columns].astype(np.uint32)
         self.save(dklg, dlog)
-        self.log.info("fn finished" + dkrk)
+        self.elog.info("fn finished" + dkrk)
         return dlog
 
     def run_all_slides(self, np=''):
