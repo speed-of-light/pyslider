@@ -1,23 +1,22 @@
-# system
 import os
 import shutil
-# scientific
 import pandas as pd
-# custom
-from ..emailer import Emailer
+from tools.path_maker import PathMaker
+from tools.logger import Explog
+from tools.emailer import Emailer
 
 
-class ExpCommon(object):
+class ExpCommon(PathMaker, Explog):
     def __init__(self, root, name):
         """
         `root`: file root
         `name`: project name
         """
+        PathMaker.__init__(self, root, name)
+        Explog.__init__(self, root, name)
         self.root = root
         self.name = name
         self.comp = 6
-        self.upass = None
-        self._init_logger()
 
     def __save_key(self, fpath, key):
         kf = self.load('keys')
@@ -44,19 +43,13 @@ class ExpCommon(object):
         return s
 
     def store(self):
-        sp = self.store_path()
+        sp = self.make()
         return pd.HDFStore(sp, format='t', data_columns=True,
                            complib='blosc', complevel=self.comp)
 
-    def store_path(self):
-        """
-        DEPRECATED, use make_path instead.
-        """
-        return self.make_path()
-
     def delete_file(self, tar=[('store', 'h5', False)]):
         for res, ext, root in tar:
-            ph = self.make_path(res, ext, False, root)
+            ph = self.make(res, ext, False, root)
             print ph
             if ext is None or root:  # for whole directory
                 shutil.rmtree(ph)
@@ -68,14 +61,14 @@ class ExpCommon(object):
         """
         Save key to hstore
         """
-        sp = self.make_path('stores', 'h5', asure=True, root=False)
+        sp = self.make('stores', 'h5', asure=True, root=False)
         self.log.info('save key [{}] to path: {}'.format(key, sp))
         data.to_hdf(sp, key, mode='a', data_columns=True, format='t',
                     complib='blosc', complevel=self.comp)
         self.__save_key(sp, key)
 
     def load(self, key):
-        sp = self.make_path(asure=False)
+        sp = self.make(asure=False)
         try:
             df = pd.read_hdf(sp, key, format='t')
         except KeyError, e:
@@ -94,4 +87,4 @@ class ExpCommon(object):
             format(cn, self.root, self.name)
         me = "speed.of.lightt@gmail.com"
         with Emailer(config=dict(uname=me, upass=ps)) as mailer:
-          mailer.send(title, summary, ['speed.of.lightt@gmail.com'])
+            mailer.send(title, summary, ['speed.of.lightt@gmail.com'])
