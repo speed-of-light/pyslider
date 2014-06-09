@@ -30,7 +30,7 @@ class Explog(PathMaker):
         """
         fmts = self.__format_str()
         fmt = logging.Formatter(**fmts)
-        fn = self.make_path('log', 'log', True, False)
+        fn = self.make('log', 'log', True, False)
         self.__add_file_handler(fn, fmt)
         if self.enable_stream:
             self.__add_stream_handler(fn, fmt)
