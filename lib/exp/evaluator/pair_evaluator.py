@@ -89,6 +89,9 @@ class PairEvaluator(Evaluator):
         return hitd
 
     def hitd_praf(self, hitd):
+        """
+        Get the precision, recall, accuracy, fmeasure of results
+        """
         hvr = [v[2] for v in hitd['vr'].values]
         g_slid = hvr > 0
         r_slid = hitd['sid'] == hvr

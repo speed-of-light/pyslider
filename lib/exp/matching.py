@@ -3,12 +3,11 @@ import math
 import cv2
 import pandas as pd
 import numpy as np
-from sklearn import mixture
-from base import ExpCommon
-from feats import Feats
-from summary import Slider
 from ..data import Video
-from ..handy import HandyTimer as ht
+from base import ExpCommon
+from tools.slider import Slider
+from tools.timer import ExpTimer
+from feats import Feats
 from filters.ransac import Ransac
 
 
@@ -151,8 +150,8 @@ class Matcher(ExpCommon):
             for sf in sfs:
                 _info = self._match_info(sf['idx'], qf['idx'], mod['kp_algo'],
                                          mod['des_algo'], mtype, thres)
-                self.log.info(_info)
-                with ht(verbose=0) as ts:
+                self.elog.info(_info)
+                with ExpTimer(verbose=0) as ts:
                     mr = self._match_desc(sf['des'], qf['des'], mtype, thres)
                     if ransac is True and len(mr) > 0:
                         ra = Ransac()

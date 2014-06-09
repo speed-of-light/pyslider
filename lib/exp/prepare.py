@@ -7,10 +7,10 @@ import time
 # plotting
 from matplotlib import offsetbox as ofb
 # core
-from summary import Slider
 from ..data import Video
-from ..exp import ExpCommon
-from ..handy import HandyTimer as ht
+from base import ExpCommon
+from tools.slider import Slider
+from tools.timer import ExpTimer
 
 
 class Prepare(ExpCommon):
@@ -131,7 +131,7 @@ class Prepare(ExpCommon):
                 fn = kw['fn']
                 parl = kw['params']
                 for par in parl:
-                    with ht(verbose=True) as t:
+                    with ExpTimer(verbose=True) as t:
                         # byfunc(*args, **kw)
                         mus = mu((fn, args, par), interval=.0,
                                  timeout=None, max_usage=False)
@@ -221,14 +221,14 @@ class Prepare(ExpCommon):
           kv.append(self._args_from(sk))
         cols = ['key', 'method', 'arg1', 'arg2', 'arg3', 'arg4']
         kdf = pd.DataFrame(data=kv, columns=cols)
-        sp = self.make_path('stores', 'h5', asure=True, root=False)
+        sp = self.make('stores', 'h5', asure=True, root=False)
         kdf.to_hdf(sp, 'keys', mode='a', data_columns=True,
                    format='t', complib='blosc', complevel=self.comp)
 
     def save_reduced_fr(self):
         df = self.load('keys')
         i = 0
-        with ht(verbose=0) as ts:
+        with ExpTimer(verbose=0) as ts:
             for key in df['key'].values:
                 if 'diff' not in key:
                     continue
@@ -238,9 +238,9 @@ class Prepare(ExpCommon):
                     cdf = self._fr_reduce(bdf)
                     rk = '/reduce'+key
                     self.save(rk, cdf)
-                    self.log.info("{}-{}, {}, {}, rate: {}".
-                                  format(rk, len(adf), len(bdf), len(cdf),
-                                         len(adf)*1.0/len(cdf)))
+                    self.elog.info("{}-{}, {}, {}, rate: {}".
+                                   format(rk, len(adf), len(bdf), len(cdf),
+                                          len(adf)*1.0/len(cdf)))
                     i = i+1
                     if i > 8:
                         break
