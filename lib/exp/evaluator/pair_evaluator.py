@@ -82,7 +82,8 @@ class PairEvaluator(Evaluator):
         cols = ['fid', 'sid', 'vr', 'dist']
         hitd = pd.DataFrame(hita, columns=cols)
         hitd = hitd.set_index('fid')
-        hitd['pair'] = self.__gmm_result(hitd.dist.values, 2)
+        real_hitd = hitd[hitd.dist.notnull()]
+        hitd['pair'] = self.__gmm_result(real_hitd.dist.values, 2)
         return hitd
 
     def hitd_praf(self, hitd):
