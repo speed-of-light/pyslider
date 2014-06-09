@@ -1,7 +1,7 @@
 import logging
 import logging.handlers
-from tools import ToolHelper as TH
-from tools.path_maker import PathMaker
+from . import ToolHelper as TH
+from path_maker import PathMaker
 
 
 class Explog(PathMaker):
@@ -46,7 +46,7 @@ class Explog(PathMaker):
             self.elog.addHandler(fh)
 
     def __done(self):
-        cn = TH._underscore(self.__class__.__name__)
+        cn = TH.underscore(self.__class__.__name__)
         raw = ">> ===== {} inited ===== <<".format(cn)
         self.elog.info(raw)
 
@@ -58,7 +58,7 @@ class Explog(PathMaker):
         return dict(fmt=fmt, datefmt=dft)
 
     def __get_logger(self):
-        cn = TH._underscore(self.__class__.__name__)
+        cn = TH.underscore(self.__class__.__name__)
         lgn = "{}.{}.{}.{}".format(self.root, self.name, __name__, cn)
         print "debug: from logger: {}".format(lgn)
         logger = logging.getLogger(lgn)

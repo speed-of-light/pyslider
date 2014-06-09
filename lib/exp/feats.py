@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import itertools
 from base import ExpCommon
+from tools.timer import ExpTimer
 from summary import Summary
-from ..handy import HandyTimer as ht
 
 
 class Feats(ExpCommon):
@@ -128,7 +128,7 @@ class Feats(ExpCommon):
         for im in img_iter:
             idx = im['idx']
             img = im['img']
-            with ht(verbose=0) as ts:
+            with ExpTimer(verbose=0) as ts:
                 kps = fd.detect(img, None)
                 kps, des = de.compute(img, kps)
             data = [[kp.pt[0], kp.pt[1], kp.size, kp.angle,
@@ -154,7 +154,7 @@ class Feats(ExpCommon):
 
     def run_all_slides(self, np=''):
         cfl = self.comb_fm_list()
-        with ht() as ts:
+        with ExpTimer() as ts:
             for cc in cfl:
                 osl = self.o_slides(gray=('Opponent' not in cc[1]))
                 try:
@@ -176,7 +176,7 @@ class Feats(ExpCommon):
         for im in fr_list:
             # iid = im['index']
             img = im['img']
-            with ht(verbose=0) as ts:
+            with ExpTimer(verbose=0) as ts:
                 kps = fd.detect(img, None)
                 kps, des = de.compute(img, kps)
             ts.msecs
@@ -219,7 +219,7 @@ class Feats(ExpCommon):
         res = []
         for si in ilist:
             img = si['img']
-            with ht(verbose=0) as ts:
+            with ExpTimer(verbose=0) as ts:
                 ks = fd.detect(img)
                 ks2, ds = de.compute(img, ks)
             res.append(dict(idx=si['idx'], kps=ks2, des=ds,
