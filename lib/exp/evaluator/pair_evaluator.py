@@ -31,10 +31,10 @@ class PairEvaluator(Evaluator):
         return [bb[ll] for ll in li]
 
     def __gmm_result(self, data, mm=2):
-      clf = mixture.GMM(n_components=mm, covariance_type='full')
-      clf.fit(data)
-      pr = clf.predict(data)
-      return np.array(self.__reorder(clf.means_.tolist(), pr))
+        clf = mixture.GMM(n_components=mm, covariance_type='full')
+        clf.fit(data)
+        pr = clf.predict(data)
+        return np.array(self.__reorder(clf.means_.tolist(), pr))
 
     def __check_hits(self, fid, feats, votes):
         """
@@ -49,10 +49,7 @@ class PairEvaluator(Evaluator):
             mr = feats[sid-1]['mr']  # matched result, since sid starts from 1
             f_one = mr.dt.quantile(.1)
             tmean = mr[mr.dt.lt(f_one)].dt.mean()
-            if sid > 0:  # has sid in ggd, so possibly hit
-                data = [fid, sid, votes, True, False, tmean]
-            else:  # if len(mr) > 0: # has matched result but no hit
-                data = [fid, sid, votes, False, True, tmean]
+            data = [fid, sid, votes, tmean]
         else:
             print 'should never goes here'
         return data
@@ -100,6 +97,3 @@ class PairEvaluator(Evaluator):
         tn = len(hitd[~g_slid & ~r_slid])
         fn = len(hitd[~g_slid & r_slid])
         return self.praf(tp, fp, tn, fn)
-
-    def evaluation(self):
-        pass
