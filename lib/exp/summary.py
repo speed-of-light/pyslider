@@ -4,13 +4,13 @@ import glob
 from ..data import PdfReader, Video
 
 
-class Summary:
+class Summary(object):
     def __init__(self):
         self.sp = 'data/store.h5'
-        self.load()
+        self.load_summary()
 
-    def load(self, key='summary'):
-        self.sdf = pd.read_hdf(self.sp, key, format='t')
+    def load_summary(self):
+        self.sdf = pd.read_hdf(self.sp, 'summary', format='t')
         return self.sdf
 
     def save(self, key='summary', data=None):
@@ -19,9 +19,13 @@ class Summary:
         data.to_hdf(self.sp, key, mode='a', data_columns=True, format='t',
                     complib='blosc', complevel=6)
 
-    def info(self, root, name):
+    def info(self, root=None, name=None):
         df = self.sdf
-        dr = df[df['n_root'].eq(root) & df['n_name'].eq(name)]
+        if root is None:
+            root = self.root
+        if name is None:
+            name = self.name
+        dr = df[df['n_root'].eq(root) & df['n_name'].eq(name)].iloc[0]
         return dr
 
     def talk_info_list(self):

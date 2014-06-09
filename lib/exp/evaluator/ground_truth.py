@@ -1,10 +1,12 @@
 import pandas as pd
-from lib.exp.base import ExpCommon
+from ..base import ExpCommon
+from ..summary import Summary
 
 
-class GroundTruth(ExpCommon):
+class GroundTruth(ExpCommon, Summary):
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)
+        Summary.__init__(self)
 
     def univ_df(self):
         """
@@ -88,9 +90,23 @@ class GroundTruth(ExpCommon):
             seg.append(flp[:])
         return seg
 
-    def pairs(self):
+    def shrink(self, df):
         """
-        TODO add this
+        df: `fid`, `sid` pairs
+        Get shrink data from original matched pairs
+        Return a cloned copy of original input
+        example:
+            df.sid = [1, 1,  1,  1,  2,  2,  3,  3,  4,  4]
+            return should be [1, 2, 3, 4]
         """
-        self.save
-        pass
+        f_sid = -1
+        ret = df.copy(deep=True)
+        for di, dd in df.iterrows():
+            if f_sid < 0:  # init
+                f_sid = dd.sid
+            elif f_sid == dd.sid:
+                ret = ret.drop(di)
+                continue
+            elif f_sid != dd.sid:
+                f_sid = dd.sid
+        return ret
