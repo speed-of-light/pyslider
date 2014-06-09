@@ -4,10 +4,11 @@ import numpy as np
 import itertools
 from base import ExpCommon
 from tools.timer import ExpTimer
+from tools.slider import Slider
 from summary import Summary
 
 
-class Feats(ExpCommon):
+class Feats(ExpCommon, Slider):
     def __init__(self, root, name):
         """
         """
