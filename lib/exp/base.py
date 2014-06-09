@@ -6,7 +6,7 @@ from tools.logger import Explog
 from tools.emailer import Emailer
 
 
-class ExpCommon(PathMaker, Explog):
+class ExpCommon(Explog, PathMaker):
     def __init__(self, root, name):
         """
         `root`: file root
