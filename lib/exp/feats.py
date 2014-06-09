@@ -82,7 +82,7 @@ class Feats(ExpCommon, Slider):
         """
         spm = self.slides_path(size='big')
         su = Summary()
-        sin = su.info(self.root, self.name).iloc[0]
+        sin = su.info(self.root, self.name)
         if resize is True:
             resize = (sin.v_width, sin.v_height)
         for si in range(1, sin.n_slides+1):
