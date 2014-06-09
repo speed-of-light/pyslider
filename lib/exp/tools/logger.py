@@ -60,7 +60,6 @@ class Explog(PathMaker):
     def __get_logger(self):
         cn = TH.underscore(self.__class__.__name__)
         lgn = "{}.{}.{}".format(self.root, self.name, cn)
-        print "debug: from logger: {}".format(lgn)
         logger = logging.getLogger(lgn)
         return logger
 
