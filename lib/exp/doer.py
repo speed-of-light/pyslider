@@ -16,7 +16,7 @@ class Doer(ExpCommon):
         ExpCommon.__init__(self, root, name)
         self.elog.info("Doer: init")
 
-    def __reduced_frames(self):
+    def reduced_frames(self):
         """ Get preprocessed frames """
         pp = Prepare(self.root, self.name)
         df = pp.load('keys')
@@ -25,7 +25,7 @@ class Doer(ExpCommon):
         self.elog.info("Doer: reduced frames")
         return fids
 
-    def __gnd_mpairs(self):
+    def gnd_mpairs(self):
         """
         load ground truth matched pairs
         TODO change univ_df() to pairs()
@@ -35,7 +35,7 @@ class Doer(ExpCommon):
         self.elog.info("Doer: gnd mpairs")
         return df
 
-    def __matching(self, fids, thres):
+    def matching(self, fids, thres):
         mm = Matcher(self.root, self.name)
         res, sfs, vfs = mm.set_match(fids, ransac=False, thres=0.9)
         self.elog.info("Doer: matching")
@@ -49,9 +49,8 @@ class Doer(ExpCommon):
         return praf
 
     def rundown(self):
-        fids = self.__reduced_frames()
-        gnd = self.__gnd_mpairs()
-        res, sfs, vfs = self.__matching(fids, .9)
+        fids = self.reduced_frames()
+        # gnd = self.gnd_mpairs()
+        res, sfs, vfs = self.matching(fids, .9)
+        # praf = self.evaluation(res, gnd)
         return res, sfs, vfs
-        praf = self.__evaluation(mre, gnd)
-        print praf
