@@ -33,7 +33,6 @@ class Explog(PathMaker):
         fn = self.make('log', 'log', True, False)
         self.__add_file_handler(fn, fmt)
         if self.enable_stream:
-            print "add stream handler"
             self.__add_stream_handler(fn, fmt)
 
     def __add_stream_handler(self, fn, fmt):
@@ -60,7 +59,7 @@ class Explog(PathMaker):
 
     def __get_logger(self):
         cn = TH.underscore(self.__class__.__name__)
-        lgn = "{}.{}.{}.{}".format(self.root, self.name, __name__, cn)
+        lgn = "{}.{}.{}".format(self.root, self.name, cn)
         print "debug: from logger: {}".format(lgn)
         logger = logging.getLogger(lgn)
         return logger
