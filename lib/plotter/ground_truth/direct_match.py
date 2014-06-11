@@ -33,7 +33,8 @@ class GtDirectMatch(Plotter):
         dy = [p for p in pairs.sid]
         dx = [p for p in pairs.fid]
         ln = ax.plot(dx, dy, marker='x', label=name)
-        ax.axvline(top, 0, max(dy), ls='-.', label='bound')
+        ax.axvline(xtop, 0, max(dy), color=ln[0].get_color(),
+                   ls='-.', label='bound', lw=2)
         return ln
 
     def relative_pairs(self, ax, pairs, name="Slide ID"):
@@ -41,6 +42,3 @@ class GtDirectMatch(Plotter):
         dx = range(len(dy))
         lns = ax.plot(dx, dy, marker='x', label=name)
         ax.set_xlim(0, dx[-1])
-        self.__legend(ax, lns)
-        self.__txy(ax, "GroundTruth of relative Slide-Frame pairs",
-                   "Time order", "Slide")
