@@ -1,1 +1,1 @@
-__all__ = ['base', 'matching.Matcher', 'feats', 'summary']
+__all__ = ['base', 'evaluator', 'matching.Matcher', 'feats', 'summary']
