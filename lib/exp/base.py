@@ -6,7 +6,7 @@ from tools.logger import Explog
 from tools.emailer import Emailer
 
 
-class ExpCommon(PathMaker, Explog):
+class ExpCommon(Explog, PathMaker):
     def __init__(self, root, name):
         """
         `root`: file root
@@ -82,7 +82,7 @@ class ExpCommon(PathMaker, Explog):
         if self.upass is None:
             return
         ps = self.upass
-        cn = self._underscore(self.__class__.__name__)
+        cn = self.underscore(self.__class__.__name__)
         title = "Pyslider Job: {} <{}-{}> Finished". \
             format(cn, self.root, self.name)
         me = "speed.of.lightt@gmail.com"

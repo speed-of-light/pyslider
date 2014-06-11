@@ -1,5 +1,5 @@
 import os
-from tools import ToolHelper as TH
+from . import ToolHelper as TH
 
 
 class PathMaker(object):
@@ -23,8 +23,8 @@ class PathMaker(object):
         if root:
             return rp
         if asure:
-            self._asure_path(rp)
-        cn = TH._underscore(self.__class__.__name__)
+            self.__asure_path(rp)
+        cn = TH.underscore(self.__class__.__name__)
         rp = "{}/{}".format(rp, cn)
         if ext is not None:
             rp = "{}.{}".format(rp, ext)
