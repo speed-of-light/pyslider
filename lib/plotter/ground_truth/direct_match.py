@@ -24,7 +24,7 @@ class GtDirectMatch(Plotter):
         """
         self.__txy(ax, title, "Frame", "Slide")
 
-    def absolute_pairs(self, ax, pairs, xtop, name="Slide ID"):
+    def absolute_pairs(self, ax, pairs, top, name="Slide ID"):
         """
         Plot ground truth data with line-wise pairs
         top: the frame limit from a video
@@ -33,8 +33,7 @@ class GtDirectMatch(Plotter):
         dy = [p for p in pairs.sid]
         dx = [p for p in pairs.fid]
         ln = ax.plot(dx, dy, marker='x', label=name)
-        ax.axvline(xtop, 0, max(dy), color=ln[0].get_color(),
-                   ls='-.', label='bound', lw=2)
+        ax.axvline(top, 0, max(dy), ls='-.', label='bound')
         return ln
 
     def relative_pairs(self, ax, pairs, name="Slide ID"):
