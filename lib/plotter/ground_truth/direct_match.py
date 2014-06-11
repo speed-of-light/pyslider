@@ -39,6 +39,8 @@ class GtDirectMatch(Plotter):
 
     def relative_pairs(self, ax, pairs, name="Slide ID"):
         dy = [p for p in pairs.sid]
-        dx = range(len(dy))
-        lns = ax.plot(dx, dy, marker='x', label=name)
-        ax.set_xlim(0, dx[-1])
+        dx = range(1, len(dy)+1)
+        oxlim = max(ax.get_xlim()[1], max(dx))
+        ln = ax.plot(dx, dy, marker='x', label=name)
+        ax.set_xlim(0, oxlim+1)
+        return ln

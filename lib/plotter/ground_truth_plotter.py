@@ -13,8 +13,19 @@ class GroundTruthPlotter(GtSegments, GtDirectMatch):
         """
         GtSegments.__init__(self, cmap=mcm.Paired)
 
-    def group_pair(self, fig, kwargs):
+    def __make_handle(self, ax, data, key, target):
+        df = data[target]
+        dio = data["info"]
+        if target == "absp":
+            top = dio.n_frames
+            ln = self.absolute_pairs(ax, df, top, key)
+        elif target == "relp":
+            ln = self.relative_pairs(ax, df, key)
+        return ln[0]
+
+    def group_pair(self, fig, kwargs, target):
         """
+        `target`: data in kwargs ready to be plot
         kwargs:
             `gnd_raw`: raw ground truth data
             `info`: summary of each keys
@@ -22,10 +33,7 @@ class GroundTruthPlotter(GtSegments, GtDirectMatch):
         ax = fig.add_subplot(111)
         lns = []
         for key in kwargs.keys():
-            df = kwargs[key]['gnd_raw']
-            top = kwargs[key]['info'].n_frames
-            ln = self.absolute_pairs(ax, df[df.sid > 0], top, key)
-            lns.append(ln[0])
+            lns.append(self.__make_handle(ax, kwargs[key], key, target))
         self.set_legends(ax, lns)
         self.set_titles(ax, "GroundTruth of Slide-Frame Pairs")
         return fig
