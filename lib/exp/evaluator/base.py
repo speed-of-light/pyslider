@@ -1,3 +1,6 @@
+from ground_truth import GroundTruth
+
+
 class Evaluator(object):
     def __init__(self):
         pass
@@ -27,3 +30,32 @@ class Evaluator(object):
         for a_ in aa:
             ast += "{}\n".format(a_)
         return ast
+
+    def __keg_pack(self, gnd, tar):
+        raw = gnd.univ_df()
+        keg = dict()
+        keg["info"] = gnd.info()
+        if "absp" in tar:
+            keg["absp"] = raw[raw.sid > 0]
+        if "relp" in tar:
+            keg["relp"] = gnd.shrink(raw[raw.sid > 0])
+        if "seg" in tar:
+            keg["seg"] = gnd.segments(raw, 'duration')
+        return keg
+
+    def pack_gnd(self, roots, names, targets):
+        """
+        `roots`: dataset roots
+        `names`: dataset names, paired with roots
+        `targets`: list with data format currently support:
+            `absp`: for `absolute pairs`
+            `relp`: for `relative pairs`
+            `seg`: for `segments` (**buggy**)
+        Return packed dict data by named keys
+        """
+        keg = {}
+        for root, name in zip(roots, names):
+            gt = GroundTruth(root, name)
+            ns = root + "_" + name
+            keg[ns] = self.__keg_pack(gt, targets)
+        return keg
