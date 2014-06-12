@@ -5,6 +5,13 @@ class GtDirectMatch(Plotter):
     def __init__(self, **kwargs):
         Plotter.__init__(self, **kwargs)
 
+    def set_markers(self, ax, handles):
+        mks = Plotter.markers(self)
+        ml = len(mks)
+        for hi, h in enumerate(handles):
+            mk = mks[hi % ml]
+            h.set_marker(mk)
+
     def set_legends(self, ax, handles):
         """
         Use to add legends for axes plotted with multiple data set

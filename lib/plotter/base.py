@@ -1,4 +1,4 @@
-import mapplotlib as mpl
+import matplotlib as mpl
 import matplotlib.cm as mcm
 from pylab import imread
 from matplotlib.offsetbox import OffsetImage as ofb
@@ -13,6 +13,10 @@ class Plotter(object):
         self.cmap = cmap
         self.seg_height = 10
         self.img_base = None
+        #self.markers = [',', '+', '-', '.', 'o', '*', 'x']
+
+    def markers(self):
+        return ['o', '+', 'x', '*', '1', '2', '4', '8', 'D', 'd', 'h']
 
     def chunks(self, li, n):
         """ Yield successive n-sized chunks from li.  """

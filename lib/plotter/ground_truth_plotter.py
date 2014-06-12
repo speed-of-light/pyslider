@@ -34,6 +34,7 @@ class GroundTruthPlotter(GtSegments, GtDirectMatch):
         lns = []
         for key in kwargs.keys():
             lns.append(self.__make_handle(ax, kwargs[key], key, target))
-        self.set_legends(ax, lns)
-        self.set_titles(ax, "GroundTruth of Slide-Frame Pairs")
+        GtDirectMatch.set_markers(self, ax, lns)
+        GtDirectMatch.set_legends(self, ax, lns)
+        GtDirectMatch.set_titles(self, ax, "GroundTruth of Slide-Frame Pairs")
         return fig
