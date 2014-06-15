@@ -1,9 +1,9 @@
 import numpy as np
 import cv2
-from ... import Dataset
-from ...exp.tools.video import Video
-from ...exp.tools.slider import Slider
-from ...plotter.base import Plotter
+from lib import Dataset
+from lib.exp.tools.video import Video
+from lib.exp.tools.slider import Slider
+from lib.plotter.base import Plotter
 
 
 class SingleMatchingPlotter(Plotter, Dataset):
@@ -44,13 +44,17 @@ class SingleMatchingPlotter(Plotter, Dataset):
         """
         self.df = data
 
-    def __frame_image(self, gray=False):
+    def __frame_image(self, gray=False, show_pos=False):
         """
+        show_pos: will stdout next frame position of aquired frame id
+            ,for helping debug.
         Returned a dict with keys: 'img', 'fid'
         """
         vv = Video(self.root, self.name)
         fi = vv.get_frames([self.fid], gray=gray).next()
-        return fi['img']
+        if show_pos:
+            print fi["idx"]
+        return fi["img"]
 
     def __slide_image(self, gray=False):
         """
@@ -131,9 +135,9 @@ class SingleMatchingPlotter(Plotter, Dataset):
         self.__cross_on_point(view, hash_[2], bound)
         return view
 
-    def get_view(self):
+    def get_view(self, show_pos=False):
         simg = self.__slide_image()
-        fimg = self.__frame_image()
+        fimg = self.__frame_image(show_pos=show_pos)
         view = self.__stiched_view(simg, fimg)
         return view
 
