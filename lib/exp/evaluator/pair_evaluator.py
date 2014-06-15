@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn import mixture
-from base import Evaluator
+from . import Evaluator
 
 
 class PairEvaluator(Evaluator):
