@@ -3,19 +3,17 @@ import shutil
 import pandas as pd
 from tools.path_maker import PathMaker
 from tools.logger import Explog
-from tools.emailer import Emailer
 
 
 class ExpCommon(Explog, PathMaker):
     def __init__(self, root, name):
         """
+        Common methods for experiments
         `root`: file root
         `name`: project name
         """
         PathMaker.__init__(self, root, name)
-        Explog.__init__(self, root, name)
-        self.root = root
-        self.name = name
+        Explog.__init__(self)
         self.comp = 6
 
     def __save_key(self, fpath, key):
@@ -25,17 +23,6 @@ class ExpCommon(Explog, PathMaker):
             kf = kf.reset_index(drop=True)
             kf.to_hdf(fpath, 'keys', mode='a', data_columns=True,
                       format='t', complib='blosc', complevel=self.comp)
-
-    def _ustr_dict(self, di):
-        """
-        Make dict keys underscore for saving to hdfs
-        """
-        s = ""
-        ks = di.keys()
-        ks.sort()
-        for k in ks:
-            s += "/{}_{}".format(k, di[k])
-        return s
 
     def store(self):
         sp = self.make()
@@ -81,14 +68,3 @@ class ExpCommon(Explog, PathMaker):
                 return self.__make_keyfile(key)
             return None
         return df
-
-    def notify(self, summary):
-        if self.upass is None:
-            return
-        ps = self.upass
-        cn = self.underscore(self.__class__.__name__)
-        title = "Pyslider Job: {} <{}-{}> Finished". \
-            format(cn, self.root, self.name)
-        me = "speed.of.lightt@gmail.com"
-        with Emailer(config=dict(uname=me, upass=ps)) as mailer:
-            mailer.send(title, summary, ['speed.of.lightt@gmail.com'])
