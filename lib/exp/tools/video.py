@@ -89,7 +89,7 @@ class Video(object):
         cap = self.cap['cap']
         cap.set(key[by], value)
         grabed, img = cap.read()
-        return img[:, :, [2, 1, 0]]  # convert for matplotlib
+        return img[:, :, [2, 1, 0]]  # convert for matplotlib, bgr
 
     def diff_pre(self, start=0, end=-1, fence="mild"):
         """

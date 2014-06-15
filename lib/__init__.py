@@ -7,7 +7,7 @@ __doc__ = """
 """
 __all__ = ["exp"]
 
-from tools.emailer import Emailer
+from exp.tools.emailer import Emailer
 
 
 class Dataset(object):
