@@ -1,3 +1,5 @@
+import os
+import numpy as np
 from PyPDF2 import PdfFileReader
 import shutil
 # from wand.image import Image, Color
