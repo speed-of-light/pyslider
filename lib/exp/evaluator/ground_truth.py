@@ -1,6 +1,7 @@
 import pandas as pd
 from ..base import ExpCommon
 from ..summary import Summary
+from base import DfExt
 
 
 class GroundTruth(ExpCommon, Summary):
@@ -125,11 +126,11 @@ class GroundTruth(ExpCommon, Summary):
                 f_sid = dd.sid
         return ret
 
-    def add_mark(self, fid=None, sid=None, ftype=None):
+    def add_mark(self, df, fid=None, sid=None, ftype=None):
         """
-        Add mark to `abs_pairs` table
+        Add mark to dataframe table, **not saved**.
+        df: should come from `abs_pairs`
         """
-        df = self.load("abs_pairs", True)
         db = DfExt(df)
         result = db.insert(fid, sid, ftype)
         return result
