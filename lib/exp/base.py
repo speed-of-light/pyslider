@@ -20,13 +20,14 @@ class ExpCommon(Explog, PathMaker):
 
     def __save_key(self, fpath, key):
         kf = self.load('keys')
-        kf = kf.append(pd.DataFrame([key], columns=['key']))
-        kf = kf.reset_index()
-        for rc in ['index', 'level']:
-            if rc in kf.columns:
-                del kf[rc]
-        kf.to_hdf(fpath, 'keys', mode='a', data_columns=True,
-                  format='t', complib='blosc', complevel=self.comp)
+        if key not in kf.key.values:
+            kf = kf.append(pd.DataFrame([key], columns=['key']))
+            kf = kf.reset_index()
+            for rc in ['index', 'level']:  # reset_index by products
+                if rc in kf.columns:
+                    del kf[rc]
+            kf.to_hdf(fpath, 'keys', mode='a', data_columns=True,
+                      format='t', complib='blosc', complevel=self.comp)
 
     def _ustr_dict(self, di):
         """
@@ -56,7 +57,7 @@ class ExpCommon(Explog, PathMaker):
 
     def save(self, key, data):
         """
-        Save key to hstore
+        Save key to hstore, and create a key to `keys`
         """
         sp = self.make('stores', 'h5', asure=True, root=False)
         data.to_hdf(sp, key, mode='a', data_columns=True, format='t',
