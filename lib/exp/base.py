@@ -20,14 +20,11 @@ class ExpCommon(Explog, PathMaker):
 
     def __save_key(self, fpath, key):
         kf = self.load('keys')
-        if kf is None:
-            kf = pd.DataFrame([key], columns=['key'])
-        else:
-            kf = kf.append(pd.DataFrame([key], columns=['key']))
-            kf = kf.reset_index()
-            for rc in ['index', 'level']:
-                if rc in kf.columns:
-                    del kf[rc]
+        kf = kf.append(pd.DataFrame([key], columns=['key']))
+        kf = kf.reset_index()
+        for rc in ['index', 'level']:
+            if rc in kf.columns:
+                del kf[rc]
         kf.to_hdf(fpath, 'keys', mode='a', data_columns=True,
                   format='t', complib='blosc', complevel=self.comp)
 
@@ -67,6 +64,13 @@ class ExpCommon(Explog, PathMaker):
         self.elog.info('Key [{}] saved to path: {}'.format(key, sp))
         self.__save_key(sp, key)
 
+    def __make_keyfile(self, key):
+        kf = pd.DataFrame([key], columns=['key'])
+        sp = self.make('stores', 'h5', asure=True, root=False)
+        kf.to_hdf(sp, key, mode='a', data_columns=True, format='t',
+                  complib='blosc', complevel=self.comp)
+        return kf
+
     def load(self, key):
         sp = self.make(asure=False)
         try:
@@ -74,7 +78,9 @@ class ExpCommon(Explog, PathMaker):
         except KeyError, e:
             print e
             self.elog.error('load key [{}] from path: {}'.format(key, sp))
-            self.elog.error('  >> Error: {}'.format(e))
+            if "No object named" in str(e):
+                print "auto create one"
+                return self.__make_keyfile(key)
             return None
         return df
 
