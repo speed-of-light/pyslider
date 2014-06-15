@@ -46,7 +46,7 @@ class Slider(object):
         """
         sp = self.slides_path(size='big')
         su = Summary()
-        sin = su.info(self.root, self.name).iloc[0]
+        sin = su.info(self.root, self.name)
         if ids is None:
             ids = range(1, sin.n_slides+1)
         if resize is True:

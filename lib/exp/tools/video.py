@@ -12,14 +12,6 @@ class Video(object):
     Purpose: Operations on video frames
     """
     @property
-    def stream_path(self):
-        return self.stream_path
-
-    @stream_path.setter
-    def stream_path(self, value):
-        self.stream_path = value
-
-    @property
     def cap(self):
         if self.stream_path == "":
             return ""
