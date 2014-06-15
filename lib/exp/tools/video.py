@@ -6,7 +6,7 @@ import cv2
 import cv
 
 
-class Video:
+class Video(object):
     """
     Author: speed-of-light
     Purpose: Operations on video frames

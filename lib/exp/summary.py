@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import glob
-from ..data import PdfReader, Video
+from tools.video import Video
+from tools.pdf_reader import PdfReader
 
 
 class Summary(object):
@@ -34,10 +35,10 @@ class Summary(object):
             yield pn
 
     def ps_list(self):
-      data = self.summary
-      for pn in data[['n_rootl', 'n_name']].values:
-        ps = PdfReader(pn[0], pn[1])
-        yield ps
+        data = self.summary
+        for pn in data[['n_rootl', 'n_name']].values:
+            ps = PdfReader(pn[0], pn[1])
+            yield ps
 
     def base_info(self):
         """ collect base information into summary

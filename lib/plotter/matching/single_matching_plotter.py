@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from ...data import Video
+from ...exp.tools.video import Video
 from ...exp.base import Slider
 from ...plotter.base import Plotter
 

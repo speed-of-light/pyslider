@@ -3,8 +3,8 @@ import math
 import cv2
 import pandas as pd
 import numpy as np
-from ..data import Video
 from base import ExpCommon
+from tools.video import Video
 from tools.slider import Slider
 from tools.timer import ExpTimer
 from feats import Feats
@@ -28,9 +28,9 @@ class Matcher(ExpCommon):
         self.algorithm[target] = method
 
     def _match_info(self, sid, fid, kalg, dalg, mtype, thres):
-      rs = "sid:{}, fid:{}, mod:{}-{}, mtype:{},thres:{}" \
-           .format(sid, fid, kalg, dalg, mtype, thres)
-      return rs
+        rs = "sid:{}, fid:{}, mod:{}-{}, mtype:{},thres:{}" \
+            .format(sid, fid, kalg, dalg, mtype, thres)
+        return rs
 
     def _no_desc(self, _list):
         return _list is None or len(_list) is 0
@@ -91,18 +91,18 @@ class Matcher(ExpCommon):
         return vk
 
     def _dist_stat(self, fres):
-      ary = []
-      for fk in fres:
-        mr = fk['mr']
-        m3 = mr[mr.dt.gt(mr.dt.quantile(.9))].dt.mean()
-        mm = mr[mr.dt.lt(mr.dt.quantile(.8)) &
-                mr.dt.gt(mr.dt.quantile(.2))].dt.mean()
-        m1 = mr[mr.dt.lt(mr.dt.quantile(.1))].dt.mean()
-        M = mr.dt.max()
-        m = mr.dt.min()
-        ary.append([fk['fid'], fk['sid'], m3, mm, m1, m1/m3, M, m, m/M])
-        cols = ['fid', 'sid', 'm3', 'mm', 'm1', 'm31', 'M', 'm', 'mM']
-      return pd.DataFrame(ary, columns=cols)
+        ary = []
+        for fk in fres:
+            mr = fk['mr']
+            m3 = mr[mr.dt.gt(mr.dt.quantile(.9))].dt.mean()
+            mm = mr[mr.dt.lt(mr.dt.quantile(.8)) &
+                    mr.dt.gt(mr.dt.quantile(.2))].dt.mean()
+            m1 = mr[mr.dt.lt(mr.dt.quantile(.1))].dt.mean()
+            M = mr.dt.max()
+            m = mr.dt.min()
+            ary.append([fk['fid'], fk['sid'], m3, mm, m1, m1/m3, M, m, m/M])
+            cols = ['fid', 'sid', 'm3', 'mm', 'm1', 'm31', 'M', 'm', 'mM']
+        return pd.DataFrame(ary, columns=cols)
 
     def single_match(self, fid, sid, thres=0.9):
         """
@@ -201,8 +201,8 @@ class Matcher(ExpCommon):
 
     class Plotter():
         def __init__(self, root, name):
-          self.root = root
-          self.name = name
+            self.root = root
+            self.name = name
 
         def stich_imgs(self, left, right):
             h1, w1 = left.shape[:2]
@@ -213,78 +213,80 @@ class Matcher(ExpCommon):
             return view
 
         def _ano_img_box(self, ax, vimg, simg, hitc, sid):
-          hv = 0 if math.isnan(hitc.hit) else hitc.hit
-          hv = hv if math.isnan(hitc.nonhit) else hitc.nonhit
-          sip = 0.1 if sid % 2 is 0 else 0.9
-          stimg = self.stich_imgs(simg, vimg[:, :, [2, 1, 0]])
-          oft = ofb.OffsetImage(stimg, zoom=0.1)
-          ab = ofb. \
-              AnnotationBbox(oft, (hitc.name, hv), xycoords='data',
-                             xybox=(hitc.name, sip),
-                             boxcoords=("data", "axes fraction"),
-                             bboxprops=dict(boxstyle='round,pad=0.1', ec='g'),
-                             arrowprops=dict(arrowstyle="->", color='g'))
-          ax.add_artist(ab)
-
-        def _ano_fid_note(self, ax, hitf):
-          hM = hitf['hit'].max()
-          for fid in hitf.index:
-            hv = hitf.ix[fid].hit  # and hitf.ix[fid].nonhit
-            hva = hM*(fid % 5)*0.05
-            hva = hva if fid % 2 is 0 else -hva
-            oft = ofb.TextArea("{}[{}]".format(fid, hitf.ix[fid].sid))
-            ab = ofb.AnnotationBbox(oft, (fid, hv), xycoords='data',
-                                    xybox=(fid, hv+hva), boxcoords=("data"),
-                                    bboxprops=dict(boxstyle='round,pad=0.1',
-                                                   ec='g'),
-                                    arrowprops=dict(arrowstyle="->",
-                                                    color='darkblue'))
+            hv = 0 if math.isnan(hitc.hit) else hitc.hit
+            hv = hv if math.isnan(hitc.nonhit) else hitc.nonhit
+            sip = 0.1 if sid % 2 is 0 else 0.9
+            stimg = self.stich_imgs(simg, vimg[:, :, [2, 1, 0]])
+            oft = ofb.OffsetImage(stimg, zoom=0.1)
+            ab = ofb. \
+                AnnotationBbox(oft, (hitc.name, hv), xycoords='data',
+                               xybox=(hitc.name, sip),
+                               boxcoords=("data", "axes fraction"),
+                               bboxprops=dict(boxstyle='round,pad=0.1',
+                                              ec='g'),
+                               arrowprops=dict(arrowstyle="->", color='g'))
             ax.add_artist(ab)
 
+        def _ano_fid_note(self, ax, hitf):
+            hM = hitf['hit'].max()
+            for fid in hitf.index:
+                hv = hitf.ix[fid].hit  # and hitf.ix[fid].nonhit
+                hva = hM*(fid % 5)*0.05
+                hva = hva if fid % 2 is 0 else -hva
+                oft = ofb.TextArea("{}[{}]".format(fid, hitf.ix[fid].sid))
+                bbprop = dict(boxstyle='round,pad=0.1', ec='g')
+                ab = ofb.AnnotationBbox(oft, (fid, hv), xycoords='data',
+                                        xybox=(fid, hv+hva),
+                                        boxcoords=("data"),
+                                        bboxprops=bbprop,
+                                        arrowprops=dict(arrowstyle="->",
+                                                        color='darkblue'))
+                ax.add_artist(ab)
+
         def _add_range_span(self, ax, mean, std, xpos, color='g'):
-          ax.axhline(mean)
-          ax.axhspan(mean-std, mean+std, facecolor=color, alpha=0.5)
-          font = dict(family='serif', color='blue', weight='normal', size=16)
-          ax.text(xpos, mean+3, "{:.3f}".format(mean), fontdict=font)
+            ax.axhline(mean)
+            ax.axhspan(mean-std, mean+std, facecolor=color, alpha=0.5)
+            font = dict(family='serif', color='blue', weight='normal', size=16)
+            ax.text(xpos, mean+3, "{:.3f}".format(mean), fontdict=font)
 
         def plot_matches(self, data, **kwargs):
-          """
-          data(dataframe) should contain columns:
-          ['fid', 'sid', 'vr', 'hit', 'nonhit', 'hita']
-          vr: voted result ( not necessary)
-          hit: similarity or confidence for true
-          nonhit: similarity or confidence for false(wrong match)
-          hita: combined hit and nonhit result withou nan/none
-          """
-          hints = kwargs['hints']
-          show = kwargs['show']
-          predict = kwargs['predict']
-          # Hit
-          hhs = data[data['hit'].notnull()].hit
-          ax = hhs.plot(style='go', figsize=(18, 9), alpha=0.6)
-          self._add_range_span(ax, hhs.mean(), hhs.std(),
-                               data.index.max()*0.01, color='limegreen')
-          if hints:
-            self._ano_fid_note(ax, data[data['hit'].notnull()])
-          # Not hit
-          hhs = data[data['nonhit'].notnull()].nonhit
-          ax = hhs.plot(style='rx')
-          self._add_range_span(ax, hhs.mean(), hhs.std(),
-                               data.index.max()*0.01, color='pink')
-          # Predicted
-          if predict:
-              hhs = data[(data.pr == 0)].hita
-              ax = hhs.plot(ms=15, color='#7CFC00', ls='',
-                            marker='p', alpha=.3)
-              hhs = data[(data.pr == 1)].hita
-              ax = hhs.plot(ms=15, color='#ff69b4', ls='',
-                            marker='h', alpha=.3)
-              # Others
-          if len(show) > 0:
-              vid = Video(self.root, self.name)
-              slid = Slider(self.root, self.name)
-              for si, fi in enumerate(show):
-                  vimg = vid.get_frames([fi]).next()['img']
-                  simg = slid.get_slide(data.ix[fi].sid, resize=True)
-                  self._ano_img_box(ax, vimg, simg, data.ix[fi], si)
-          return ax
+            """
+            data(dataframe) should contain columns:
+            ['fid', 'sid', 'vr', 'hit', 'nonhit', 'hita']
+            vr: voted result ( not necessary)
+            hit: similarity or confidence for true
+            nonhit: similarity or confidence for false(wrong match)
+            hita: combined hit and nonhit result withou nan/none
+            """
+            hints = kwargs['hints']
+            show = kwargs['show']
+            predict = kwargs['predict']
+            # Hit
+            hhs = data[data['hit'].notnull()].hit
+            ax = hhs.plot(style='go', figsize=(18, 9), alpha=0.6)
+            self._add_range_span(ax, hhs.mean(), hhs.std(),
+                                 data.index.max()*0.01, color='limegreen')
+            if hints:
+                self._ano_fid_note(ax, data[data['hit'].notnull()])
+            # Not hit
+            hhs = data[data['nonhit'].notnull()].nonhit
+            ax = hhs.plot(style='rx')
+            self._add_range_span(ax, hhs.mean(), hhs.std(),
+                                 data.index.max()*0.01, color='pink')
+            # Predicted
+            if predict:
+                hhs = data[(data.pr == 0)].hita
+                ax = hhs.plot(ms=15, color='#7CFC00', ls='',
+                              marker='p', alpha=.3)
+                hhs = data[(data.pr == 1)].hita
+                ax = hhs.plot(ms=15, color='#ff69b4', ls='',
+                              marker='h', alpha=.3)
+                # Others
+            if len(show) > 0:
+                vid = Video(self.root, self.name)
+                slid = Slider(self.root, self.name)
+                for si, fi in enumerate(show):
+                    vimg = vid.get_frames([fi]).next()['img']
+                    simg = slid.get_slide(data.ix[fi].sid, resize=True)
+                    self._ano_img_box(ax, vimg, simg, data.ix[fi], si)
+            return ax

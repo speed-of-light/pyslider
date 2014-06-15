@@ -7,8 +7,8 @@ import time
 # plotting
 from matplotlib import offsetbox as ofb
 # core
-from ..data import Video
 from base import ExpCommon
+from tools.video import Video
 from tools.slider import Slider
 from tools.timer import ExpTimer
 
@@ -218,7 +218,7 @@ class Prepare(ExpCommon):
         ss.close()
         kv = []
         for sk in sks:
-          kv.append(self._args_from(sk))
+            kv.append(self._args_from(sk))
         cols = ['key', 'method', 'arg1', 'arg2', 'arg3', 'arg4']
         kdf = pd.DataFrame(data=kv, columns=cols)
         sp = self.make('stores', 'h5', asure=True, root=False)
@@ -252,18 +252,18 @@ class Prepare(ExpCommon):
         self.notify("Finished, spent time: {}".format(ts.tstr()))
 
     def _args_from(self, key):
-      """
-      Split key string into list of array
-      """
-      va = [key]
-      for ks in key.split('/'):
-          if ks is '':
-              continue
-          if 'diff' in ks:
-              va.append(ks)
-          else:
-              va.append(float(ks.split('_')[1]))
-      return va
+        """
+        Split key string into list of array
+        """
+        va = [key]
+        for ks in key.split('/'):
+            if ks is '':
+                continue
+            if 'diff' in ks:
+                va.append(ks)
+            else:
+                va.append(float(ks.split('_')[1]))
+        return va
 
     def _fr_reduce(self, df):
         """
