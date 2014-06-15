@@ -126,7 +126,7 @@ class GroundTruth(ExpCommon, Summary):
                 f_sid = dd.sid
         return ret
 
-    def add_mark(self, df, fid=None, sid=None, ftype=None):
+    def add_mark(self, df, sid=None, fid=None, ftype=None):
         """
         Add mark to dataframe table, **not saved**.
         df: should come from `abs_pairs`
