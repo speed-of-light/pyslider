@@ -5,6 +5,10 @@ from ..summary import Summary
 
 class GroundTruth(ExpCommon, Summary):
     def __init__(self, root, name):
+        """
+        Mainly designed to containing 3 dataframes:
+            `abs_pairs`, `rel_pairs`, `segments`
+        """
         ExpCommon.__init__(self, root, name)
         Summary.__init__(self)
 
@@ -120,3 +124,12 @@ class GroundTruth(ExpCommon, Summary):
             elif f_sid != dd.sid:
                 f_sid = dd.sid
         return ret
+
+    def add_mark(self, fid=None, sid=None, ftype=None):
+        """
+        Add mark to `abs_pairs` table
+        """
+        df = self.load("abs_pairs", True)
+        db = DfExt(df)
+        result = db.insert(fid, sid, ftype)
+        return result
