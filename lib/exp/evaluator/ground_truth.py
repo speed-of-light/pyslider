@@ -63,8 +63,18 @@ class GroundTruth(ExpCommon, Summary):
             ftp[1] = ftv
             return ftp
 
+    def segments_df(self, df, ftype="duration"):
+        """
+        Return dataframe version of segments
+        """
+        segs = self.segments(df, ftype)
+        cols = ['fstart', ftype, 'sid']
+        df = pd.DataFrame(segs, columns=cols)
+        return df
+
     def segments(self, df, ftype="duration"):
         """
+        df: columns should be like `abs_pairs`.
         ftype: control the return data with "duration"(default) or
             just "end" frame id
         Return ground truth of segments, should return a list of
