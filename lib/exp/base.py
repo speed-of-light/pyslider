@@ -22,10 +22,7 @@ class ExpCommon(Explog, PathMaker):
         kf = self.load('keys')
         if key not in kf.key.values:
             kf = kf.append(pd.DataFrame([key], columns=['key']))
-            kf = kf.reset_index()
-            for rc in ['index', 'level']:  # reset_index by products
-                if rc in kf.columns:
-                    del kf[rc]
+            kf = kf.reset_index(drop=True)
             kf.to_hdf(fpath, 'keys', mode='a', data_columns=True,
                       format='t', complib='blosc', complevel=self.comp)
 
