@@ -31,7 +31,7 @@ class DfExt(object):
         self.df.ix[wi, "ftype"] = ftype
         return self.df
 
-    def insert(self, fid, sid, ftype, ow=False):
+    def insert(self, sid, fid, ftype, ow=False):
         """
         Insert a row to dataframe, if the index was existed, then overwrite it.
         Input should never be `none`

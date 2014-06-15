@@ -132,5 +132,5 @@ class GroundTruth(ExpCommon, Summary):
         df: should come from `abs_pairs`
         """
         db = DfExt(df)
-        result = db.insert(fid, sid, ftype)
+        result = db.insert(sid, fid, ftype)
         return result
