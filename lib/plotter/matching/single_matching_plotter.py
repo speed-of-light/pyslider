@@ -127,7 +127,7 @@ class SingleMatchingPlotter(Plotter):
         self.__cross_on_point(view, hash_[2], bound)
         return view
 
-    def __get_view(self):
+    def get_view(self):
         simg = self.__slide_image()
         fimg = self.__frame_image()
         view = self.__stiched_view(simg, fimg)
