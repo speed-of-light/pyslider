@@ -1,6 +1,6 @@
 import cv2
 from ..summary import Summary
-from ...data import PdfReader
+from pdf_reader import PdfReader
 
 
 class Slider(object):
