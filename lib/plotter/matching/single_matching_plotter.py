@@ -1,18 +1,22 @@
 import numpy as np
 import cv2
+from ... import Dataset
 from ...exp.tools.video import Video
-from ...exp.base import Slider
+from ...exp.tools.slider import Slider
 from ...plotter.base import Plotter
 
 
-class SingleMatchingPlotter(Plotter):
+class SingleMatchingPlotter(Plotter, Dataset):
     def __init__(self, root, name, data, fid=-1, sid=-1):
         """
+        Plot with single matched pairs (frame v.s. slide)
         data: dict contained needed dataframe within columns
         """
-        Plotter.__init__(self, root, name, data)
+        Dataset.__init__(self, root, name)
+        Plotter.__init__(self)
         self.fid = fid
         self.sid = sid
+        self.data = data
         self.__load_colors()
 
     def __load_colors(self):
