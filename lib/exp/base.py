@@ -78,7 +78,7 @@ class ExpCommon(Explog, PathMaker):
         except KeyError, e:
             print e
             self.elog.error('load key [{}] from path: {}'.format(key, sp))
-            if "No object named" in str(e):
+            if "No object named" in str(e) and key is "keys":
                 print "auto create one"
                 return self.__make_keyfile(key)
             return None
