@@ -44,7 +44,7 @@ class ExpCommon(Explog, PathMaker):
         return pd.HDFStore(sp, format='t', data_columns=True,
                            complib='blosc', complevel=self.comp)
 
-    def delete_file(self, tar=[('store', 'h5', False)]):
+    def delete_file(self, tar=[('stores', 'h5', False)]):
         for res, ext, root in tar:
             ph = self.make(res, ext, False, root)
             print ph
