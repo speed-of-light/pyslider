@@ -7,7 +7,7 @@ from ...plotter.base import Plotter
 
 
 class SingleMatchingPlotter(Plotter, Dataset):
-    def __init__(self, root, name, data, fid=-1, sid=-1):
+    def __init__(self, root, name, data, sid=-1, fid=-1):
         """
         Plot with single matched pairs (frame v.s. slide)
         data: dict contained needed dataframe within columns
@@ -29,7 +29,7 @@ class SingleMatchingPlotter(Plotter, Dataset):
             self.rcolors.append(white - np.array(cc))
         self.colors = cs
 
-    def set_matched_pair(self, fid=None, sid=None):
+    def set_matched_pair(self, sid=None, fid=None):
         """
         Interface to update current matched target
         """
