@@ -69,7 +69,7 @@ class Matcher(ExpCommon):
             mra.append([m.queryIdx, m.trainIdx, m.imgIdx, m.distance])
         return mra
 
-    def _image_pair(self, fid, sid, gray=True):
+    def __image_pair(self, fid, sid, gray=True):
         sr = self.root
         sn = self.name
         vv = Video(sr, sn)
@@ -111,7 +111,7 @@ class Matcher(ExpCommon):
         mod = dict(kp_algo=self.algorithm['keypoint'],
                    des_algo=self.algorithm['descriptor'])
         mtype = self.algorithm['matching']
-        fimg, simg = self._image_pair(fid, sid)
+        fimg, simg = self.__image_pair(fid, sid)
         ff = Feats(self.root, self.name)
         sif = ff.feats_set([simg], mod=mod)[0]
         vif = ff.feats_set([fimg], mod=mod)[0]
