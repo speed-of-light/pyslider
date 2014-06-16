@@ -71,7 +71,7 @@ class ExpCommon(Explog, PathMaker):
                 if os.path.isfile(ph):
                     os.remove(ph)
 
-    def save(self, key, data, klass_var=""):
+    def save(self, key, data):
         """
         Save key to hstore, and create a key to `keys`
         """
