@@ -44,8 +44,7 @@ class ExpCommon(Explog, PathMaker):
         """
         Save key to hstore, and create a key to `keys`
         """
-        sp = self.common_path(resource='stores', ext='h5', asure=True,
-                              root=False)
+        sp = self.common_path('stores', ext='h5', asure=True, root=False)
         data.to_hdf(sp, key, mode='a', data_columns=True, format='t',
                     complib='blosc', complevel=self.comp)
         self.elog.info('Key [{}] saved to path: {}'.format(key, sp))

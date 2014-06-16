@@ -8,7 +8,7 @@ class PathMaker(Dataset):
         Dataset.__init__(self, root, name)
 
     def common_path(self, resource='stores', ext='h5',
-                    asure=True, root=False, klass_var=""):
+                    asure=True, root=False):
         """
         resource: resource name in path
         ext: file extension for resource, if None then return only path
@@ -27,14 +27,9 @@ class PathMaker(Dataset):
             self.__asure_path(rp)
         cn = TH.underscore(self.__class__.__name__)
         rp = "{}/{}".format(rp, cn)
-        if klass_var:
-            rp = "{}_{}".format(rp, klass_var)
         if ext is not None:
             rp = "{}.{}".format(rp, ext)
         return rp
-
-    def store_path(self, klass_var=""):
-        pass
 
     def __asure_path(self, path):
         if not os.path.exists(path):
