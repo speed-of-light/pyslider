@@ -40,7 +40,7 @@ class PathMaker(Dataset):
         pth = "data/{}/{}/{}".format(rt, pn, resource)
         return pth
 
-    def __rm_file_path(self, fp):
+    def rm_file_path(self, fp):
         if os.path.isfile(fp):
             print "{} removed".format(fp)
             os.remove(fp)

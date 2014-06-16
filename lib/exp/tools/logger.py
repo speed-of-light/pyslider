@@ -96,5 +96,5 @@ class Explog(PathMaker):
         return None
 
     def delete_log(self):
-        fn = self.common_path(resource='log', ext='log', asure=True)
-        self.__rm_file_path(fp)
+        fp = self.common_path(resource='log', ext='log', asure=True)
+        self.rm_file_path(fp)

@@ -117,5 +117,5 @@ class Featx(ExpCommon):
         """
         Clear dataset used logs and stores
         """
-        ExpCommon.delete_store(self)
-        ExpCommon.delete_log(self)
+        self.delete_store()
+        self.delete_log()

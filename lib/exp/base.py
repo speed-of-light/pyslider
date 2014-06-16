@@ -48,7 +48,7 @@ class ExpCommon(Explog, PathMaker):
 
     def delete_store(self):
         sp = self.__stores_path()
-        self.__rm_file_path(sp)
+        self.rm_file_path(sp)
 
     def load(self, key, force=False):
         """
