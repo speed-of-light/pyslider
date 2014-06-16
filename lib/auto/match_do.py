@@ -1,12 +1,12 @@
 import numpy as np
-from base import ExpCommon
-from prepare import Prepare
-from matching import Matcher
-from evaluator.ground_truth import GroundTruth
-from evaluator.pair_evaluator import PairEvaluator
+from lib.exp.base import ExpCommon
+from lib.exp.prepare import Prepare
+from lib.exp.matching import Matcher
+from lib.exp.evaluator.ground_truth import GroundTruth
+from lib.exp.evaluator.pair_evaluator import PairEvaluator
 
 
-class Doer(ExpCommon):
+class MatchDo(ExpCommon):
     """
     Provide a simple way to rundown
     """

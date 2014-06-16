@@ -1,11 +1,11 @@
 import os
+from ... import Dataset
 from . import ToolHelper as TH
 
 
-class PathMaker(object):
+class PathMaker(Dataset):
     def __init__(self, root, name):
-        self.root = root
-        self.name = name
+        Dataset.__init__(self, root, name)
 
     def make(self, resource='stores', ext='h5', asure=True, root=False):
         """

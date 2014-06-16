@@ -1,4 +1,4 @@
-__all__ = ["ToolHelper", "logger", "path_maker"]
+__all__ = ["slider", "video", "ToolHelper", "logger", "path_maker"]
 
 import re
 import time

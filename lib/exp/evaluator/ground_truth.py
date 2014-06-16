@@ -1,10 +1,15 @@
 import pandas as pd
 from ..base import ExpCommon
 from ..summary import Summary
+from base import DfExt
 
 
 class GroundTruth(ExpCommon, Summary):
     def __init__(self, root, name):
+        """
+        Mainly designed to containing 3 dataframes:
+            `abs_pairs`, `rel_pairs`, `segments`
+        """
         ExpCommon.__init__(self, root, name)
         Summary.__init__(self)
 
@@ -63,8 +68,18 @@ class GroundTruth(ExpCommon, Summary):
             ftp[1] = ftv
             return ftp
 
+    def segments_df(self, df, ftype="duration"):
+        """
+        Return dataframe version of segments
+        """
+        segs = self.segments(df, ftype)
+        cols = ['fstart', ftype, 'sid']
+        df = pd.DataFrame(segs, columns=cols)
+        return df
+
     def segments(self, df, ftype="duration"):
         """
+        df: columns should be like `abs_pairs`.
         ftype: control the return data with "duration"(default) or
             just "end" frame id
         Return ground truth of segments, should return a list of
@@ -110,3 +125,12 @@ class GroundTruth(ExpCommon, Summary):
             elif f_sid != dd.sid:
                 f_sid = dd.sid
         return ret
+
+    def add_mark(self, df, sid=None, fid=None, ftype=None):
+        """
+        Add mark to dataframe table, **not saved**.
+        df: should come from `abs_pairs`
+        """
+        db = DfExt(df)
+        result = db.insert(sid, fid, ftype)
+        return result

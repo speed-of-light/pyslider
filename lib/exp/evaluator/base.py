@@ -1,61 +1,47 @@
-from ground_truth import GroundTruth
+import pandas as pd
 
 
-class Evaluator(object):
-    def __init__(self):
-        pass
-
-    def fbeta(self, precision, recall, beta=1):
+class DfExt(object):
+    def __init__(self, df):
         """
-        F1: for bata = 0.5, also called f1 score
-        F2: for bata = 1
+        Helper class to extend pandas dataframe usage
         """
-        return (1+beta**2)*precision*recall/((beta**2)*precision+recall)
+        self.df = df
 
-    def praf(self, tp, fp, tn, fn):
-        precision = tp*1.0/(tp+fp)
-        recall = tp*1.0/(tp+fn)
-        accuracy = (tp+tn)*1.0/(tp+tn+fp+fn)
-        fmeasure = self.fbeta(precision, recall, .5)
-        # print self.__praf_str(precision, recall, accuracy, fmeasure)
-        return (precision, recall, accuracy, fmeasure)
+    def __check_input(self, fid, sid, ftype):
+        if fid is None or sid is None or ftype is None:
+            print "Failed to add new record"
+            return False
+        else:
+            return True
 
-    def __praf_str(self, p, r, a, f):
-        aa = []
-        aa.append("Precision: {:.3f}".format(p))
-        aa.append("Recall: {:.3f}".format(r))
-        aa.append("Accuracy: {:.3f}".format(a))
-        aa.append("Fmeasure: {:.3f}".format(f))
-        ast = ""
-        for a_ in aa:
-            ast += "{}\n".format(a_)
-        return ast
+    def __insert_data(self, fid, sid, ftype):
+        # find last frame id
+        pa = self.df[self.df.fid < fid]
+        pb = self.df[self.df.fid >= fid]
+        apdf = pd.DataFrame([[fid, sid, ftype, -99]], columns=pa.columns)
+        pa = pa.append(apdf)
+        pa = pa.append(pb)
+        pa = pa.reset_index(drop=True)
+        return pa
 
-    def __keg_pack(self, gnd, tar):
-        raw = gnd.univ_df()
-        keg = dict()
-        keg["info"] = gnd.info()
-        if "absp" in tar:
-            keg["absp"] = raw[raw.sid > 0]
-        if "relp" in tar:
-            keg["relp"] = gnd.shrink(raw[raw.sid > 0])
-        if "seg" in tar:
-            keg["seg"] = gnd.segments(raw, 'duration')
-        return keg
+    def __overwrite_data(self, fid, sid, ftype):
+        wi = self.df[self.df.fid == fid].index[0]
+        self.df.ix[wi, "sid"] = sid
+        self.df.ix[wi, "ftype"] = ftype
+        return self.df
 
-    def pack_gnd(self, roots, names, targets):
+    def insert(self, sid, fid, ftype, ow=False):
         """
-        `roots`: dataset roots
-        `names`: dataset names, paired with roots
-        `targets`: list with data format currently support:
-            `absp`: for `absolute pairs`
-            `relp`: for `relative pairs`
-            `seg`: for `segments` (**buggy**)
-        Return packed dict data by named keys
+        Insert a row to dataframe, if the index was existed, then overwrite it.
+        Input should never be `none`
         """
-        keg = {}
-        for root, name in zip(roots, names):
-            gt = GroundTruth(root, name)
-            ns = root + "_" + name
-            keg[ns] = self.__keg_pack(gt, targets)
-        return keg
+        valid = self.__check_input(fid, sid, ftype)
+        if valid:
+            if len(self.df[self.df.fid == fid]) == 0:
+                return self.__insert_data(fid, sid, ftype)
+            else:  # overwrite original data
+                if ow is False:
+                    print "use ow=True to overwrite existed fid"
+                else:
+                    return self.__overwrite_data(fid, sid, ftype)

@@ -8,7 +8,7 @@ class Explog(PathMaker):
     """
     logger
     """
-    def __init__(self, root, name):
+    def __init__(self):
         """
         usage:
             Explog(self.__class__.__name__)
