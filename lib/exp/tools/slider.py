@@ -31,8 +31,9 @@ class Slider(PdfReader):
     def __is_valid_sid(self, index, count):
         return (index > 0 and index < count+1)
 
-    def __img_path(self, root, idx):
-        return "{}/{:03d}.jpg".format(root, idx)
+    def __img_path(self, idx):
+        sp = self.slides_path(size='big')
+        return "{}/{:03d}.jpg".format(sp, idx)
 
     def __info(self):
         su = Summary()
@@ -62,14 +63,13 @@ class Slider(PdfReader):
         Get slide images collection
         use img[:, :, [2, 1, 0]] to convert for matplotlib
         """
-        sp = self.slides_path(size='big')
         sin = self.__info()
         if ids is None:
             ids = range(1, sin.n_slides+1)
         if resize is True:
             resize = (sin.v_width, sin.v_height)
         for si in ids:
-            sp = self.__img_path(sp, si)
+            sp = self.__img_path(si)
             img = self.__make_img(si, sin.n_slides, sp, gray)
             if resize is not None:
                 img = cv2.resize(img, resize)
