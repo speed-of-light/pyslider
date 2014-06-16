@@ -7,13 +7,12 @@ class PathMaker(Dataset):
     def __init__(self, root, name):
         Dataset.__init__(self, root, name)
 
-    def common_path(self, resource='stores', ext='h5',
-                    asure=True, root=False):
+    def common_path(self, resource="stores", kvar="", ext="h5", asure=True):
         """
-        resource: resource name in path
+        res: resource name in path
+        kvar: klass variables
         ext: file extension for resource, if None then return only path
         asure: make sure the path exist
-        root: get only root path of given resource
         usage:
             # make simple log path, and make sure created
             self.common_path('log', None)
@@ -21,13 +20,13 @@ class PathMaker(Dataset):
             self.common_path('log', 'log', False)
         """
         rp = self.__root(resource)
-        if root:
-            return rp
-        if asure:
-            self.__asure_path(rp)
         cn = TH.underscore(self.__class__.__name__)
         rp = "{}/{}".format(rp, cn)
-        if ext is not None:
+        if kvar:
+            rp = "{}/{}".format(rp, kvar)
+        if asure:
+            self.__asure_path(rp)
+        if ext:
             rp = "{}.{}".format(rp, ext)
         return rp
 
