@@ -226,7 +226,7 @@ class Prepare(ExpCommon):
                    format='t', complib='blosc', complevel=self.comp)
 
     def save_reduced_fr(self):
-        df = self.load('keys')
+        df = self.load("keys")
         i = 0
         with ExpTimer(verbose=0) as ts:
             for key in df['key'].values:

@@ -19,7 +19,7 @@ class MatchDo(ExpCommon):
     def reduced_frames(self):
         """ Get preprocessed frames """
         pp = Prepare(self.root, self.name)
-        df = pp.load('keys')
+        df = pp.load("keys")
         pk = df[df.key.str.contains('reduce')].key.values[5]
         fids = pp.load(pk).frame_id.values.astype(np.int32)
         self.elog.info("Doer: reduced frames")

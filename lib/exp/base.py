@@ -27,11 +27,11 @@ class ExpCommon(Explog, PathMaker):
         return sp
 
     def __save_key(self, fpath, key):
-        kf = self.load('keys')
+        kf = self.load("keys", force=True)
         if key not in kf.key.values:
             kf = kf.append(pd.DataFrame([key], columns=['key']))
             kf = kf.reset_index(drop=True)
-            kf.to_hdf(fpath, 'keys', mode='a', data_columns=True,
+            kf.to_hdf(fpath, "keys", mode='a', data_columns=True,
                       format='t', complib='blosc', complevel=self.comp)
 
     def __make_key(self, fp, key):
@@ -46,15 +46,18 @@ class ExpCommon(Explog, PathMaker):
         else:
             return ""
 
-    def load(self, key):
+    def load(self, key, force=False):
+        """
+        use `force` to create a new store if not exist.
+        """
         sp = self.__stores_path()
         try:
             df = pd.read_hdf(sp, key, format='t')
         except KeyError, e:
             print e
             self.elog.error('load key [{}] from path: {}'.format(key, sp))
-            if "No object named" in str(e) and key is "keys":
-                print "auto create one"
+            if force and "No object named" in str(e):
+                print "Forced to create {}-{}".format(sp, key)
                 return self.__make_key(sp, key)
             return None
         return df
