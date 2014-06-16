@@ -38,6 +38,7 @@ class Feats(ExpCommon):
             kr = [kp.pt[0], kp.pt[1], kp.size, kp.angle,
                   kp.response, kp.octave, kp.class_id]
             data.append(kr)
+        data = None if len(data) is 0 else data
         kdf = pd.DataFrame(data, columns=cols)
         ddf = pd.DataFrame(des)
         # uniform dataframe configs
