@@ -4,10 +4,10 @@ from lib.exp.base import ExpCommon
 from lib.exp.tools.timer import ExpTimer
 
 
-class Featx(ExpCommon):
+class Feats(ExpCommon):
     def __init__(self, root, name):
         """
-        Collecting features from image and frames
+        Factory to collecting features from image and frames
         """
         ExpCommon.__init__(self, root, name)
         # create base dir
