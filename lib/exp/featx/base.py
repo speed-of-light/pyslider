@@ -46,7 +46,7 @@ class Featx(ExpCommon):
         return kdf, ddf
 
     def __save_log(self, data):
-        rtdf = self.load("rtdf")
+        rtdf = self.load("rtlog")
         cols = ["key", "time_ms", "start_kcnt", "end_kcnt"]
         if rtdf is None:
             rtdf = pd.DataFrame([data], columns=cols)
@@ -111,4 +111,11 @@ class Featx(ExpCommon):
             kps, kpe, des, time = self.__featuring(fd, dd, imd)
             self.__save_feats(key, kpe, des)
             self.__feats_log(key, time, len(kps), len(kpe))
-        self.elog.info("----- finished -----".format(key))
+        self.elog.info("----- finished-{} -----".format(prefix))
+
+    def clear(self):
+        """
+        Clear dataset used logs and stores
+        """
+        ExpCommon.delete_store(self)
+        ExpCommon.delete_log(self)
