@@ -1,6 +1,6 @@
 import os
-from ... import Dataset
-from . import ToolHelper as TH
+from lib import Dataset
+from lib.exp.tools import ToolHelper as TH
 
 
 class PathMaker(Dataset):
@@ -39,3 +39,8 @@ class PathMaker(Dataset):
         pn = self.name
         pth = "data/{}/{}/{}".format(rt, pn, resource)
         return pth
+
+    def __rm_file_path(self, fp):
+        if os.path.isfile(fp):
+            print "{} removed".format(fp)
+            os.remove(fp)

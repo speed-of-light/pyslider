@@ -46,6 +46,10 @@ class ExpCommon(Explog, PathMaker):
         else:
             return ""
 
+    def delete_store(self):
+        sp = self.__stores_path()
+        self.__rm_file_path(sp)
+
     def load(self, key, force=False):
         """
         use `force` to create a new store if not exist.

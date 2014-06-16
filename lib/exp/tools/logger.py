@@ -94,3 +94,7 @@ class Explog(PathMaker):
         if shn not in fhns:
             return self.__create_stream_handle(lfp, fmt, shn)
         return None
+
+    def delete_log(self):
+        fn = self.common_path(resource='log', ext='log', asure=True)
+        self.__rm_file_path(fp)
