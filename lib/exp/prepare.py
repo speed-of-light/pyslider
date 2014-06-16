@@ -3,6 +3,7 @@ from multiprocessing import Process, Queue, Lock
 from memory_profiler import memory_usage as mu
 import cv2
 import pandas as pd
+import numpy as np
 import time
 # plotting
 from matplotlib import offsetbox as ofb
@@ -291,3 +292,7 @@ class Prepare(ExpCommon):
                 igmax = v
             last_v = v
         return df
+
+    def frame_ids(self, key="/reduce/diff_next/size_30"):
+        df = self.load(key)
+        return df.frame_id.values.astype(np.int32)
