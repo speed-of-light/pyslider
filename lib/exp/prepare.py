@@ -3,6 +3,7 @@ from multiprocessing import Process, Queue, Lock
 from memory_profiler import memory_usage as mu
 import cv2
 import pandas as pd
+import numpy as np
 import time
 # plotting
 from matplotlib import offsetbox as ofb
@@ -221,12 +222,12 @@ class Prepare(ExpCommon):
             kv.append(self._args_from(sk))
         cols = ['key', 'method', 'arg1', 'arg2', 'arg3', 'arg4']
         kdf = pd.DataFrame(data=kv, columns=cols)
-        sp = self.make('stores', 'h5', asure=True, root=False)
+        sp = self.common_path(resource='stores', ext='h5', asure=True)
         kdf.to_hdf(sp, 'keys', mode='a', data_columns=True,
                    format='t', complib='blosc', complevel=self.comp)
 
     def save_reduced_fr(self):
-        df = self.load('keys')
+        df = self.load("keys")
         i = 0
         with ExpTimer(verbose=0) as ts:
             for key in df['key'].values:
@@ -291,3 +292,7 @@ class Prepare(ExpCommon):
                 igmax = v
             last_v = v
         return df
+
+    def frame_ids(self, key="/reduce/diff_next/size_30"):
+        df = self.load(key)
+        return df.frame_id.values.astype(np.int32)

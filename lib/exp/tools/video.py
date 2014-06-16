@@ -11,6 +11,10 @@ class Video(object):
     Author: speed-of-light
     Purpose: Operations on video frames
     """
+    def __init__(self, root, name):
+        vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
+        self.stream_path = vid
+
     @property
     def cap(self):
         if self.stream_path == "":
@@ -30,10 +34,6 @@ class Video(object):
     @classmethod
     def from_path(self, stream_path=""):
         self.stream_path = stream_path
-
-    def __init__(self, root, name):
-        vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
-        self.stream_path = vid
 
     def scoped_frames(self, start=0, end=-1, size=1, time_span=1000):
         """
@@ -83,7 +83,7 @@ class Video(object):
             if gray:
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             idx = cap.get(cv.CV_CAP_PROP_POS_FRAMES)
-            yield(dict(img=img, idx=idx))
+            yield(dict(img=img, idx=int(idx)))
 
     def get_frame(self, by='id', value=0):
         key = dict(time=cv.CV_CAP_PROP_POS_MSEC, id=cv.CV_CAP_PROP_POS_FRAMES)

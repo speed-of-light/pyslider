@@ -30,7 +30,7 @@ class Explog(PathMaker):
         """
         fmts = self.__format_str()
         fmt = logging.Formatter(**fmts)
-        fn = self.make('log', 'log', True, False)
+        fn = self.common_path(resource='log', ext='log', asure=True)
         self.__add_file_handler(fn, fmt)
         if self.enable_stream:
             self.__add_stream_handler(fn, fmt)
@@ -94,3 +94,7 @@ class Explog(PathMaker):
         if shn not in fhns:
             return self.__create_stream_handle(lfp, fmt, shn)
         return None
+
+    def delete_log(self):
+        fp = self.common_path(resource='log', ext='log', asure=True)
+        self.rm_file_path(fp)
