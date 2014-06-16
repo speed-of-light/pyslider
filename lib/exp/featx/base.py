@@ -62,7 +62,7 @@ class Feats(ExpCommon):
         kecnt: end keypoint size
         """
         data = [key, time, kscnt, kecnt]
-        sinfo = "key: {}, kps: {}, kpe: {}, time: {}".format(*data)
+        sinfo = "key: {}, time: {}, kps: {}, kpe: {}".format(*data)
         self.elog.info(sinfo)
         self.__save_log(data)
 
