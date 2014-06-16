@@ -221,7 +221,8 @@ class Prepare(ExpCommon):
             kv.append(self._args_from(sk))
         cols = ['key', 'method', 'arg1', 'arg2', 'arg3', 'arg4']
         kdf = pd.DataFrame(data=kv, columns=cols)
-        sp = self.make('stores', 'h5', asure=True, root=False)
+        sp = self.common_path(resource='stores', ext='h5',
+                              asure=True, root=False)
         kdf.to_hdf(sp, 'keys', mode='a', data_columns=True,
                    format='t', complib='blosc', complevel=self.comp)
 

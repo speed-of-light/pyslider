@@ -25,13 +25,14 @@ class ExpCommon(Explog, PathMaker):
                       format='t', complib='blosc', complevel=self.comp)
 
     def store(self):
-        sp = self.make()
+        sp = self.common_path()
         return pd.HDFStore(sp, format='t', data_columns=True,
                            complib='blosc', complevel=self.comp)
 
     def delete_file(self, tar=[('stores', 'h5', False)]):
         for res, ext, root in tar:
-            ph = self.make(res, ext, False, root)
+            ph = self.common_path(resource=res, ext=ext, asure=False,
+                                  root=root)
             print ph
             if ext is None or root:  # for whole directory
                 shutil.rmtree(ph)
@@ -43,7 +44,8 @@ class ExpCommon(Explog, PathMaker):
         """
         Save key to hstore, and create a key to `keys`
         """
-        sp = self.make('stores', 'h5', asure=True, root=False)
+        sp = self.common_path(resource='stores', ext='h5', asure=True,
+                              root=False)
         data.to_hdf(sp, key, mode='a', data_columns=True, format='t',
                     complib='blosc', complevel=self.comp)
         self.elog.info('Key [{}] saved to path: {}'.format(key, sp))
@@ -51,13 +53,14 @@ class ExpCommon(Explog, PathMaker):
 
     def __make_keyfile(self, key):
         kf = pd.DataFrame([key], columns=['key'])
-        sp = self.make('stores', 'h5', asure=True, root=False)
+        sp = self.common_path(resource='stores', ext='h5',
+                              asure=True, root=False)
         kf.to_hdf(sp, key, mode='a', data_columns=True, format='t',
                   complib='blosc', complevel=self.comp)
         return kf
 
     def load(self, key):
-        sp = self.make(asure=False)
+        sp = self.common_path(asure=False)
         try:
             df = pd.read_hdf(sp, key, format='t')
         except KeyError, e:
