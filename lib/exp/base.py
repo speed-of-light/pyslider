@@ -65,6 +65,7 @@ class ExpCommon(Explog, PathMaker):
                 return self.__make_key(sp, key)
             return None
         return df
+
     def delete(self, tar=[('stores', 'h5', False)]):
         """
         TODO: Check path validity
@@ -97,3 +98,15 @@ class ExpCommon(Explog, PathMaker):
         print "{} files included".format(len(files))
         for f in files:
             print "  -", f
+
+    def save_rtlog(self, data, cols):
+        """
+        Save and load runtime log
+        """
+        df = self.load("rtlog")
+        if df is None:
+            df = pd.DataFrame([data], columns=cols)
+        else:
+            ldf = pd.DataFrame([data], columns=cols)
+            df = df.append(ldf)
+        self.save("rtlog", df)
