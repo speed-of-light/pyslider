@@ -46,25 +46,16 @@ class Feats(ExpCommon):
         ddf.columns = [("d" + str(cc)) for cc in ddf.columns]
         return kdf, ddf
 
-    def __save_log(self, data):
-        rtdf = self.load("rtlog")
-        cols = ["key", "time_ms", "start_kcnt", "end_kcnt"]
-        if rtdf is None:
-            rtdf = pd.DataFrame([data], columns=cols)
-        else:
-            ldf = pd.DataFrame([data], columns=cols)
-            rtdf = rtdf.append(ldf)
-        self.save("rtlog", rtdf)
-
-    def __feats_log(self, key, time, kscnt, kecnt):
+    def __feats_log(self, **opts):
         """
+        keys are: key, time, kscnt, kecnt
         kscnt: start keypoint size
         kecnt: end keypoint size
         """
-        data = [key, time, kscnt, kecnt]
-        sinfo = "key: {}, time: {}, kps: {}, kpe: {}".format(*data)
+        sinfo = "key: {}, time: {}, kps: {}, kpe: {}".\
+            format(*opts.values())
         self.elog.info(sinfo)
-        self.__save_log(data)
+        self.save_rtlog(opts.keys(), opts.values())
 
     def __save_feats(self, key, kps, des):
         kdf, ddf = self.__dataframe(kps, des)
@@ -111,7 +102,8 @@ class Feats(ExpCommon):
             key = "{}_{:03d}".format(prefix, imd["idx"])
             kps, kpe, des, time = self.__featuring(fd, dd, imd)
             self.__save_feats(key, kpe, des)
-            self.__feats_log(key, time, len(kps), len(kpe))
+            self.__feats_log(key=key, time=time,
+                             kscnt=len(kps), kecnt=len(kpe))
         self.elog.info("----- finished-{} -----".format(prefix))
 
     def clear(self):
