@@ -99,7 +99,7 @@ class ExpCommon(Explog, PathMaker):
         for f in files:
             print "  -", f
 
-    def save_rtlog(self, data, cols):
+    def save_rtlog(self, cols, data):
         """
         Save and load runtime log
         """
