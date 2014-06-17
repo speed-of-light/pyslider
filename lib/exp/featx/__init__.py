@@ -3,7 +3,7 @@ __all__ = []
 from lib.exp.featx.base import Feats
 from lib.exp.tools.slider import Slider
 from lib.exp.tools.video import Video
-from lib.exp.prepare import Prepare
+from lib.exp.pre import Reducer
 
 
 class Featx(Feats):
@@ -16,9 +16,9 @@ class Featx(Feats):
         self.feats(imgl, prefix="s")
 
     def get_frame_feats(self):
-        pp = Prepare(self.root, self.name)
+        rr = Reducer(self.root, self.name)
         vv = Video(self.root, self.name)
-        imgl = vv.get_frames(pp.frame_ids(), gray=True)
+        imgl = vv.get_frames(rr.frame_ids(), gray=True)
         self.feats(imgl, prefix="f")
 
     def get_feats_pair(self, sid, fid):
