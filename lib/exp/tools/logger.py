@@ -55,7 +55,7 @@ class Explog(PathMaker):
     def __format_str(self):
         items = ["%(asctime)s", "%(levelname)s",  # "%(name)s",
                  "%(funcName)s", "%(lineno)d", "%(message)s"]
-        fmt = "{},{},{},{},\n{}".format(*items)
+        fmt = "{},{},{},{},\n    {}".format(*items)
         dft = "%H:%M:%S"  # %m/%d/%Y
         return dict(fmt=fmt, datefmt=dft)
 
