@@ -20,3 +20,13 @@ class Featx(Feats):
         vv = Video(self.root, self.name)
         imgl = vv.get_frames(pp.frame_ids(), gray=True)
         self.feats(imgl, prefix="f")
+
+    def get_feats_pair(self, sid, fid):
+        """
+        Get features by given `slide`, `frame` pairs
+        """
+        sk = self.load("s_{:03d}_kps".format(sid))
+        sd = self.load("s_{:03d}_des".format(sid))
+        fk = self.load("f_{:03d}_kps".format(fid))
+        fd = self.load("f_{:03d}_des".format(fid))
+        return dict(sk=sk, sd=sd, fk=fk, fd=fd)
