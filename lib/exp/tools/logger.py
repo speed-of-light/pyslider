@@ -1,3 +1,4 @@
+import datetime
 import logging
 import logging.handlers
 from . import ToolHelper as TH
@@ -47,14 +48,15 @@ class Explog(PathMaker):
 
     def __done(self):
         cn = TH.underscore(self.__class__.__name__)
-        raw = ">> ===== {} inited ===== <<".format(cn)
+        date = str(datetime.date.today())
+        raw = ">> ===== {} start logging at {} ===== <<".format(cn, date)
         self.elog.info(raw)
 
     def __format_str(self):
-        items = ["%(asctime)s", "%(levelname)s", "%(name)s",
+        items = ["%(asctime)s", "%(levelname)s",  # "%(name)s",
                  "%(funcName)s", "%(lineno)d", "%(message)s"]
-        fmt = "{},{},{},{},{},{}".format(*items)
-        dft = "%m/%d/%Y %H:%M:%S"
+        fmt = "{},{},{},{},\n{}".format(*items)
+        dft = "%H:%M:%S"  # %m/%d/%Y
         return dict(fmt=fmt, datefmt=dft)
 
     def __get_logger(self):
