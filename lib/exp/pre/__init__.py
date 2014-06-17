@@ -10,7 +10,6 @@ Preprocess input data, include
 
 __all__ = []
 
-import pandas as pd
 from lib.exp.base import ExpCommon
 
 
@@ -53,7 +52,7 @@ class Reducer(ExpCommon):
             format(before, after, after*1.0/before)
         print "Reduce data from", info
         self.elog.info("Reduce data from", info)
-        self.__save_rtlog([opts["key"], before, after], opts.keys())
+        self.save_rtlog(opts.keys(), opts.values())
 
     def reduce(self, key):
         can = self.__get_data(key)
