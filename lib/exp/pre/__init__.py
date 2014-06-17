@@ -10,6 +10,7 @@ Preprocess input data, include
 
 __all__ = []
 
+import numpy as np
 from lib.exp.base import ExpCommon
 
 
@@ -65,3 +66,7 @@ class Reducer(ExpCommon):
     def clear(self):
         self.delete_log()
         # self.delete_store()  # be careful
+
+    def frame_ids(self, key="/reduce/diff_next/size_30"):
+        df = self.load(key)
+        return df.frame_id.values.astype(np.int32)
