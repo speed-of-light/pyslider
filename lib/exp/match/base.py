@@ -56,7 +56,7 @@ class Mahelp(object):
         ps = "[{: 2d}-{:5d}]".format(*pairs)
         cs = ": {:4d}sk {:4d}fk {:4d}matches.".format(*lens)
         ifs = "{:5.2f} dist_avg, ssc:{:4.2f} \
-                fsc:{:4.2f}, ms:{:5.2f}".format(*info)
+fsc:{:4.2f}, ms:{:5.2f}".format(*info)
         return "{}{} | {}".format(ps, cs, ifs)
 
     def _remove_high_simi(self, matches, thres=.5):
