@@ -34,10 +34,10 @@ class Mahelp(object):
         return dict(pairs=pairs, lens=lens, info=info)
 
     def _info_str(self, pairs=None, lens=None, info=None, time=None):
-        ps = "[{: 2d}-{: 5d}]".format(*pairs)
-        cs = "{: 4d} sk {: 4d} fk {: 4d} matches.".format(*lens)
-        ifs = "{:7.3f} dist_avg, ssc:{:5.2f} fsc:{:5.2f}, ms:{: 8.3f}".format(*info)
-        return "{}: {} | {}".format(ps, cs, ifs)
+        ps = "[{: 2d}-{:5d}]".format(*pairs)
+        cs = ": {:4d}sk {:4d}fk {:4d}matches.".format(*lens)
+        ifs = "{:7.3f}dist_avg, ssc:{:5.2f} fsc:{:5.2f}, ms:{: 8.3f}".format(*info)
+        return "{}{} | {}".format(ps, cs, ifs)
 
     def _remove_high_simi(self, matches, thres=.5):
         """
