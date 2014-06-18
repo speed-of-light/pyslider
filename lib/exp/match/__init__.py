@@ -13,6 +13,7 @@ from lib.exp.match.base import MatchHelper
 class Matchx(ExpCommon, MatchHelper):
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)
+        MatchHelper.__init__(self)
         self.fx = Featx(self.root, self.name)
         self.set_match_core()
         self.set_featx()
