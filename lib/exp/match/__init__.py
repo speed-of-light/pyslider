@@ -41,8 +41,11 @@ class Matchx(ExpCommon, MatchHelper):
         self.__klass_var()
 
     def __matching(self, feats, matcher, thres):
-        mra = matcher.knnMatch(feats["sd"], feats["fd"], k=2)
-        mra = self.__remove_high_simi(mra, thres)
+        if feats["fd"] is None:
+            mra = []
+        else:
+            mra = matcher.knnMatch(feats["sd"], feats["fd"], k=2)
+            mra = self.__remove_high_simi(mra, thres)
         mdf = self.__to_df(mra)
         return mdf
 
@@ -75,7 +78,7 @@ class Matchx(ExpCommon, MatchHelper):
         for sid in sids:
             for fid in fids:
                 fxp = self.fx.get_feats_pair(sid, fid)
-                df = self.__matching(fxp, ma)
+                df = self.__matching(fxp, ma, thres)
                 self.__match_info(sid, fid, fxp, df)
                 self.__save_match(sid, fid, df)
 
