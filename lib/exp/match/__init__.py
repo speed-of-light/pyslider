@@ -5,12 +5,12 @@ Perform feature matching on features
 __all__ = []
 
 import cv2
-import pandas as pd
 from lib.exp.base import ExpCommon
 from lib.exp.featx import Featx
+from lib.exp.match.base import MatchHelper
 
 
-class Matchx(ExpCommon):
+class Matchx(ExpCommon, MatchHelper):
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)
         self.fx = Featx(self.root, self.name)
@@ -39,53 +39,45 @@ class Matchx(ExpCommon):
         self.elog.info("Use matching core: {}".format(fn))
         self.__klass_var()
 
-    def __remove_high_simi(self, matches, thres=.5):
-        """
-        Remove high similarity pairs
-        """
-        mre = []
-        for m, n in matches:
-            if m.distance < n.distance*thres:
-                mre.append(m)
-        return mre
-
-    def __flatten_matches(self, matches):
-        mra = []
-        for m in matches:
-            mra.append([m.queryIdx, m.trainIdx, m.imgIdx, m.distance])
-        return mra
-
-    def __to_df(self, data):
-        col = ["qix", "tix", "iix", "dt"]
-        if len(data) is 0:
-            df = pd.DataFrame(columns=col)
-        else:
-            fm = self.__flatten_matches(data)
-            df = pd.DataFrame(fm, columns=col)
-        return df
-
-    def match(self, sid, fid, thres=0.8):
-        fxp = self.fx.get_feats_pair(sid, fid)
-        mat = cv2.DescriptorMatcher_create(self.mcore)
-        mra = mat.knnMatch(fxp["sd"], fxp["fd"], k=2)
-        mra = self.__remove_high_simi(mra, thres)
-        mdf = self.__to_df(mra)
-        return dict(sid=sid, fid=fid, match=mdf)
-
     def __matching(self, feats, matcher, thres):
         mra = matcher.knnMatch(feats["sd"], feats["fd"], k=2)
         mra = self.__remove_high_simi(mra, thres)
         mdf = self.__to_df(mra)
         return mdf
 
-    def __match_log(self, sid, fid, df):
-        self.elog.info("{} - {}: {}".format(sid, fid, len(df)))
+    def __save_rtlog(self, pairs, lens, info):
+        cols = ["sid", "fid", "skcnt", "fkcnt", "mrcnt",
+                "mean_dist", "ssc", "fsc"]
+        pairs.extend(lens)
+        pairs.extend(info)
+        self.save_rtlog(cols, pairs)
 
-    def group_match(self, sids, fids, thres=0.8):
-        self.__klass_var()
+    def __match_info(self, sid, fid, fxp, df):
+        dm = df["dist"].mean()
+        skl = len(fxp["sk"])
+        fkl = len(fxp["fk"])
+        pairs = [sid, fid]
+        lens = [skl, fkl, len(df)]
+        info = [dm, len(df)*1.0/skl, len(df)*1.0/fkl]
+        self.elog.info(self.__info_str(pairs, lens, info))
+        self.__save_rtlog(pairs, lens, info)
+
+    def __save_match(self, sid, fid, df):
+        self.save("m_{sid:03d}_{fid:03d}".format(sid, fid), df)
+
+    def __match(self, sids, fids, thres=0.8):
+        """
+        Save matched result by `keys` formated as:
+            `m_{sid:03d}_{fid:03d}`
+        """
         ma = cv2.DescriptorMatcher_create(self.mcore)
         for sid in sids:
             for fid in fids:
                 fxp = self.fx.get_feats_pair(sid, fid)
                 df = self.__matching(fxp, ma)
-                self.__match_log(sid, fid, df)
+                self.__match_info(sid, fid, fxp, df)
+                self.__save_match(sid, fid, df)
+
+    def match(self, thres=0.8):
+        sids, fids = self.seeds()
+        self.__match(sids, fids, thres)
