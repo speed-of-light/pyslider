@@ -33,8 +33,7 @@ class PdfReader(object):
     def pdf_path(self):
         """The root of converted slide images
         """
-        rt = self.root if self.root == "" else "{}/".format(self.root)
-        return "./data/{1}{0}/{0}.pdf".format(self.name, rt)
+        return "./data/{0}/{1}/slides.pdf".format(self.root, self.name)
 
     def png_jpg(self, path):
         png = "{}.png".format(path)
