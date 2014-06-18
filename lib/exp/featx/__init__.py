@@ -3,7 +3,7 @@ __all__ = []
 from lib.exp.featx.base import Feats
 from lib.exp.tools.slider import Slider
 from lib.exp.tools.video import Video
-from lib.exp.prepare import Prepare
+from lib.exp.pre import Reducer
 
 
 class Featx(Feats):
@@ -16,17 +16,33 @@ class Featx(Feats):
         self.feats(imgl, prefix="s")
 
     def get_frame_feats(self):
-        pp = Prepare(self.root, self.name)
+        rr = Reducer(self.root, self.name)
         vv = Video(self.root, self.name)
-        imgl = vv.get_frames(pp.frame_ids(), gray=True)
+        imgl = vv.get_frames(rr.frame_ids(), gray=True)
         self.feats(imgl, prefix="f")
+
+    def load_feats(self, key):
+        fd = self.load(key)
+        if fd is None:
+            return []
+        return fd
 
     def get_feats_pair(self, sid, fid):
         """
         Get features by given `slide`, `frame` pairs
         """
-        sk = self.load("s_{:03d}_kps".format(sid))
-        sd = self.load("s_{:03d}_des".format(sid))
-        fk = self.load("f_{:03d}_kps".format(fid))
-        fd = self.load("f_{:03d}_des".format(fid))
+        sk = self.load_feats("s_{:03d}_kps".format(sid))
+        sd = self.load_feats("s_{:03d}_des".format(sid))
+        fk = self.load_feats("f_{:03d}_kps".format(fid))
+        fd = self.load_feats("f_{:03d}_des".format(fid))
         return dict(sk=sk, sd=sd, fk=fk, fd=fd)
+
+    def load_slides_feats(self, sids):
+        sfs = []
+        for sid in sids:
+            sfs.append(self.load_feats("s_{:03d}_des".format(sid)))
+        self.elog.info("loading {}-{} slides feats ...".format(self.root, self.name))
+        return sfs
+
+    def load_frame_feats(self, fid):
+        return self.load_feats("f_{:03d}_des".format(fid))

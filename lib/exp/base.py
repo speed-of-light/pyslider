@@ -15,6 +15,7 @@ class ExpCommon(Explog, PathMaker):
         PathMaker.__init__(self, root, name)
         Explog.__init__(self)
         self.comp = 6
+        self.silent = False
 
     def store(self):
         sp = self.stores_path()
@@ -58,7 +59,8 @@ class ExpCommon(Explog, PathMaker):
         try:
             df = pd.read_hdf(sp, key, format='t')
         except KeyError, e:
-            print e
+            if not self.silent:
+                print e, self.silent
             self.elog.error('load key [{}] from path: {}'.format(key, sp))
             if force and "No object named" in str(e):
                 print "Forced to create {}-{}".format(sp, key)
@@ -86,7 +88,7 @@ class ExpCommon(Explog, PathMaker):
         sp = self.__stores_path()
         data.to_hdf(sp, key, mode='a', data_columns=True, format='t',
                     complib='blosc', complevel=self.comp)
-        self.elog.info('Key [{}] saved to path: {}'.format(key, sp))
+        # self.elog.info('Key [{}] saved to path: {}'.format(key, sp))
         self.__save_key(sp, key)
 
     def list_stores(self):
