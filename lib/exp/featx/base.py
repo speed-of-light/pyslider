@@ -52,8 +52,8 @@ class Feats(ExpCommon):
         kscnt: start keypoint size
         kecnt: end keypoint size
         """
-        sinfo = "key: {key}, time: {time}, kps: {kps}, kpe: {kpe}".\
-            format(**opts))
+        sinfo = "key: {key}, time: {time}, kps: {kscnt}, kpe: {kecnt}".\
+            format(**opts)
         self.elog.info(sinfo)
         self.save_rtlog(opts.keys(), opts.values())
 
