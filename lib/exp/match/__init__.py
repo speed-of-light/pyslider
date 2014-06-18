@@ -88,8 +88,8 @@ class Matchx(ExpCommon, Mahelp):
             `m_{sid:03d}_{fid:03d}`
         """
         ma = cv2.DescriptorMatcher_create(self.mcore)
-        for sid in sids:
-            for fid in fids:
+        for fid in fids:
+            for sid in sids:
                 fxp = self.fx.get_feats_pair(sid, fid)
                 df = self.__matching(fxp, ma, thres)
                 self.__match_info(sid, fid, fxp, df)
