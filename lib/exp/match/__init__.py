@@ -6,6 +6,7 @@ __all__ = []
 
 import cv2
 from lib.exp.base import ExpCommon
+from lib.exp.tools.timer import ExpTimer
 from lib.exp.featx import Featx
 from lib.exp.match.base import Mahelp
 
@@ -17,6 +18,7 @@ class Matchx(ExpCommon, Mahelp):
         ExpCommon.common_path(self, "stores", asure=True)
         Mahelp.__init__(self)
         self.fx = Featx(self.root, self.name)
+        self.fx.silent = True
         self.set_match_core()
         self.set_featx()
 
@@ -44,40 +46,25 @@ class Matchx(ExpCommon, Mahelp):
 
     def __matching(self, feats, matcher, thres):
         mra = []
-        if len(feats["fd"]) > 0:
-            mra = matcher.knnMatch(feats["sd"].values,
-                                   feats["fd"].values, k=2)
-            mra = self._remove_high_simi(mra, thres)
+        with ExpTimer(verbose=0) as ts:
+            if len(feats["fk"]) > 0:
+                mra = matcher.knnMatch(feats["sk"].values,
+                                       feats["fk"].values, k=2)
+                mra = self._remove_high_simi(mra, thres)
         mdf = self._to_df(mra)
-        return mdf
+        return mdf, ts
 
-    def __save_rtlog(self, pairs, lens, info):
+    def __save_rtlog(self, pairs=None, lens=None, info=None):
         cols = ["sid", "fid", "skcnt", "fkcnt", "mrcnt",
-                "mean_dist", "ssc", "fsc"]
+                "mean_dist", "ssc", "fsc", "time"]
         pairs.extend(lens)
         pairs.extend(info)
         self.save_rtlog(cols, pairs)
 
-    def __dvz(self, sa, sb):
-        if sa == 0:
-            return 0
-        else:
-            return sa*1.0/sb
-
-    def __get_stats(self, skl, fkl, df):
-        dm = df["dist"].mean()
-        skr = self.__dvz(len(df), skl)
-        fkr = self.__dvz(len(df), fkl)
-        return [dm, skr, fkr]
-
-    def __match_info(self, sid, fid, fxp, df):
-        skl = len(fxp["sk"])
-        fkl = len(fxp["fk"])
-        pairs = [sid, fid]
-        lens = [skl, fkl, len(df)]
-        info = self.__get_stats(skl, fkl, df)
-        self.elog.info(self._info_str(pairs, lens, info))
-        self.__save_rtlog(pairs, lens, info)
+    def __match_info(self, sid, fid, fxp, mat, time):
+        data = self._match_info(sid, fid, fxp, mat, time.msecs)
+        self.elog.info(self._info_str(**data))
+        self.__save_rtlog(**data)
 
     def __save_match(self, sid, fid, df):
         self.save("m_{:03d}_{:03d}".format(sid, fid), df)
@@ -88,11 +75,13 @@ class Matchx(ExpCommon, Mahelp):
             `m_{sid:03d}_{fid:03d}`
         """
         ma = cv2.DescriptorMatcher_create(self.mcore)
+        sfs = self.fx.load_slides_feats(sids)
         for fid in fids:
-            for sid in sids:
-                fxp = self.fx.get_feats_pair(sid, fid)
-                df = self.__matching(fxp, ma, thres)
-                self.__match_info(sid, fid, fxp, df)
+            fk = self.fx.load_frame_feats(fid)
+            for sid, sk in zip(sids, sfs):
+                fxp = dict(sk=sk, fk=fk)
+                df, optime = self.__matching(fxp, ma, thres)
+                self.__match_info(sid, fid, fxp, df, optime)
                 self.__save_match(sid, fid, df)
 
     def match(self, thres=0.8):

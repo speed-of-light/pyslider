@@ -36,3 +36,13 @@ class Featx(Feats):
         fk = self.load_feats("f_{:03d}_kps".format(fid))
         fd = self.load_feats("f_{:03d}_des".format(fid))
         return dict(sk=sk, sd=sd, fk=fk, fd=fd)
+
+    def load_slides_feats(self, sids):
+        sfs = []
+        for sid in sids:
+            sfs.append(self.load_feats("s_{:03d}_des".format(sid)))
+        self.elog.info("loading {}-{} slides feats ...".format(self.root, self.name))
+        return sfs
+
+    def load_frame_feats(self, fid):
+        return self.load_feats("f_{:03d}_des".format(fid))
