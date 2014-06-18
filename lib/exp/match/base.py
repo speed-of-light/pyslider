@@ -94,5 +94,5 @@ class Mahelp(object):
 
     def seeds(self, key="/reduce/diff_next/size_30"):
         sids = self.slide_seeds()
-        fids = self.__frame_seeds(key)
+        fids = self.frame_seeds(key)
         return sids, fids

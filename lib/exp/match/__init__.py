@@ -4,14 +4,14 @@ Perform feature matching on features
 
 __all__ = []
 
-import cv2
 from lib.exp.base import ExpCommon
 from lib.exp.tools.timer import ExpTimer
 from lib.exp.featx import Featx
 from lib.exp.match.base import Mahelp
+from lib.exp.match.preloader import Preloader
 
 
-class Matchx(ExpCommon, Mahelp):
+class Matchx(ExpCommon, Mahelp, Preloader):
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)
         # create base dir
@@ -65,7 +65,7 @@ class Matchx(ExpCommon, Mahelp):
         Save matched result by `keys` formated as:
             `m_{sid:03d}_{fid:03d}`
         """
-        ma = cv2.DescriptorMatcher_create(self.mcore)
+        ma = self.get_matcher()
         sfs = self.fx.load_slides_feats(sids)
         for fid in fids:
             fk = self.fx.load_frame_feats(fid)
@@ -104,15 +104,18 @@ class Matchx(ExpCommon, Mahelp):
         sids, fids = self.seeds()
         self.__match(sids, fids, thres)
 
-    def single_match(self, fid, thres=0.9):
+    def single_match(self, fid, thres=0.9, auto_save=True):
         """
         Try to find matches on a single frame
         Check `self.rtlog` and `matches` as result
         """
         self.matches = []
-        ma = cv2.DescriptorMatcher_create(self.mcore)
-        sids = self.slide_seeds()
-        sfs = self.fx.load_slides_feats(sids)
+        self._preload()
         fk = self.fx.load_frame_feats(fid)
-        for sid, sk in zip(sids, sfs):
-            self.__match_core(ma, thres=thres, sid=sid, fid=fid, sk=sk, fk=fk)
+        for sid, sk in enumerate(self.sfx, 1):
+            self.__match_core(self.get_matcher(), thres=thres,
+                              sid=sid, fid=fid, sk=sk, fk=fk)
+        self.elog.info("batch saving")
+        if auto_save:
+            self.batch_save()
+        self.elog.info("finish batch saving")
