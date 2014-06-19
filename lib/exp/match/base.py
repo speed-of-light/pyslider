@@ -25,9 +25,28 @@ class Mahelp(object):
             mra.append([m.queryIdx, m.trainIdx, m.imgIdx, m.distance])
         return mra
 
-    def _match_info(self, sid, fid, fxp, mat, time):
-        skl = len(fxp["sk"])
-        fkl = len(fxp["fk"])
+    def frame_seeds(self, key="/reduce/diff_next/size_30"):
+        rr = Reducer(self.root, self.name)
+        fids = rr.frame_ids(key)
+        return fids
+
+    def _rtlog_cols(self):
+        return ["sid", "fid", "skcnt", "fkcnt", "mrcnt",
+                "mean_dist", "ssc", "fsc", "time"]
+
+    def _mem_rtlog(self, pairs=None, lens=None, info=None):
+        pairs.extend(lens)
+        pairs.extend(info)
+        ldf = pd.DataFrame([pairs], columns=self._rtlog_cols())
+        if hasattr(self, "rtlog"):
+            self.rtlog = self.rtlog.append(ldf)
+        else:
+            self.rtlog = ldf
+
+    def _match_info(self, mat, time,
+                    sid=None, fid=None, sk=None, fk=None):
+        skl = len(sk)
+        fkl = len(fk)
         pairs = [sid, fid]
         lens = [skl, fkl, len(mat)]
         info = self.__get_stats(skl, fkl, mat, time)
@@ -36,7 +55,8 @@ class Mahelp(object):
     def _info_str(self, pairs=None, lens=None, info=None, time=None):
         ps = "[{: 2d}-{:5d}]".format(*pairs)
         cs = ": {:4d}sk {:4d}fk {:4d}matches.".format(*lens)
-        ifs = "{:7.3f}dist_avg, ssc:{:5.2f} fsc:{:5.2f}, ms:{: 8.3f}".format(*info)
+        ifs = "{:5.2f} dist_avg, ssc:{:4.2f} \
+fsc:{:4.2f}, ms:{:5.2f}".format(*info)
         return "{}{} | {}".format(ps, cs, ifs)
 
     def _remove_high_simi(self, matches, thres=.5):
@@ -58,9 +78,21 @@ class Mahelp(object):
             df = pd.DataFrame(fm, columns=col)
         return df
 
-    def seeds(self, key="/reduce/diff_next/size_30"):
+    def _pair_key(self, sid, fid):
+        return "m_{:03d}_{:03d}".format(sid, fid)
+
+    def batch_save(self):
+        self.save("rtlog", self.rtlog)
+        for sm in self.matches:
+            key = self._pair_key(sm["sid"], sm["fid"])
+            self.save(key, sm["df"])
+
+    def slide_seeds(self):
         su = Summary()
         sids = range(1, su.info(self.root, self.name).n_slides+1)
-        rr = Reducer(self.root, self.name)
-        fids = rr.frame_ids(key)
+        return sids
+
+    def seeds(self, key="/reduce/diff_next/size_30"):
+        sids = self.slide_seeds()
+        fids = self.frame_seeds(key)
         return sids, fids
