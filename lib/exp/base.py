@@ -112,3 +112,10 @@ class ExpCommon(Explog, PathMaker):
             ldf = pd.DataFrame([data], columns=cols)
             df = df.append(ldf)
         self.save("rtlog", df)
+
+    def _reload(self, key):
+        self.__dict__[key] = self.load(key)
+
+    def _preload(self, key):
+        if hasattr(self, key):
+            self.__reload(key)

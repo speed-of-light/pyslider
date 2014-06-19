@@ -82,10 +82,12 @@ fsc:{:4.2f}, ms:{:5.2f}".format(*info)
         return "m_{:03d}_{:03d}".format(sid, fid)
 
     def batch_save(self):
+        self.elog.info("batch saving")
         self.save("rtlog", self.rtlog)
         for sm in self.matches:
             key = self._pair_key(sm["sid"], sm["fid"])
             self.save(key, sm["df"])
+        self.elog.info("finish batch saving")
 
     def slide_seeds(self):
         su = Summary()

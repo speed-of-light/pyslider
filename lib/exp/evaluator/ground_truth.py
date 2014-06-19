@@ -134,3 +134,23 @@ class GroundTruth(ExpCommon, Summary):
         db = DfExt(df)
         result = db.insert(sid, fid, ftype)
         return result
+
+    def answer(self, fid):
+        """
+        Get sid by given fid
+        """
+        df = self._preload("segments")
+        dfi = df[df.fstart <= fid].iloc[-1]
+        fs = dfi.fstart
+        fe = dfi.fstart + dfi.duration
+        if fs <= fid <= fe:
+            return dfi.sid
+        else:
+            return -1
+
+    def guess(self, fid, sid):
+        """
+        Return true if a correct match
+        """
+        asid = self.answer(fid)
+        return asid == sid

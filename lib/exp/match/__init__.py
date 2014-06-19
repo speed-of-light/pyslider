@@ -100,22 +100,31 @@ class Matchx(ExpCommon, Mahelp, Preloader):
         self.elog.info("Use matching core: {}".format(fn))
         self.__klass_var()
 
-    def match(self, thres=0.8):
-        sids, fids = self.seeds()
-        self.__match(sids, fids, thres)
-
     def single_match(self, fid, thres=0.9, auto_save=True):
         """
         Try to find matches on a single frame
         Check `self.rtlog` and `matches` as result
         """
         self.matches = []
-        self._preload()
+        Preloader._preload(self)
         fk = self.fx.load_frame_feats(fid)
         for sid, sk in enumerate(self.sfx, 1):
             self.__match_core(self.get_matcher(), thres=thres,
                               sid=sid, fid=fid, sk=sk, fk=fk)
-        self.elog.info("batch saving")
         if auto_save:
             self.batch_save()
-        self.elog.info("finish batch saving")
+
+    def match(self, thres=0.8, save=False):
+        """
+        """
+        fids = self.frame_seeds()
+        for fid in fids:
+            mm.single_match(fid, auto_save=save)
+
+    def old_match(self, thres=0.8):
+        """
+        Deprecated, too slow
+        """
+        sids, fids = self.seeds()
+        self.__match(sids, fids, thres)
+
