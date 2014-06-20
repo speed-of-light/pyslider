@@ -1,5 +1,6 @@
 __all__ = ["core", "single_matching_plotter"]
 
+from lib.exp.evaluator.ground_truth import GroundTruth as GT
 from core import MatchingPlotterBase
 
 
@@ -37,3 +38,23 @@ class MatchingPlotter(MatchingPlotterBase):
 
     def slides_frames_similarity(self, sids, fids, sims):
         pass
+
+    def slice_bar(self, ax, x, y, z, start, size, cmm):
+        end = start+size
+        gt = GT(self.root, self.name)
+        for fi, mv, fid in zip(range(1, size+1), z[start: end], y[start:end]):
+            cr = [cmm(fi*3./size)]*len(mv)
+            asid = int(gt.answer(fid))
+            fac = 1
+            if asid > 0:
+                print asid, fid
+                cr[asid-1] = '#FF5698'
+            else:
+                cr = ['#aa77FF']*len(mv)
+                mv = mv/max(mv)
+                fac = max(mv)
+            ax.bar(x, mv, fid, zdir='y', color=cr, alpha=0.4)
+            mi = min(xrange(len(mv)), key=mv.__getitem__)
+            ax.bar([x[mi]], [mv[mi]*fac/2.0], fid,
+                   zdir='y', color=['#44FF32'], alpha=.8)
+        ax.view_init(elev=60., azim=120)
