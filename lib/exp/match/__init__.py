@@ -7,8 +7,9 @@ __all__ = []
 from lib.exp.base import ExpCommon
 from lib.exp.tools.timer import ExpTimer
 from lib.exp.featx import Featx
-from lib.exp.match.base import Mahelp
-from lib.exp.match.preloader import Preloader
+from base import Mahelp
+from preloader import Preloader
+from match_app import MatchAppBase
 
 
 class Matchx(ExpCommon, Mahelp, Preloader):
@@ -114,12 +115,14 @@ class Matchx(ExpCommon, Mahelp, Preloader):
         if auto_save:
             self.batch_save()
 
-    def match(self, thres=0.8, save=False):
+    def matches(self, thres=0.8, save=False):
         """
+        All frame matches iterator
         """
         fids = self.frame_seeds()
         for fid in fids:
-            mm.single_match(fid, auto_save=save)
+            self.single_match(fid, auto_save=save)
+            yield fid, self.matches
 
     def old_match(self, thres=0.8):
         """
@@ -128,3 +131,16 @@ class Matchx(ExpCommon, Mahelp, Preloader):
         sids, fids = self.seeds()
         self.__match(sids, fids, thres)
 
+
+class MatchApp(MatchAppBase):
+    def __init__(self, root, name):
+        MatchAppBase.__init__(self, root, name)
+
+    def knn_mean_pairs(self):
+        mm = Matchx(self.root, self.name)
+        mm.silent = True
+        ms = []
+        for fid, matches in mm.matches(thres=0.85):
+            ms.append(self._get_matches_means(matches))
+            self.elog.info("Match app appending fid:{}".format(fid))
+        return ms

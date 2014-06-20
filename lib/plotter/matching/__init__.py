@@ -26,3 +26,14 @@ class MatchingPlotter(MatchingPlotterBase):
         for mi, mc in enumerate(self.df[start:end], 1):
             ax = fig.add_subplot(15, 4, mi)
             self.__match_info(ax, **mc)
+
+    def frame_slides_relation(self, ax, matches, answer):
+        """
+        Print frame to slides relation by input function
+        """
+        x = [s["sid"] for s in matches]
+        y = [s["df"].dist.mean() for s in matches]
+        ax.plot(x, y)
+
+    def slides_frames_similarity(self, sids, fids, sims):
+        pass
