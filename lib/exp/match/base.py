@@ -25,11 +25,6 @@ class Mahelp(object):
             mra.append([m.queryIdx, m.trainIdx, m.imgIdx, m.distance])
         return mra
 
-    def frame_seeds(self, key="/reduce/diff_next/size_30"):
-        rr = Reducer(self.root, self.name)
-        fids = rr.frame_ids(key)
-        return fids
-
     def _rtlog_cols(self):
         return ["sid", "fid", "skcnt", "fkcnt", "mrcnt",
                 "mean_dist", "ssc", "fsc", "time"]
@@ -51,13 +46,6 @@ class Mahelp(object):
         lens = [skl, fkl, len(mat)]
         info = self.__get_stats(skl, fkl, mat, time)
         return dict(pairs=pairs, lens=lens, info=info)
-
-    def _info_str(self, pairs=None, lens=None, info=None, time=None):
-        ps = "[{: 2d}-{:5d}]".format(*pairs)
-        cs = ": {:4d}sk {:4d}fk {:4d}matches.".format(*lens)
-        ifs = "{:5.2f} dist_avg, ssc:{:4.2f} \
-fsc:{:4.2f}, ms:{:5.2f}".format(*info)
-        return "{}{} | {}".format(ps, cs, ifs)
 
     def _remove_high_simi(self, matches, thres=.5):
         """
@@ -82,10 +70,17 @@ fsc:{:4.2f}, ms:{:5.2f}".format(*info)
         return "m_{:03d}_{:03d}".format(sid, fid)
 
     def batch_save(self):
+        self.elog.info("batch saving")
         self.save("rtlog", self.rtlog)
         for sm in self.matches:
             key = self._pair_key(sm["sid"], sm["fid"])
             self.save(key, sm["df"])
+        self.elog.info("finish batch saving")
+
+    def frame_seeds(self, key="/reduce/diff_next/size_30"):
+        rr = Reducer(self.root, self.name)
+        fids = rr.frame_ids(key)
+        return fids
 
     def slide_seeds(self):
         su = Summary()
@@ -96,3 +91,11 @@ fsc:{:4.2f}, ms:{:5.2f}".format(*info)
         sids = self.slide_seeds()
         fids = self.frame_seeds(key)
         return sids, fids
+
+    def _info_str(self, pairs=None, lens=None, info=None, time=None):
+        ps = "[{: 2d}-{:5d}]".format(*pairs)
+        cs = ": {:4d}sk {:4d}fk {:4d}matches.".format(*lens)
+        ifs = "{:5.2f} dist_avg, ssc:{:4.2f} \
+fsc:{:4.2f}, ms:{:5.2f}".format(*info)
+        return "{}{} | {}".format(ps, cs, ifs)
+

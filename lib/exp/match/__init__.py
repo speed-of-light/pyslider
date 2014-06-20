@@ -7,8 +7,9 @@ __all__ = []
 from lib.exp.base import ExpCommon
 from lib.exp.tools.timer import ExpTimer
 from lib.exp.featx import Featx
-from lib.exp.match.base import Mahelp
-from lib.exp.match.preloader import Preloader
+from base import Mahelp
+from preloader import Preloader
+from match_app import MatchAppBase
 
 
 class Matchx(ExpCommon, Mahelp, Preloader):
@@ -100,22 +101,46 @@ class Matchx(ExpCommon, Mahelp, Preloader):
         self.elog.info("Use matching core: {}".format(fn))
         self.__klass_var()
 
-    def match(self, thres=0.8):
-        sids, fids = self.seeds()
-        self.__match(sids, fids, thres)
-
     def single_match(self, fid, thres=0.9, auto_save=True):
         """
         Try to find matches on a single frame
         Check `self.rtlog` and `matches` as result
         """
         self.matches = []
-        self._preload()
+        Preloader._preload(self)
         fk = self.fx.load_frame_feats(fid)
         for sid, sk in enumerate(self.sfx, 1):
             self.__match_core(self.get_matcher(), thres=thres,
                               sid=sid, fid=fid, sk=sk, fk=fk)
-        self.elog.info("batch saving")
         if auto_save:
             self.batch_save()
-        self.elog.info("finish batch saving")
+
+    def matches(self, thres=0.8, save=False):
+        """
+        All frame matches iterator
+        """
+        fids = self.frame_seeds()
+        for fid in fids:
+            self.single_match(fid, auto_save=save)
+            yield fid, self.matches
+
+    def old_match(self, thres=0.8):
+        """
+        Deprecated, too slow
+        """
+        sids, fids = self.seeds()
+        self.__match(sids, fids, thres)
+
+
+class MatchApp(MatchAppBase):
+    def __init__(self, root, name):
+        MatchAppBase.__init__(self, root, name)
+
+    def knn_mean_pairs(self):
+        mm = Matchx(self.root, self.name)
+        mm.silent = True
+        ms = []
+        for fid, matches in mm.matches(thres=0.85):
+            ms.append(self._get_matches_means(matches))
+            self.elog.info("Match app appending fid:{}".format(fid))
+        return ms
