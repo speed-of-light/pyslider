@@ -1,14 +1,14 @@
 import cv2
 import numpy as np
-from core import KpFilter
+from base import FilterBase
 
 
-class Slope(KpFilter):
-    """
-    Use matching pair slopes distribution to filter out bad results
-    """
+class Slope(FilterBase):
     def __init__(self, data):
-        KpFilter.__init__(self, data)
+        """
+        Use matching pair slopes distribution to filter out bad results
+        """
+        FilterBase.__init__(self, data)
         self.__update_matches()
 
     def __slope(self, spt, fpt):
@@ -65,7 +65,10 @@ class Slope(KpFilter):
         return (tr, tl, bl, br)
 
     def __unknown_roi(self, row):
-        return ('roi' not in row.keys()) or (row.roi is None) or (row.roi == -1)
+        no_roi = 'roi' not in row.keys()
+        non_roi = row.roi is None
+        neg_roi = row.roi == -1
+        return no_roi or non_roi or neg_roi
 
     def __mark_roi(self, row, ii, roi):
         """
