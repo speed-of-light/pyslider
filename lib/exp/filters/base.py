@@ -1,18 +1,15 @@
-class FilterBase(object):
+class KpFilter(object):
     """
     Interface of filter classes
     """
     def __init__(self, data):
         """
-        data: dict includes keys:
-            `matches`,
-            `slide feats`,
-            `video frame feats`,
+        data: dict includes keys: `matches`, `slide feats`, `video frame feats`,
             `slide size(qsize)`
         """
         self.data = data
 
-    def filtering(self):
+    def filter_(self):
         """
         Return common need data pointers
         """
