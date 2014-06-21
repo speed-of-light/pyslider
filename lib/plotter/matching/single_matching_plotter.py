@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
 from lib import Dataset
+from lib.exp.featx import Featx
+from lib.exp.summary import Summary
 from lib.exp.tools.video import Video
 from lib.exp.tools.slider import Slider
 from lib.plotter.base import Plotter
@@ -14,10 +16,21 @@ class SingleMatchingPlotter(Plotter, Dataset):
         """
         Dataset.__init__(self, root, name)
         Plotter.__init__(self)
+        self.__common_properties(sid, fid, data)
+        self.__set_qsize(root, name)
+        self.__load_kps(root, name)
+
+    def __common_properties(self, sid, fid, data):
         self.fid = fid
         self.sid = sid
-        self.data = data
+        self.df = data
         self.__load_colors()
+
+    def __load_kps(self, root, name):
+        fx = Featx(root, name)
+        sks, fks = fx.load_keypoints_pair(self.sid, self.fid)
+        self.skps = sks
+        self.fkps = fks
 
     def __load_colors(self):
         cs = [(255, 24, 122), (249, 252, 157), (255, 232, 18),
@@ -28,6 +41,11 @@ class SingleMatchingPlotter(Plotter, Dataset):
             white = np.array((255, 255, 255))
             self.rcolors.append(white - np.array(cc))
         self.colors = cs
+
+    def __set_qsize(self, root, name):
+        su = Summary()
+        sin = su.info(root, name)
+        self.qsize = (sin.v_width, sin.v_height)
 
     def set_matched_pair(self, sid=None, fid=None):
         """
@@ -100,19 +118,18 @@ class SingleMatchingPlotter(Plotter, Dataset):
         t_ = [int(lg.ix[mi].tix) for mi in lg.index]
         return zip(f_, t_)
 
-    def __add_lines(self, view, good, mask, dx,
-                    color=(100, 100, 255)):
+    def __add_lines(self, view, good, mask, color=(100, 100, 255)):
         for fi, ti in self.__filtered_goods(good, mask):
-            spt = self.data['sif']['kps'][fi].pt
-            fpt = self.data['vif']['kps'][ti].pt
+            spt = self.skps[fi].pt
+            fpt = self.fkps[ti].pt
             smp = (int(spt[0]), int(spt[1]))
-            fmp = (int(fpt[0] + dx), int(fpt[1]))
+            fmp = (int(fpt[0] + self.qsize[0]), int(fpt[1]))
             cv2.line(view, smp, fmp, color, thickness=2)
         return view
 
     def __add_pos(self, view, good, mask, color=(100, 100, 255)):
         for fi, ti in self.__filtered_goods(good, mask):
-            spt = self.data['sif']['kps'][fi].pt
+            spt = self.skps[fi].pt
             smp = (int(spt[0]), int(spt[1]))
             cv2.putText(view, "{},{}".format(fi, ti), smp,
                         cv2.FONT_HERSHEY_PLAIN, 1, color, 2)
@@ -164,11 +181,9 @@ class SingleMatchingPlotter(Plotter, Dataset):
         return view
 
     def __lines_on_view(self, view, good, key='', roi=0):
-        y = 1
-        qsize = self.data['qsize']
         color = self.__get_color(key, roi)
         mask = self.__get_mask(good, key)
-        view = self.__add_lines(view, good, mask, qsize[y], color)
+        view = self.__add_lines(view, good, mask, color)
         return view
 
     def __roi_items(self, item, view, good):
@@ -208,7 +223,7 @@ class SingleMatchingPlotter(Plotter, Dataset):
         item: should be form as `filtered_lines`, `keep_position`, etc...
         Return image array
         """
-        good = self.data['matches']
+        good = self.df['matches']
         if roi:
             view = self.__roi_items(item, view, good)
         else:
@@ -230,7 +245,7 @@ class SingleMatchingPlotter(Plotter, Dataset):
         Currently supported:
             `lines`, `homography`, `position`, `grid`
         """
-        view = self.__get_view()
+        view = self.get_view()
         for nn in names:
             sn = nn.split("_")
             if sn[1] in ['lines', 'position']:

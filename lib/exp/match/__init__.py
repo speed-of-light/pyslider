@@ -86,7 +86,7 @@ class Matchx(ExpCommon, MatchBase, Preloader):
         if auto_save:
             self.batch_save()
 
-    def matches(self, thres=0.8, save=False):
+    def batch_matches(self, thres=0.8, save=False):
         """
         All frame matches iterator
         """
@@ -115,12 +115,13 @@ class MatchApp(MatchAppBase, MatchBase):
             self.knn_mean_pairs()
         return self.knnms
 
-    def knn_mean_pairs(self):
+    def knn_mean_pairs(self, thres=0.85):
         mm = Matchx(self.root, self.name)
         mm.silent = True
         ms = []
-        for fid, matches in mm.matches(thres=0.85):
+        for fid, matches in mm.matches(thres=thres):
             ms.append(self._get_matches_means(matches))
             self.elog.info("Match app appending fid:{}".format(fid))
         self.knnms = ms
+        self.matchx = mm
         return ms

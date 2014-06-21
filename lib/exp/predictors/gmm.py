@@ -21,6 +21,12 @@ class GmmPredictor(Predictor):
             bb[i] = old.index(t)
         return [bb[ll] for ll in li]
 
+    def __refit_non_slides(self, pr, data, mean):
+        for di, d in enumerate(data):
+            if d > mean:
+                pr[di] = 1  # type of non slide
+        return pr
+
     def __predict_core(self, data, nc=2):
         """
         Predict with `slide`, and `non-slide` 2 types
@@ -29,6 +35,7 @@ class GmmPredictor(Predictor):
         clf.fit(data)
         pr = clf.predict(data)
         pr = self.__reorder(clf.means_.tolist(), pr)
+        pr = self.__refit_non_slides(pr, data, max(clf.means_))
         self.clf = clf
         return pr
 

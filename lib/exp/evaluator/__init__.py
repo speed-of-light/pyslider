@@ -87,11 +87,12 @@ class Evaluator(object):
         cf = self.__make_confusion(oc, sid, fid)
         return cf
 
-    def __wrongs(self, cfs):
+    def __wrongs(self, gnd, cfs):
         wg = []
         for ci, cf in enumerate(cfs):
             if (cf["fn"] == 1) or (cf["fp"] == 1):
-                wg.append(dict(ci=ci, fid=cf["fid"], sid=cf["sid"]))
+                ans = gnd.answer(cf["fid"])
+                wg.append(dict(ci=ci, ans=ans, fid=cf["fid"], sid=cf["sid"]))
         return wg
 
     def eval_sfps(self, gnd, sfps):
@@ -103,6 +104,6 @@ class Evaluator(object):
             cf = self.__guess_to_praf(gnd, *sfp)
             cfs.append(cf)
         praf = self.__cfs_to_praf(cfs)
-        wrongs = self.__wrongs(cfs)
+        wrongs = self.__wrongs(gnd, cfs)
         print self.__praf_str(*praf)
         return praf, wrongs

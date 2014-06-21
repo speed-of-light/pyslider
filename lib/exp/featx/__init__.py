@@ -27,21 +27,29 @@ class Featx(Feats):
             return []
         return fd
 
-    def get_feats_pair(self, sid, fid):
+    def get_feats_pair(self, sid, fid, keys=["kps"]):
         """
         Get features by given `slide`, `frame` pairs
+        keys: ["kps", "des"] or both
         """
-        sk = self.load_feats("s_{:03d}_kps".format(sid))
-        sd = self.load_feats("s_{:03d}_des".format(sid))
-        fk = self.load_feats("f_{:03d}_kps".format(fid))
-        fd = self.load_feats("f_{:03d}_des".format(fid))
-        return dict(sk=sk, sd=sd, fk=fk, fd=fd)
+        dd = dict(sid=sid, fid=fid)
+        for key in keys:
+            dd["s"+key[0]] = self.load_feats("s_{:03d}_{}".format(sid, key))
+            dd["f"+key[0]] = self.load_feats("f_{:03d}_{}".format(fid, key))
+        return dd
+
+    def load_keypoints_pair(self, sid, fid):
+        data = self.get_feats_pair(sid, fid)
+        skps = self._to_keypoints(data["sk"])
+        fkps = self._to_keypoints(data["fk"])
+        return skps, fkps
 
     def load_slides_feats(self, sids):
         sfs = []
         for sid in sids:
             sfs.append(self.load_feats("s_{:03d}_des".format(sid)))
-        self.elog.info("loading {}-{} slides feats ...".format(self.root, self.name))
+        self.elog.info("loading {}-{} slides feats ...".
+                       format(self.root, self.name))
         return sfs
 
     def load_frame_feats(self, fid):

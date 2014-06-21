@@ -112,3 +112,15 @@ class Feats(ExpCommon):
         """
         self.delete_store()
         self.delete_log()
+
+    def _to_keypoints(self, kdf):
+        if kdf is None:
+            return []
+        kps = []
+        for ki, kp in kdf.iterrows():
+            ktmp = cv2.KeyPoint(
+                x=kp.x, y=kp.y, _size=kp.size, _angle=kp.angle,
+                _response=kp.response, _octave=int(kp.octave),
+                _class_id=int(kp.class_id))
+            kps.append(ktmp)
+        return kps
