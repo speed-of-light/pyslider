@@ -60,7 +60,7 @@ class PdfReader(object):
             if page > self.pages or page < 0:
                 continue
             pdf = "{}[{}]".format(self.pdf_path, page)
-            slid = "{}/{:03d}".format(sp, page)
+            slid = "{}/{:03d}".format(sp, page+1)
             img.read(pdf)
             img.write("{}.jpg".format(slid))
         # break

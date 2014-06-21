@@ -99,7 +99,7 @@ class MatchingPlotterBase(Plotter, Dataset):
         ax.bar(sids, mscore, fid, zdir='y', color=cr, alpha=0.4)
         # plot predict result with green
         if psid and psid > 0:
-            ax.bar([sids[psid]], [mscore[psid]*mfac/2.0], fid,
+            ax.bar([sids[psid-1]], [mscore[psid-1]*mfac/2.0], fid,
                    zdir='y', color=['#44FF32'], alpha=.8)
 
     def slideset_bar(self, ax, gnd, cmm, sids, fid=None, psid=None,

@@ -29,6 +29,7 @@ class GmmPredictor(Predictor):
         clf.fit(data)
         pr = clf.predict(data)
         pr = self.__reorder(clf.means_.tolist(), pr)
+        self.clf = clf
         return pr
 
     def __merge_raw_class(self, gsids, prclass):
