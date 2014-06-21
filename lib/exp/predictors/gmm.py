@@ -60,9 +60,16 @@ class GmmPredictor(Predictor):
             gsids.append(guess_sid+1)
         return gsids
 
+    def __replace_no_feats_pairs(self, means, pr):
+        for mi, mean in enumerate(means):
+            if mean < 0:
+                pr[mi] = -1
+        return pr
+
     def predict(self):
         means = self.__means()
         gsids = self.__slide_index()
         pr = self.__predict_core(means)
         pr = self.__merge_raw_class(gsids, pr)
+        pr = self.__replace_no_feats_pairs(means, pr)
         return zip(pr, self.fids)

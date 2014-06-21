@@ -150,7 +150,7 @@ class GroundTruth(ExpCommon, Summary):
                 ret = dfi.sid
         return ret
 
-    def guess(self, fid, sid):
+    def guess(self, sid, fid):
         """
         Return true if a correct match
         """

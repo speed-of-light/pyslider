@@ -13,7 +13,7 @@ class Evaluator(object):
         """
         return (1+beta**2)*precision*recall/((beta**2)*precision+recall)
 
-    def praf(self, tp, fp, tn, fn):
+    def praf(self, tp=0, fp=0, tn=0, fn=0):
         precision = tp*1.0/(tp+fp)
         recall = tp*1.0/(tp+fn)
         accuracy = (tp+tn)*1.0/(tp+tn+fp+fn)
@@ -60,3 +60,49 @@ class Evaluator(object):
             ns = root + "_" + name
             keg[ns] = self.__keg_pack(gt, targets)
         return keg
+
+    def __make_confusion(self, correct, sid, fid):
+        con = dict(tp=0, tn=0, fp=0, fn=0, fid=fid, sid=sid)
+        predict_with_sid = (sid > 0)
+        predict_with_nosid = (sid == -1)
+        if not correct and predict_with_nosid:
+            con["fn"] = 1
+        elif not correct and predict_with_sid:
+            con["fp"] = 1
+        elif correct and predict_with_nosid:
+            con["tn"] = 1
+        elif correct and predict_with_sid:
+            con["tp"] = 1
+        return con
+
+    def __cfs_to_praf(self, cfs):
+        prafd = dict(tp=0, tn=0, fp=0, fn=0)
+        for cf in cfs:
+            for fk in prafd.keys():
+                prafd[fk] += cf[fk]
+        return self.praf(**prafd)
+
+    def __guess_to_praf(self, gnd, sid, fid):
+        oc = gnd.guess(sid, fid)  # outcome
+        cf = self.__make_confusion(oc, sid, fid)
+        return cf
+
+    def __wrongs(self, cfs):
+        wg = []
+        for ci, cf in enumerate(cfs):
+            if (cf["fn"] == 1) or (cf["fp"] == 1):
+                wg.append(dict(ci=ci, fid=cf["fid"], sid=cf["sid"]))
+        return wg
+
+    def eval_sfps(self, gnd, sfps):
+        """
+        sfp: slide-frame pairs
+        """
+        cfs = []
+        for sfp in sfps:
+            cf = self.__guess_to_praf(gnd, *sfp)
+            cfs.append(cf)
+        praf = self.__cfs_to_praf(cfs)
+        wrongs = self.__wrongs(cfs)
+        print self.__praf_str(*praf)
+        return praf, wrongs

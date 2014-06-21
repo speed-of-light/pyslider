@@ -108,7 +108,7 @@ class MatchApp(MatchAppBase, MatchBase):
         MatchAppBase.__init__(self, root, name)
         MatchAppBase.silent = True
         self.gnd.silent = True
-        Mahelp.__init__(self)
+        MatchBase.__init__(self)
 
     def knn_ms(self):
         if not hasattr(self, "knnms"):
