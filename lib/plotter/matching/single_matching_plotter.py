@@ -27,6 +27,8 @@ class SingleMatchingPlotter(Plotter, Dataset):
         self.__load_colors()
 
     def __load_kps(self, root, name):
+        if self.df is None:
+            return
         fx = Featx(root, name)
         sks, fks = fx.load_keypoints_pair(self.sid, self.fid)
         self.skps = sks
@@ -61,6 +63,7 @@ class SingleMatchingPlotter(Plotter, Dataset):
         Interface to update dataframe
         """
         self.df = data
+        # self.__load_kps(self, root, name):
 
     def __frame_image(self, gray=False, show_pos=False):
         """

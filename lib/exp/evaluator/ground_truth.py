@@ -68,7 +68,7 @@ class GroundTruth(ExpCommon, Summary):
             ftp[1] = ftv
             return ftp
 
-    def segments_df(self, df, ftype="duration"):
+    def get_segments_df(self, df, ftype="duration"):
         """
         Return dataframe version of segments
         """
@@ -77,7 +77,7 @@ class GroundTruth(ExpCommon, Summary):
         df = pd.DataFrame(segs, columns=cols)
         return df
 
-    def segments(self, df, ftype="duration"):
+    def get_segments(self, df, ftype="duration"):
         """
         df: columns should be like `abs_pairs`.
         ftype: control the return data with "duration"(default) or
@@ -163,5 +163,5 @@ class GroundTruth(ExpCommon, Summary):
         Update local groundtruth by abs pairs
         """
         df = self.load("abs_pairs")
-        self.save("rel_pairs", self.shrink(df))
-        self.save("segments", self.segments_df(df))
+        self.save("rel_pairs", self.get_shrink(df))
+        self.save("segments", self.get_segments_df(df))

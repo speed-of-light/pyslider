@@ -8,11 +8,11 @@ class MatchBase(object):
     def __init__(self):
         pass
 
-    def _matching(self, matcher, sk=None, fk=None, thres=0.9):
+    def _matching(self, matcher, sdes=None, fdes=None, thres=0.9):
         mra = []
         with ExpTimer(verbose=0) as ts:
-            if len(fk) > 0:
-                mra = matcher.knnMatch(sk.values, fk.values, k=2)
+            if len(fdes) > 0:
+                mra = matcher.knnMatch(sdes.values, fdes.values, k=2)
                 mra = self._remove_high_simi(mra, thres)
         mdf = self._to_df(mra)
         return mdf, ts
@@ -26,9 +26,9 @@ class MatchBase(object):
             `m_{sid:03d}_{fid:03d}`
         """
         ma = self.get_matcher()
-        sfs = self.fx.load_slides_feats(sids)
+        sfs = self.fx.load_slides_des(sids)
         for fid in fids:
-            fk = self.fx.load_frame_feats(fid)
+            fk = self.fx.load_frame_des(fid)
             for sid, sk in zip(sids, sfs):
                 fxp = dict(sk=sk, fk=fk, thres=thres)
                 df, optime = self.__matching(ma, **fxp)
@@ -68,9 +68,9 @@ class MatchBase(object):
             self.rtlog = ldf
 
     def _match_info(self, mat, time,
-                    sid=None, fid=None, sk=None, fk=None):
-        skl = len(sk)
-        fkl = len(fk)
+                    sid=None, fid=None, sdes=None, fdes=None):
+        skl = len(sdes)
+        fkl = len(fdes)
         pairs = [sid, fid]
         lens = [skl, fkl, len(mat)]
         info = self.__get_stats(skl, fkl, mat, time)

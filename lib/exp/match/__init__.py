@@ -49,7 +49,7 @@ class Matchx(ExpCommon, MatchBase, Preloader):
         self._mem_rtlog(**data)
 
     def __match_core(self, ma, **opts):
-        fxp = dict(sk=opts["sk"], fk=opts["fk"])
+        fxp = dict(sdes=opts["sdes"], fdes=opts["fdes"])
         df, optime = self._matching(ma, **fxp)
         fxp.update(dict(fid=opts["fid"], sid=opts["sid"]))
         self.__match_info_mem(df, optime, fxp)
@@ -72,17 +72,17 @@ class Matchx(ExpCommon, MatchBase, Preloader):
         self.elog.info("Use matching core: {}".format(fn))
         self.__klass_var()
 
-    def single_match(self, fid, thres=0.9, auto_save=True):
+    def frame_matches(self, fid, thres=0.9, auto_save=True):
         """
         Try to find matches on a single frame
         Check `self.rtlog` and `matches` as result
         """
         self.matches = []
         Preloader._preload(self)
-        fk = self.fx.load_frame_feats(fid)
-        for sid, sk in enumerate(self.sfx, 1):
+        fdes = self.fx.load_frame_des(fid)
+        for sid, sdes in enumerate(self.sfx, 1):
             self.__match_core(self.get_matcher(), thres=thres,
-                              sid=sid, fid=fid, sk=sk, fk=fk)
+                              sid=sid, fid=fid, sdes=sdes, fdes=fdes)
         if auto_save:
             self.batch_save()
 
@@ -92,8 +92,19 @@ class Matchx(ExpCommon, MatchBase, Preloader):
         """
         fids = self.frame_seeds()
         for fid in fids:
-            self.single_match(fid, auto_save=save)
+            self.frame_matches(fid, auto_save=save)
             yield fid, self.matches
+
+    def pair_matches(self, sid, fid, thres=0.85):
+        """
+        Return slide frame pairs match data
+        """
+        self.matches = []
+        Preloader._preload(self)
+        sdes = self.sfx[sid-1]
+        fdes = self.fx.load_frame_des(fid)
+        self.__match_core(self.get_matcher(), thres=thres,
+                          sid=sid, fid=fid, sdes=sdes, fdes=fdes)
 
     def old_match(self, thres=0.8):
         """
@@ -119,7 +130,7 @@ class MatchApp(MatchAppBase, MatchBase):
         mm = Matchx(self.root, self.name)
         mm.silent = True
         ms = []
-        for fid, matches in mm.matches(thres=thres):
+        for fid, matches in mm.batch_matches(thres=thres):
             ms.append(self._get_matches_means(matches))
             self.elog.info("Match app appending fid:{}".format(fid))
         self.knnms = ms

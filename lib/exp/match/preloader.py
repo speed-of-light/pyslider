@@ -4,7 +4,7 @@ import cv2
 class Preloader(object):
     def __reload_slide_feats(self):
         sids = self.slide_seeds()
-        self.sfx = self.fx.load_slides_feats(sids)
+        self.sfx = self.fx.load_slides_des(sids)
 
     def __preload_slide_feats(self):
         if not hasattr(self, "sfx"):

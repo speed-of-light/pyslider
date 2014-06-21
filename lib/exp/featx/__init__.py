@@ -44,7 +44,10 @@ class Featx(Feats):
         fkps = self._to_keypoints(data["fk"])
         return skps, fkps
 
-    def load_slides_feats(self, sids):
+    def load_slides_des(self, sids):
+        """
+        `1` based keys
+        """
         sfs = []
         for sid in sids:
             sfs.append(self.load_feats("s_{:03d}_des".format(sid)))
@@ -52,5 +55,5 @@ class Featx(Feats):
                        format(self.root, self.name))
         return sfs
 
-    def load_frame_feats(self, fid):
+    def load_frame_des(self, fid):
         return self.load_feats("f_{:03d}_des".format(fid))
