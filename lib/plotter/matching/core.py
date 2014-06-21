@@ -88,26 +88,36 @@ class MatchingPlotterBase(Plotter, Dataset):
             colors = ['#aa77FF']*len(colors)
         return colors, fac
 
-    def __psb(self, ax, sids, matches, fid, mfac, cr):
+    def __psb(self, ax, sids, mscore, fid, mfac, psid, cr):
+        """
+        sids: slide ids
+        matches: slide matches score
+        psid: predicted sid
+        """
         # plot matches and ground turth
-        matches = np.array(matches)/(mfac*1.0)
-        ax.bar(sids, matches, fid, zdir='y', color=cr, alpha=0.4)
-        # plot guess with green
-        mi = min(xrange(len(matches)), key=matches.__getitem__)
-        ax.bar([sids[mi]], [matches[mi]*mfac/2.0], fid,
-               zdir='y', color=['#44FF32'], alpha=.8)
+        mscore = np.array(mscore)/(mfac*1.0)
+        ax.bar(sids, mscore, fid, zdir='y', color=cr, alpha=0.4)
+        # plot predict result with green
+        if psid and psid > 0:
+            ax.bar([sids[psid]], [mscore[psid]*mfac/2.0], fid,
+                   zdir='y', color=['#44FF32'], alpha=.8)
 
-    def slideset_bar(self, ax, gnd, cmm, sids, fid=None,
+    def slideset_bar(self, ax, gnd, cmm, sids, fid=None, psid=None,
                      iid=None, size=None, matches=None):
         cr = [cmm(iid*3./size)]*len(matches)
         asid = int(gnd.answer(fid))
         cr, mfac = self.__adjust_colormap(cr, max(matches), asid)
-        self.__psb(ax, sids, matches, fid, mfac, cr)
+        self.__psb(ax, sids, matches, fid, mfac, psid, cr)
 
-    def iter_slideset(self, x, y, z, start=None, size=None):
+    def iter_slideset(self, x, y, z, psids, start=None, size=None):
         end = start+size
         iids = range(1, size+1)
-        yse = y[start:end]
+        yse = y[start: end]
         zse = z[start: end]
-        for i, f, m in zip(iids, yse, zse):
-            yield dict(iid=i, fid=f, matches=m, size=size)
+        if psids is None:
+            for i, f, m in zip(iids, yse, zse):
+                yield dict(iid=i, fid=f, matches=m, size=size, psid=None)
+        else:
+            pse = psids[start: end]
+            for i, f, m, p in zip(iids, yse, zse, pse):
+                yield dict(iid=i, fid=f, matches=m, size=size, psid=p)

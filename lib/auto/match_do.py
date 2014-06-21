@@ -7,10 +7,11 @@ from lib.exp.evaluator.pair_evaluator import PairEvaluator
 
 
 class MatchDo(ExpCommon):
-    """
-    Provide a simple way to rundown
-    """
     def __init__(self, root, name):
+        """
+        Deprecated
+        Provide a simple way to rundown
+        """
         self.root = root
         self.name = name
         ExpCommon.__init__(self, root, name)

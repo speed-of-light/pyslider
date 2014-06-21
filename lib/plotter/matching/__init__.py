@@ -39,13 +39,13 @@ class MatchingPlotter(MatchingPlotterBase):
     def slides_frames_similarity(self, sids, fids, sims):
         pass
 
-    def sf_dist_bar(self, ax, match_app, start, size):
+    def sf_dist_bar(self, ax, match_app, psids, start, size):
         """
         Show 3d comparable bar chart for slide and frame similarity
         """
         x = match_app.slide_seeds()
         y = match_app.frame_seeds()
         z = match_app.knn_ms()
-        for data in self.iter_slideset(x, y, z, start, size):
+        for data in self.iter_slideset(x, y, z, psids, start, size):
             self.slideset_bar(ax, match_app.gnd, mcm.gray, x, **data)
         ax.view_init(elev=60., azim=120)
