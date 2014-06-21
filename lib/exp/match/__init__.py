@@ -132,9 +132,17 @@ class Matchx(ExpCommon, Mahelp, Preloader):
         self.__match(sids, fids, thres)
 
 
-class MatchApp(MatchAppBase):
+class MatchApp(MatchAppBase, Mahelp):
     def __init__(self, root, name):
         MatchAppBase.__init__(self, root, name)
+        MatchAppBase.silent = True
+        self.gnd.silent = True
+        Mahelp.__init__(self)
+
+    def knn_ms(self):
+        if not hasattr(self, "knnms"):
+            self.knn_mean_pairs()
+        return self.knnms
 
     def knn_mean_pairs(self):
         mm = Matchx(self.root, self.name)
@@ -143,4 +151,5 @@ class MatchApp(MatchAppBase):
         for fid, matches in mm.matches(thres=0.85):
             ms.append(self._get_matches_means(matches))
             self.elog.info("Match app appending fid:{}".format(fid))
+        self.knnms = ms
         return ms

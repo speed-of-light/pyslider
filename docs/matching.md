@@ -6,12 +6,12 @@ The core routine to get matched results
 
 ## Base Methods
 
-`Prepare` get filtered `diff_next/size_30` frames
-`Reducer` get reduced frames
-`Featx` get `SIFT_SIFT` keypoints
-`Matchx` get `BruteForce` matched pairs
-`DecisionMaker` get guessed `fid-sid` pairs
-`Evaluator` get result `precision`, `recall`, `fmeasure`, `accuracy`
+- `Prepare` get filtered `diff_next/size_30` frames
+- `Reducer` get reduced frames
+- `Featx` get `SIFT_SIFT` keypoints
+- `Matchx` get `BruteForce` matched pairs
+- `DecisionMaker` get guessed `fid-sid` pairs
+- `Evaluator` get result `precision`, `recall`, `fmeasure`, `accuracy`
 
 ## TODOs
 
@@ -22,4 +22,4 @@ The core routine to get matched results
 
 # API
 
-[API Reference](http://nbviewer.ipython.org/github/speed-of-light/pyslider/blob/master/docs/nb/matching.ipynb)
+[API Reference](http://nbviewer.ipython.org/github/speed-of-light/pyslider/blob/master/docs/nb/matching_base.ipynb)
