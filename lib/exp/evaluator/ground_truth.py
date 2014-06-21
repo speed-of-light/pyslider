@@ -130,6 +130,7 @@ class GroundTruth(ExpCommon, Summary):
         """
         Add mark to dataframe table, **not saved**.
         df: should come from `abs_pairs`
+        Return inserted result
         """
         db = DfExt(df)
         result = db.insert(sid, fid, ftype)
@@ -156,3 +157,11 @@ class GroundTruth(ExpCommon, Summary):
         """
         asid = self.answer(fid)
         return asid == sid
+
+    def update(self):
+        """
+        Update local groundtruth by abs pairs
+        """
+        df = self.load("abs_pairs")
+        self.save("rel_pairs", self.shrink(df))
+        self.save("segments", self.segments_df(df))
