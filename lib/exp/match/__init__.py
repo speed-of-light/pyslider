@@ -5,19 +5,18 @@ Perform feature matching on features
 __all__ = []
 
 from lib.exp.base import ExpCommon
-from lib.exp.tools.timer import ExpTimer
 from lib.exp.featx import Featx
-from base import Mahelp
+from base import MatchBase
 from preloader import Preloader
 from match_app import MatchAppBase
 
 
-class Matchx(ExpCommon, Mahelp, Preloader):
+class Matchx(ExpCommon, MatchBase, Preloader):
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)
         # create base dir
         ExpCommon.common_path(self, "stores", asure=True)
-        Mahelp.__init__(self)
+        MatchBase.__init__(self)
         self.fx = Featx(self.root, self.name)
         self.fx.silent = True
         self.set_match_core()
@@ -28,27 +27,18 @@ class Matchx(ExpCommon, Mahelp, Preloader):
         self.klass_var = st
         self.elog.info("Current configs: {}".format(st))
 
-    def __matching(self, matcher, sk=None, fk=None, thres=0.9):
-        mra = []
-        with ExpTimer(verbose=0) as ts:
-            if len(fk) > 0:
-                mra = matcher.knnMatch(sk.values, fk.values, k=2)
-                mra = self._remove_high_simi(mra, thres)
-        mdf = self._to_df(mra)
-        return mdf, ts
-
     def __save_rtlog(self, pairs=None, lens=None, info=None):
         pairs.extend(lens)
         pairs.extend(info)
         self.save_rtlog(self._rtlog_cols(), pairs)
 
+    def __save_match(self, sid, fid, df):
+        self.save(self._pair_key(sid, fid), df)
+
     def __match_info(self, mat, time, fxp):
         data = self._match_info(mat, time.msecs, fxp)
         self.elog.info(self._info_str(**data))
         self.__save_rtlog(**data)
-
-    def __match_mem(self, **opts):
-        self.matches.append(opts)
 
     def __match_info_mem(self, mat, time, fxp):
         """
@@ -58,31 +48,12 @@ class Matchx(ExpCommon, Mahelp, Preloader):
         self.elog.info(self._info_str(**data))
         self._mem_rtlog(**data)
 
-    def __save_match(self, sid, fid, df):
-        self.save(self._pair_key(sid, fid), df)
-
-    def __match(self, sids, fids, thres=0.8):
-        """
-        Save matched result by `keys` formated as:
-            `m_{sid:03d}_{fid:03d}`
-        """
-        ma = self.get_matcher()
-        sfs = self.fx.load_slides_feats(sids)
-        for fid in fids:
-            fk = self.fx.load_frame_feats(fid)
-            for sid, sk in zip(sids, sfs):
-                fxp = dict(sk=sk, fk=fk, thres=thres)
-                df, optime = self.__matching(ma, **fxp)
-                fxp.update(dict(sid=sid, fid=fid))
-                self.__match_info(df, optime, fxp)
-                self.__save_match(sid, fid, df)
-
     def __match_core(self, ma, **opts):
         fxp = dict(sk=opts["sk"], fk=opts["fk"])
-        df, optime = self.__matching(ma, **fxp)
+        df, optime = self._matching(ma, **fxp)
         fxp.update(dict(fid=opts["fid"], sid=opts["sid"]))
         self.__match_info_mem(df, optime, fxp)
-        self.__match_mem(sid=opts["sid"], fid=opts["fid"], df=df)
+        self._match_mem(sid=opts["sid"], fid=opts["fid"], df=df)
 
     def set_featx(self, engine="keypoint", method="SIFT"):
         """
@@ -129,10 +100,10 @@ class Matchx(ExpCommon, Mahelp, Preloader):
         Deprecated, too slow
         """
         sids, fids = self.seeds()
-        self.__match(sids, fids, thres)
+        self._match(sids, fids, thres)
 
 
-class MatchApp(MatchAppBase, Mahelp):
+class MatchApp(MatchAppBase, MatchBase):
     def __init__(self, root, name):
         MatchAppBase.__init__(self, root, name)
         MatchAppBase.silent = True
