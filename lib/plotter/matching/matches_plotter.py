@@ -1,3 +1,4 @@
+import matplotlib.cm as mcm
 from lib.plotter.base import Plotter
 from single_matching_plotter import SingleMatchingPlotter
 

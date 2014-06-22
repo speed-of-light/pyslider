@@ -114,7 +114,7 @@ class Feats(ExpCommon):
         self.delete_log()
 
     def _to_keypoints(self, kdf):
-        if kdf is None:
+        if kdf is None or len(kdf) == 0:
             return []
         kps = []
         for ki, kp in kdf.iterrows():

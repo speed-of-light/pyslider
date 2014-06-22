@@ -35,13 +35,12 @@ class SingleMatchingPlotter(Plotter, Dataset):
         self.fkps = fks
 
     def __load_colors(self):
-        self.cmap.N = 10
-        cs = [self.cmap(i)[:3]*255 for i in range(10)]
+        cs = [(20*i, 234+i, 10*i) for i in range(10)]
         self.rcolors = []
         for cc in cs:
             white = np.array((255, 255, 255))
-            self.rcolors.append(white - np.array(cc))
-        self.colors = cs
+            self.rcolors.append(255-np.array(cc))
+        self.colors = np.array(cc)*255
 
     def __set_qsize(self, root, name):
         su = Summary()

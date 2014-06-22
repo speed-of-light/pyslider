@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from base import FilterBase
+from core import FilterBase
 
 
 class Slope(FilterBase):

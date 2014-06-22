@@ -8,7 +8,6 @@ from lib.exp.base import ExpCommon
 from lib.exp.featx import Featx
 from base import MatchBase
 from preloader import Preloader
-from match_app import MatchAppBase
 
 
 class Matchx(ExpCommon, MatchBase, Preloader):
@@ -93,7 +92,7 @@ class Matchx(ExpCommon, MatchBase, Preloader):
         fids = self.frame_seeds()
         for fid in fids:
             self.frame_matches(fid, auto_save=save)
-            yield fid, self.matches
+            yield(fid, self.matches)
 
     def pair_matches(self, sid, fid, thres=0.85):
         """
@@ -112,27 +111,3 @@ class Matchx(ExpCommon, MatchBase, Preloader):
         """
         sids, fids = self.seeds()
         self._match(sids, fids, thres)
-
-
-class MatchApp(MatchAppBase, MatchBase):
-    def __init__(self, root, name):
-        MatchAppBase.__init__(self, root, name)
-        MatchAppBase.silent = True
-        self.gnd.silent = True
-        MatchBase.__init__(self)
-
-    def knn_ms(self):
-        if not hasattr(self, "knnms"):
-            self.knn_mean_pairs()
-        return self.knnms
-
-    def knn_mean_pairs(self, thres=0.85):
-        mm = Matchx(self.root, self.name)
-        mm.silent = True
-        ms = []
-        for fid, matches in mm.batch_matches(thres=thres):
-            ms.append(self._get_matches_means(matches))
-            self.elog.info("Match app appending fid:{}".format(fid))
-        self.knnms = ms
-        self.matchx = mm
-        return ms

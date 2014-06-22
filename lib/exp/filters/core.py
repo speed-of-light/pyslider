@@ -2,7 +2,7 @@ class FilterBase(object):
     """
     Interface of filter classes
     """
-    def __init__(self, data):
+    def __init__(self, matchx):
         """
         data: dict includes keys:
             `matches`,
@@ -10,13 +10,12 @@ class FilterBase(object):
             `video frame feats`,
             `slide size(qsize)`
         """
-        self.data = data
+        self.matchx = matchx
 
-    def filtering(self):
+    def pair_data(self, sid, fid, df):
         """
         Return common need data pointers
         """
-        good = self.data['matches']
-        skp = self.data['sif']['kps']
-        fkp = self.data['vif']['kps']
-        return good, skp, fkp
+        good = df
+        skps, fkps = self.matchx.fx.load_keypoints_pair(sid, fid)
+        return dict(good=good, skps=skps, fkps=fkps)
