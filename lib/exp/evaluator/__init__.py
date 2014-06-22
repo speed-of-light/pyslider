@@ -110,7 +110,7 @@ class Evaluator(ExpCommon):
         print self.__praf_str(*praf)
         return praf, wrongs
 
-    def __flatten(row):
+    def __flatten(self, row):
         lsa = list(row["praf"])
         lsa.insert(0, row["thres"])
         lsa.append(len(row["wrongs"]))
