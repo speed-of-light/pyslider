@@ -126,6 +126,6 @@ class Evaluator(ExpCommon):
         cols = ["thres", "precision", "recall", "accuracy", "fmeasure",
                 "wrongs"]
         dat = map(self.__flatten, data)
-        self.__save_wrongs(self, key+"/wrongs", data)
+        self.__save_wrongs(key+"/wrongs", data)
         df = pd.DataFrame(dat, columns=cols)
         self.save(key, df)
