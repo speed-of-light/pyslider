@@ -28,6 +28,11 @@ class GroundTruth(ExpCommon, Summary):
         gcf = self.__aggregate(gf.copy())
         return gcf
 
+    def manual_to_abs(self):
+        df = self.load("manual")
+        gcf = self.__aggregate(df)
+        return gcf
+
     def __aggregate(self, df):
         """
         Get the univ aggregated result
@@ -72,7 +77,7 @@ class GroundTruth(ExpCommon, Summary):
         """
         Return dataframe version of segments
         """
-        segs = self.segments(df, ftype)
+        segs = self.get_segments(df, ftype)
         cols = ['fstart', ftype, 'sid']
         df = pd.DataFrame(segs, columns=cols)
         return df
@@ -163,5 +168,5 @@ class GroundTruth(ExpCommon, Summary):
         Update local groundtruth by abs pairs
         """
         df = self.load("abs_pairs")
-        self.save("rel_pairs", self.get_shrink(df))
+        self.save("rel_pairs", self.shrink(df))
         self.save("segments", self.get_segments_df(df))

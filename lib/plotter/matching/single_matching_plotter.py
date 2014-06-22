@@ -35,7 +35,8 @@ class SingleMatchingPlotter(Plotter, Dataset):
         self.fkps = fks
 
     def __load_colors(self):
-        cs = [self.cmap(i/10) for i in range(10)]
+        self.cmap.N = 10
+        cs = [self.cmap(i)[:3]*255 for i in range(10)]
         self.rcolors = []
         for cc in cs:
             white = np.array((255, 255, 255))

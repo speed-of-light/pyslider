@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pylab as plt
-import matplotlib.mlab.normpdf as pdf
+import matplotlib.mlab as mmlab
 
 
 class MatchingHistPlotter(object):
@@ -14,7 +14,8 @@ class MatchingHistPlotter(object):
         gpcm = clf.means_
         grng = range(len(gpcm))
         for i, m, w, c in zip(grng, gpcm, clf.weights_, clf.covars_):
-            ax.plot(bins, w*pdf(bins, m, np.sqrt(c))[0], lw=2, color=colors[i])
+            ax.plot(bins, w*mmlab.normpdf(bins, m, np.sqrt(c))[0],
+                    lw=2, color=colors[i])
             ax.axvline(x=m, color=colors[i], lw=2)
         return n, bins
 
