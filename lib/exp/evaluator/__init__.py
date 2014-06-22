@@ -1,10 +1,12 @@
 __all__ = ['ground_truth']
+import pandas as pd
+from lib.exp import ExpCommon
 from ground_truth import GroundTruth
 
 
-class Evaluator(object):
-    def __init__(self):
-        pass
+class Evaluator(ExpCommon):
+    def __init__(self, root, name):
+        ExpCommon.__init__(self, root, name)
 
     def fbeta(self, precision, recall, beta=1):
         """
@@ -107,3 +109,23 @@ class Evaluator(object):
         wrongs = self.__wrongs(gnd, cfs)
         print self.__praf_str(*praf)
         return praf, wrongs
+
+    def __flatten(row):
+        lsa = list(row["praf"])
+        lsa.insert(0, row["thres"])
+        lsa.append(len(row["wrongs"]))
+        return lsa
+
+    def __save_wrongs(self, key, data=[]):
+        for dd in data:
+            wrongs = dd["wrongs"]
+            wd = pd.DataFrame(wrongs)
+            self.save(key+"/{:03d}".format(int(dd["thres"]*100)), wd)
+
+    def save_praf(self, key="/knn", data=[]):
+        cols = ["thres", "precision", "recall", "accuracy", "fmeasure",
+                "wrongs"]
+        dat = map(self.__flatten, data)
+        self.__save_wrongs(self, key+"/wrongs", data)
+        df = pd.DataFrame(dat, columns=cols)
+        self.save(key, df)
