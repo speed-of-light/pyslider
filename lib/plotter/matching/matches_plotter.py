@@ -31,10 +31,5 @@ class MatchesPlotter(Plotter):
     def wrong_pairs(self, fig, matchx, wrongs):
         for wi, wrong in enumerate(wrongs, 1):
             ax = fig.add_subplot(len(wrongs)/4 + 1, 4, wi)
-            try:
-                mview = self.check_pair(matchx, **wrong)
-                self.__plot_with_title(ax, mview, **wrong)
-            except Exception as e:
-                print e.args, wrong
-            else:
-                pass #print wrong
+            mview = self.check_pair(matchx, **wrong)
+            self.__plot_with_title(ax, mview, **wrong)
