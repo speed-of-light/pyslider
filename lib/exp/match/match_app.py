@@ -10,10 +10,11 @@ class MatchAppBase(ExpCommon):
         ExpCommon.__init__(self, root, name)
         self.__preload_ground_truth()
 
-    def _get_matches_means(self, mat_pack):
+    def _get_matches_means(self, mat_pack, quant=1):
         ys = []
         for match in mat_pack:
             df = match["df"]
+            df = df[df.dist < df.dist.quantile(quant)]
             if len(df) > 0:
                 y = df.dist.mean()
             else:
@@ -49,10 +50,11 @@ class MatchApp(MatchAppBase, MatchBase):
             self.knn_mean_pairs()
         return self.knnms
 
-    def knn_mean_pairs(self, thres=0.85):
+    def knn_mean_pairs(self, thres=0.85, start=0, size=-1):
         self._preload_matchx()
         ms = []
-        for fid, matches in self.matchx.batch_matches(thres=thres):
+        mbls = self.matchx.batch_matches(thres, start, size)
+        for fid, matches in mbls:
             matches = yield(matches)
             ms.append(self._get_matches_means(matches))
             self.elog.info("Match app appending fid:{}".format(fid))

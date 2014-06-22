@@ -85,12 +85,13 @@ class Matchx(ExpCommon, MatchBase, Preloader):
         if auto_save:
             self.batch_save()
 
-    def batch_matches(self, thres=0.8, save=False):
+    def batch_matches(self, thres=0.8, start=0, size=-1, save=False):
         """
         All frame matches iterator
         """
+        end = start+size
         fids = self.frame_seeds()
-        for fid in fids:
+        for fid in fids[start: end]:
             self.frame_matches(fid, auto_save=save)
             yield(fid, self.matches)
 
