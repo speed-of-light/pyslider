@@ -1,6 +1,6 @@
 __all__ = ['ground_truth']
 import pandas as pd
-from lib.exp import ExpCommon
+from lib.exp.base import ExpCommon
 from ground_truth import GroundTruth
 
 
