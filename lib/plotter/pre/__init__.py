@@ -5,11 +5,22 @@ Preprocessing data result plotter
 __all__ = []
 
 from matplotlib.ticker import FuncFormatter
+from lib.exp.evaluator.preproc_evaluator import PreprocEvaluator
+from lib.exp.pre import Reducer
 
 
 class PrePlotter(object):
     def __init__(self):
-        pass
+        rkeys = ["diff_next/size_2",
+                 "diff_next/size_15",
+                 "diff_next/size_30",
+                 "diff_next/size_60",
+                 "diff_next/size_300",
+                 "diff_bkg"]
+        mnames = ["Avg 2", "Avg 15", "Avg 30",
+                  "Avg 60", "Avg 300", "Bkg Model"]
+        self.rkeys = rkeys
+        self.names = mnames
 
     def _frame_time_formatter(self, data, pos):
         sec = (data)/30
@@ -43,8 +54,8 @@ class PrePlotter(object):
             hl[1] = hl[1] + newl
         return hl
 
-    def frame_candidates_relationships(self, ax, data, cols,
-                                       key="Delay-time vs Frame Difference"):
+    def fc_delay_relations(self, ax, data, cols,
+                           key="Delay-time vs Frame Difference"):
         """
         data: dataframe with columns `diff`, `dist`
         """
@@ -57,3 +68,25 @@ class PrePlotter(object):
         ax.legend(hls[0], hls[1], loc=0)
         ax.set_title(key, fontsize=18, y=1.03)
         return ax
+
+    def __get_reduced_data(self, re, rk, pp):
+        prk = "/reduce/{}".format(rk)
+        red = re.load(prk)
+        scf = pp.ac_reduced_to_slides(red)
+        return scf
+
+    def batch_delay_relations(self, fig, root, name):
+        """
+        Usage:
+            fig = plt.figure(figsize=(15, 38))
+            ppt.batch_delay_relations(fig, *dn)
+        """
+        pp = PreprocEvaluator(root, name)
+        re = Reducer(root, name)
+        dzip = zip(range(len(self.names)), self.names, self.rkeys)
+        for ri, na, rk in dzip:
+            df = self.__get_reduced_data(re, rk, pp)
+            # plot
+            ax = fig.add_subplot(len(self.names), 1, ri)
+            title = "[Data: {}-{}] {}".format(root, name, na)
+            self.fc_delay_relations(ax, df, cols=["diff", "dist"], key=title)

@@ -56,9 +56,13 @@ class PreprocEvaluator(ExpCommon):
             smi.append(dg.dist.argmin())
         return segments.iloc[smi]
 
-    def slide_coverage(self, reduced, total_slides):
+    def ac_reduced_to_slides(self, reduced):
         seg = self.ac_segments_df(reduced)
         sdf = self.ac_slide_count(seg)
+        return sdf
+
+    def slide_coverage(self, reduced, total_slides):
+        sdf = self.ac_reduced_to_slides(reduced)
         return len(sdf)*1.0/total_slides
 
     def segment_hit_ratio(self, reduced):
