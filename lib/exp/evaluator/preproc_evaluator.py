@@ -35,6 +35,7 @@ class PreprocEvaluator(ExpCommon):
         if len(dfi) > 0:
             tag = dfi.iloc[-1]
             sid = self.__get_slide_id(fid, tag)
+            tagid = tag.fstart * -1
             if sid > 0:
                 tagid = tag.fstart
                 dist = fid - tag.fstart
