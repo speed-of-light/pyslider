@@ -16,16 +16,18 @@ class PrePlotter(object):
         return "{: 5.1f}".format(sec)
 
     def diff_plot(self, ax, data, hls):
-        data.plot(ax=ax, label="Difference", c='g')
+        data.plot(ax=ax, label="Difference", c='g', marker='>')
         ah, al = ax.get_legend_handles_labels()
-        ax.hlines(data.mean(), 0, max(data.index), color='g')
+        mean = data.mean()
+        ax.hlines(mean, 0, max(data.index), color='g')
         ax.set_ylabel("Frame Difference", fontsize=15)
         ax.set_xlabel("Candidate Index", fontsize=15)
         hls = self.__add__handles_labels(hls, ah, al)
         return ax, hls
 
     def dist_plot(self, ax, data, hls):
-        ax = data.plot(ax=ax, label="Frame Distance", secondary_y=True, c='r')
+        ax = data.plot(ax=ax, label="Frame Distance", secondary_y=True, c='r',
+                       marker='x')
         ah, al = ax.get_legend_handles_labels()
         ax.hlines(data.mean(), 0, max(data.index), color='r')
         ax.set_ylabel("Frame Delay (Seconds)", fontsize=15)
@@ -41,7 +43,8 @@ class PrePlotter(object):
             hl[1] = hl[1] + newl
         return hl
 
-    def frame_candidates_relationships(self, ax, data, cols):
+    def frame_candidates_relationships(self, ax, data, cols,
+                                       key="Delay-time vs Frame Difference"):
         """
         data: dataframe with columns `diff`, `dist`
         """
@@ -52,7 +55,5 @@ class PrePlotter(object):
             ax, hls = self.dist_plot(ax, data["dist"], hls)
         ax.set_xlim(0, max(data.index))
         ax.legend(hls[0], hls[1], loc=0)
-        title = "Relationships between frame difference and " + \
-            "delay time of filtered candidates"
-        ax.set_title(title, fontsize=18, y=1.03)
+        ax.set_title(key, fontsize=18, y=1.03)
         return ax
