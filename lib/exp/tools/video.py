@@ -4,22 +4,20 @@ import collections
 import glob
 import cv2
 import cv
-from preloader import Preloader
 
 
-class Video(Preloader):
+class Video(object):
     def __init__(self, root, name):
         """
         Author: speed-of-light
         Purpose: Operations on video frames
         """
-        Preloader.__init__(self)
         vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
         self.stream_path = vid
         self.cap_loaded =False
 
     @property
-    def cap(self):
+    def __cap(self):
         if self.stream_path == "":
             return ""
         else:
@@ -118,11 +116,17 @@ class Video(Preloader):
         iqr = (df.isum.quantile(.75) - df.isum.quantile(.5))*iqt[fence]
         return df[df.isum.gt(iqr)]
 
+    def __invalid_str_attr(self, name):
+        return (not hasattr(self, name)) or \
+            (self.__dict__[name] is None) or (self.__dict__[name] == "")
+
+    def _assert_valid_str(self, name):
+        if self.__invalid_str_attr(name):
+            info = "Attribute {} is invalid.".format(name)
+            raise Exception("Invalid Attribute Error", info)
     def __duration(self, start=0, end=-1):
-        self.__assert_loaded("video")
-        vid = self.video
-        fps = vid.cap['fps']
-        frame = int(vid.cap['frames'])
+        fps = self.cap['fps']
+        frame = int(self.cap['frames'])
         if (end < 0 or end > frame):
             end = frame
         return start, end+1
@@ -161,6 +165,8 @@ class Video(Preloader):
             cap.set(cv.CV_CAP_PROP_POS_FRAMES, ci)
             grabed, img = cap.read()
             if grabed:
-                ret = dict(img=img, fn=ci, ms=cap.get(ms_flag))
-                iset = self.__regulate_q(iset)
+                data = dict(img=img, fn=ci, ms=cap.get(ms_flag))
+                iset = self.__regulate_q(iset, qsize, data)
+                if len(iset) < qsize:
+                    continue
                 yield(iset)

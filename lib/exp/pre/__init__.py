@@ -8,10 +8,11 @@ Preprocess input data, include
     `reducer.probe` probing video to compute distingushable posibility position
 """
 
-__all__ = []
+__all__ = ["probe"]
 
 import numpy as np
 from lib.exp.base import ExpCommon
+from probe import Probe
 
 
 class Reducer(ExpCommon):
@@ -71,3 +72,13 @@ class Reducer(ExpCommon):
     def frame_ids(self, key="/reduce/diff_next/size_30"):
         df = self.load(key)
         return df.frame_id.values.astype(np.int32)
+
+    def probing(self, qs=2):
+        pb = Probe(self.root, self.name)
+        for frame_id in pb.diff_next(qs=qs):
+            self.elog.info("Qs: {}, FrameID: {}".format(qs, frame_id))
+        self.save("diff_next/size_{}".format(qs), pb.pdf)
+
+    def batch_probing(self, qss=[2]):
+        for qs in qss:
+            self.probing(qs)

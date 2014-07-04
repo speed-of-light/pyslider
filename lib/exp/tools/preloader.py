@@ -1,4 +1,4 @@
-from lib.exp.tools.video import Video
+from video import Video
 
 
 class Preloader(object):
