@@ -13,13 +13,18 @@ For more information, please refer to [docs][docs].
 
 # Working flow
 
-  - TODO
+  - `Reducer`
+  - `Matcher`
+  - `Classification`
+  - `Recognition`
+  - `DTW`
 
-# Structure
+# Lib. Structure
 
-  - `lib.exp`: Experimental core
-  - `lib.plotter`: Plotting toolset
-  - `lib.emailer`: email notifications
+  - `addons`: system support files
+  - `auto`: auto scripts for collecting data
+  - `exp`: Experimental core
+  - `plotter`: Plotting toolset
 
 ## [docs](./docs)
 
