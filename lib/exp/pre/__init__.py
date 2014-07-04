@@ -18,23 +18,24 @@ class Reducer(ExpCommon):
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)
 
-    def __compress(self, data):
+    def __compress(self, data, keep_last=False):
         """
         Get the compressed dataset and compressed ratio
         """
         before = len(data)
-        igmax = data.iloc[0].name
-        last_v = data.iloc[0].name
-        for v in data.index[1:]:
-            if (v - last_v) == 1:  # check conti series max
-                if data.ix[igmax]['diff'] < data.ix[v]['diff']:
-                    data = data.drop([igmax])
-                    igmax = v
-                else:
-                    data = data.drop([v])
-            else:
-                igmax = v
-            last_v = v
+        maxv = data.iloc[0].name
+        prev = data.iloc[0].name
+        for curv in data.index[1:]:
+            if (curv - prev) == 1:  # continuous sequence
+                if data.ix[maxv]['diff'] < data.ix[curv]['diff']:
+                    # drop previous max if its diff smaller
+                    data = data.drop([maxv])
+                    maxv = curv
+                else:  # drop continuous item
+                    data = data.drop([curv])
+            else:  # seperate sequence start
+                maxv = curv
+            prev = curv
         return data, before, len(data)
 
     def __get_data(self, key):
