@@ -64,3 +64,8 @@ class PrePlotter(_Exts, _Base):
         rp = RP(self.re_)
         ax = fig.add_subplot(111)
         rp.frame_reduced_ratio(ax, self.names)
+
+    def debug(self):
+        kz = _Base._name_key_zip(self)
+        pdf = _Exts._get_slide_coverages(self, self.root, self.name, kz)
+        return pdf

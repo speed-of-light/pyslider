@@ -37,5 +37,6 @@ class _Exts(object):
             prk = "/nr/{}".format(rk)
             red = self.re_.load(prk)
             sc, sh = self.pp_.preview(red, self.__slide_count(root, name))
-            pda.append(dict(method=na, slide_coverage=sc, segments_hit_ratio=sh))
+            pda.append(
+                dict(method=na, slide_coverage=sc, segments_hit_ratio=sh))
         return pd.DataFrame(pda)

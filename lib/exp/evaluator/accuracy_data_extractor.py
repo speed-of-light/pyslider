@@ -8,16 +8,20 @@ class PreSegHrBins(object):
         """
         Preprocessing segmented result hit ratio bins
         """
-        methods = ["Avg 2", "Avg 15", "Avg 30", "Avg 60",
-                   "Avg 300", "Bkg Model"]
-        rkeys = ["diff_next/size_2", "diff_next/size_15",
+        self.__load_const()
+        self.pp_ = PreprocEvaluator(root, name)
+        self.re_ = Reducer(root, name)
+        self.gt_ = GroundTruth(root, name)
+
+    def __load_const(self):
+        methods = ["Avg 2", "Avg 10", "Avg 15", "Avg 20",
+                   "Avg 30", "Avg 60", "Avg 300", "Bkg Model"]
+        rkeys = ["diff_next/size_2", "dn/size_10",
+                 "diff_next/size_15", "dn/size_20",
                  "diff_next/size_30", "diff_next/size_60",
                  "diff_next/size_300", "diff_bkg"]
         self.funs = methods
         self.keys = rkeys
-        self.pp_ = PreprocEvaluator(root, name)
-        self.re_ = Reducer(root, name)
-        self.gt_ = GroundTruth(root, name)
 
     def __load_data(self, key):
         df = self.re_.load(key)
@@ -46,6 +50,7 @@ class PreSegHrBins(object):
             prk = "/nr/{}".format(rk)
             pdf, gdf = self.__load_data(prk)
             binn = self.__counting(pdf, gdf)
+            binn.update(key=rk)
             bins.append(binn)
             if show:
                 print binn

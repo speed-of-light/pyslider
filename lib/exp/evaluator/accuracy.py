@@ -36,7 +36,7 @@ class Accuracy(__AccExtractors):
         self.__assert_set_data()
         dts = []
         for binn in self.bin_set:
-            dt = dict()
+            dt = dict(key=binn.pop("key"))
             for name in names:
                 dt[name] = self.detail(binn, name, show)
             dts.append(dt)

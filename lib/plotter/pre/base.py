@@ -3,16 +3,17 @@ from matplotlib.ticker import FuncFormatter
 
 class _Base(object):
     def __init__(self):
-        rkeys = ["diff_next/size_2",
-                 "diff_next/size_15",
-                 "diff_next/size_30",
-                 "diff_next/size_60",
-                 "diff_next/size_300",
-                 "diff_bkg"]
-        mnames = ["Avg 2", "Avg 15", "Avg 30",
-                  "Avg 60", "Avg 300", "Bkg Model"]
+        self.__load_const()
+
+    def __load_const(self):
+        names = ["Avg 2", "Avg 10", "Avg 15", "Avg 20",
+                 "Avg 30", "Avg 60", "Avg 300", "Bkg Model"]
+        rkeys = ["diff_next/size_2", "dn/size_10",
+                 "diff_next/size_15", "dn/size_20",
+                 "diff_next/size_30", "diff_next/size_60",
+                 "diff_next/size_300", "diff_bkg"]
         self.rkeys = rkeys
-        self.names = mnames
+        self.names = names
 
     def _name_key_zip(self):
         inxs = range(len(self.names))
@@ -90,6 +91,7 @@ class _Base(object):
     def _shr_sc_texts(self, ax, data):
         for pdi, pd in data.iterrows():
             shrf = "{:3.2f}".format(pd.segments_hit_ratio*100)
-            ax.text(pdi+0.3, pd.segments_hit_ratio, shrf, va='bottom', fontsize=12)
+            ax.text(pdi+0.3, pd.segments_hit_ratio, shrf,
+                    va='bottom', fontsize=12)
             scf = "{:3.2f}".format(pd.slide_coverage*100)
             ax.text(pdi+0.7, pd.slide_coverage, scf, va='bottom', fontsize=12)

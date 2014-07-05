@@ -58,11 +58,13 @@ class Reducer(ExpCommon):
         self.elog.info(istr)
         self.save_rtlog(opts.keys(), opts.values())
 
-    def reduce(self, key):
+    def reduce(self, key, save=False):
         can, orl = self.__get_data(key)
         red, thresed, after = self.__compress(can)
-        self.__results(key=key, origin=orl,
-                       thresed=thresed, final=after)
+        self.__results(key=key, origin=orl, thresed=thresed,
+                       final=after)
+        if save:
+            self.save("/nr/{}".format(key), red)
         return red
 
     def clear(self):
@@ -75,9 +77,10 @@ class Reducer(ExpCommon):
 
     def probing(self, qs=2):
         pb = Probe(self.root, self.name)
-        for frame_id in pb.diff_next(qs=qs):
-            self.elog.info("Qs: {}, FrameID: {}".format(qs, frame_id))
-        self.save("diff_next/size_{}".format(qs), pb.pdf)
+        for frame_id, opt in pb.diff_next(qs=qs):
+            self.elog.info("Qs: {}, FrameID: {}, time: {}".
+                           format(qs, frame_id, opt))
+        self.save("dn/size_{}".format(qs), pb.pdf)
 
     def batch_probing(self, qss=[2]):
         for qs in qss:

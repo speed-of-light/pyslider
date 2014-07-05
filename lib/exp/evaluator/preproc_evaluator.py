@@ -68,7 +68,7 @@ class PreprocEvaluator(ExpCommon):
 
     def segment_hit_ratio(self, reduced):
         seg = self.ac_segments_df(reduced)
-        seg = seg[seg.hit_seg_id.notnull()]
+        seg = seg[seg.hit_seg_id.notnull() & (seg.hit_seg_id > 0)]
         hsi = []
         for gsi, gs in seg.groupby("hit_seg_id"):
             hsi.append(gs.hit_seg_id)
