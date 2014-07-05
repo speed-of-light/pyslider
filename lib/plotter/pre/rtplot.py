@@ -1,6 +1,7 @@
 from matplotlib.ticker import FuncFormatter
 import matplotlib.cm as mcm
 import numpy as np
+from lib.exp.pre import Const
 
 
 class _RtPlot(object):
@@ -50,8 +51,8 @@ class _RtPlot(object):
         ah2, al2 = ax2.get_legend_handles_labels()
         return ah2, al2
 
-    def __add_labs(self, ax, ah2, al2, methods, data):
-        ax.set_xticklabels(methods, fontsize=15, rotation=0)
+    def __add_labs(self, ax, ah2, al2, data):
+        ax.set_xticklabels(Const.Names, fontsize=15, rotation=0)
         hx, lx = ax.get_legend_handles_labels()
         labs = ["Origin", "Thresed", "Final"] + al2
         ax.legend(hx+ah2, labs, loc='upper center',
@@ -74,9 +75,9 @@ class _RtPlot(object):
             self.__add_text(ax, pdi, pd.thresed/2+pd.final, int(pd.thresed))
             self.__add_text(ax, pdi, pd.final/2, int(pd.final))
 
-    def frame_reduced_ratio(self, ax, methods):
+    def frame_reduced_ratio(self, ax):
         data = self.__load_reduced_rtdf()
         self.__base_bar(ax, data)
         ah2, al2 = self.__line_frame_ratio(ax, data)
-        self.__add_labs(ax, ah2, al2, methods, data)
+        self.__add_labs(ax, ah2, al2, data)
         self.__add_texts(ax, data)
