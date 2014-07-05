@@ -1,4 +1,5 @@
 from matplotlib.ticker import FuncFormatter
+from lib.exp.pre import Const
 
 
 class _Base(object):
@@ -6,14 +7,8 @@ class _Base(object):
         self.__load_const()
 
     def __load_const(self):
-        names = ["Avg 2", "Avg 10", "Avg 15", "Avg 20",
-                 "Avg 30", "Avg 60", "Avg 300", "Bkg Model"]
-        rkeys = ["diff_next/size_2", "dn/size_10",
-                 "diff_next/size_15", "dn/size_20",
-                 "diff_next/size_30", "diff_next/size_60",
-                 "diff_next/size_300", "diff_bkg"]
-        self.rkeys = rkeys
-        self.names = names
+        self.rkeys = Const.Rkeys
+        self.names = Const.Names
 
     def _name_key_zip(self):
         inxs = range(len(self.names))
@@ -24,9 +19,15 @@ class _Base(object):
         sd = self.__dict__
         return (not hasattr(self, key)) or (sd[key] is None) or (sd[key] == "")
 
-    def rootname_not_set(self):
+    def __rootname_not_set(self):
         return self.__key_is_blank("root") or \
             self.__key_is_blank("name")
+
+    def _assert_rootname_exist(self):
+        if self.__rootname_not_set():
+            info = "set_rootname() before calling this function"
+            print info
+            raise Exception("Error", info)
 
     def _frame_time_formatter(self, data, pos):
         sec = (data)/30
@@ -35,6 +36,7 @@ class _Base(object):
     def set_rootname(self, root, name):
         self.root = root
         self.name = name
+        self.rn = "{}_{}".format(root, name)
         self.rootname = "[Data: {}-{}]".format(root, name)
 
     def __add_ser_lelabs(self, hl, newh, newl):
@@ -95,3 +97,8 @@ class _Base(object):
                     va='bottom', fontsize=12)
             scf = "{:3.2f}".format(pd.slide_coverage*100)
             ax.text(pdi+0.7, pd.slide_coverage, scf, va='bottom', fontsize=12)
+
+    def _common_axes(self, fig):
+        ax = fig.add_subplot(111)
+        ax.patch.set_alpha(.0)
+        return ax

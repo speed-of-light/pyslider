@@ -15,6 +15,17 @@ from lib.exp.base import ExpCommon
 from probe import Probe
 
 
+class Const(object):
+    __doc__ = "Constants for preprocessing data"
+
+    Names = ["Avg 2", "Avg 15",
+             "Avg 30", "Avg 60", "Avg 300", "Bkg Model"]
+
+    Rkeys = ["diff_next/size_2", "diff_next/size_15",
+             "diff_next/size_30", "diff_next/size_60",
+             "diff_next/size_300", "diff_bkg"]
+
+
 class Reducer(ExpCommon):
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)

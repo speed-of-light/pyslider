@@ -1,5 +1,6 @@
-from lib.exp.pre import Reducer
 from preproc_evaluator import PreprocEvaluator
+from lib.exp.pre import Const
+from lib.exp.pre import Reducer
 from lib.exp.evaluator.ground_truth import GroundTruth
 
 
@@ -14,14 +15,8 @@ class PreSegHrBins(object):
         self.gt_ = GroundTruth(root, name)
 
     def __load_const(self):
-        methods = ["Avg 2", "Avg 10", "Avg 15", "Avg 20",
-                   "Avg 30", "Avg 60", "Avg 300", "Bkg Model"]
-        rkeys = ["diff_next/size_2", "dn/size_10",
-                 "diff_next/size_15", "dn/size_20",
-                 "diff_next/size_30", "diff_next/size_60",
-                 "diff_next/size_300", "diff_bkg"]
-        self.funs = methods
-        self.keys = rkeys
+        self.funs = Const.Names
+        self.keys = Const.Rkeys
 
     def __load_data(self, key):
         df = self.re_.load(key)
@@ -46,11 +41,11 @@ class PreSegHrBins(object):
         Return extracted bins
         """
         bins = []
-        for rk in self.keys:
+        for rk, nk in zip(self.keys, self.funs):
             prk = "/nr/{}".format(rk)
             pdf, gdf = self.__load_data(prk)
             binn = self.__counting(pdf, gdf)
-            binn.update(key=rk)
+            binn.update(key=nk)
             bins.append(binn)
             if show:
                 print binn
