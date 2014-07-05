@@ -14,7 +14,7 @@ class Video(object):
         """
         vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
         self.stream_path = vid
-        self.cap_loaded =False
+        self.cap_loaded = False
 
     @property
     def __cap(self):
@@ -75,7 +75,8 @@ class Video(object):
             i += 1
 
     def get_frames(self, ids=[], gray=False):
-        cap = self.cap['cap']
+        self.__preload_cap()
+        cap = self.cap["engine"]
         for fid in ids:
             cap.set(cv.CV_CAP_PROP_POS_FRAMES, fid)
             grabed, img = cap.read()
@@ -124,8 +125,8 @@ class Video(object):
         if self.__invalid_str_attr(name):
             info = "Attribute {} is invalid.".format(name)
             raise Exception("Invalid Attribute Error", info)
+
     def __duration(self, start=0, end=-1):
-        fps = self.cap['fps']
         frame = int(self.cap['frames'])
         if (end < 0 or end > frame):
             end = frame

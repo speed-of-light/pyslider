@@ -19,7 +19,7 @@ class Probe(Preloader):
     def __get_local_avgimg(self, imgs, ratio=0):
         mix = imgs[0]
         mix = cv2.addWeighted(mix, ratio, mix, 0, 0)
-        for img in imgs[1:-1]:
+        for img in imgs[1:]:
             mix = cv2.addWeighted(mix, 1, img, ratio, 0)
         diff = cv2.absdiff(imgs[-1], mix).sum()
         return diff
