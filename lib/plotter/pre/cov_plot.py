@@ -1,9 +1,11 @@
 from matplotlib.ticker import FuncFormatter
 from lib.exp.pre import Const
+from lib.plotter.ax_helper import AxHelper
 
 
-class _CovPlot(object):
+class _CovPlot(AxHelper):
     def __init__(self, tag):
+        AxHelper.__init__(self)
         self.tag = tag
 
     def __title(self, ax):
@@ -34,19 +36,6 @@ class _CovPlot(object):
             scf = "{:3.2f}".format(pd.slide_coverage*100)
             ax.text(pdi+0.7, pd.slide_coverage, scf, va='bottom', fontsize=12)
 
-    def make_patch_spines_invisible(self, ax):
-        # TODO: Move to common package
-        ax.set_frame_on(True)
-        ax.patch.set_visible(False)
-        for sp in ax.spines.itervalues():
-            sp.set_visible(False)
-
-    def __shift_yaxes(self, ax, spine_pos="right", delta=1.1):
-        # TODO: Move to common package
-        ax.spines[spine_pos].set_position(("axes", 1.05))
-        self.make_patch_spines_invisible(ax)
-        ax.spines[spine_pos].set_visible(True)
-
     def __point_base(self, ax, x, y, title, style="ro", ymax=1):
         ah = ax.plot(x, y, style, alpha=0)
         ax.set_ylim(0, ymax)
@@ -63,7 +52,7 @@ class _CovPlot(object):
 
     def __point_slide_count(self, ax, data, shift=.8):
         ax2 = ax.twinx()
-        self.__shift_yaxes(ax2, delta=1.05)
+        self._ax_shift_yaxis(ax2, delta=1.05)
         x = data.index+.8
         y = data.slide_count
         self.__point_base(ax2, x, y, "Slide Count", "g>",

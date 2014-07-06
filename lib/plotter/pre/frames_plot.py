@@ -1,9 +1,11 @@
 import numpy as np
 from lib.exp.tools.video import Video
+from lib.plotter.ax_helper import AxHelper
 
 
-class _FramesPlot(object):
+class _FramesPlot(AxHelper):
     def __init__(self, root, name):
+        AxHelper.__init__(self)
         self.video = Video(root, name)
 
     def __get_all_frames(self, data, flag):
@@ -36,17 +38,8 @@ class _FramesPlot(object):
         ax.yaxis.set_visible(False)
         ax.xaxis.set_visible(False)
 
-    def make_patch_spines_invisible(self, ax):
-        # TODO: Move to common package
-        ax.set_frame_on(True)
-        ax.patch.set_visible(False)
-        ax.xaxis.set_visible(False)
-        ax.yaxis.set_visible(False)
-        for sp in ax.spines.itervalues():
-            sp.set_visible(False)
-
     def plot(self, fig, title):
-        self.make_patch_spines_invisible(fig.axes[0])
+        self._ax_hide_patch_spine_axis(fig.axes[0])
         for fi, (di, dv) in enumerate(self.data.iterrows(), 1):
             vd = self.video.get_frames([dv.fid]).next()
             ax = fig.add_subplot(6, 9, fi)

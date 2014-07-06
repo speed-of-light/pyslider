@@ -12,6 +12,7 @@ from rtplot import _RtPlot as RP
 from acc_plot import _AccPlot as AP
 from cov_plot import _CovPlot as CovP
 from frames_plot import _FramesPlot as FrmP
+from delay_plot import _DelayPlot as DeP
 
 
 class PrePlotter(Exts, Base, PF):
@@ -46,6 +47,7 @@ class PrePlotter(Exts, Base, PF):
         ax.set_title(key, fontsize=18, y=1.03)
         return ax
 
+    @render_base
     def batch_delay_relations(self, fig):
         """
         Usage:
