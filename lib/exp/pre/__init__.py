@@ -18,15 +18,17 @@ from probe import Probe
 class Const(object):
     __doc__ = "Constants for preprocessing data"
 
-    Names = ["Avg 2", "Avg 10", "Avg 15", "Avg 20",
-             "Avg 30", "Avg 60", "Avg 300", "Bkg Model"]
+    Names = np.array(
+        ["Avg 2", "Avg 10", "Avg 15", "Avg 20",
+         "Avg 30", "Avg 60", "Avg 300", "Bkg Model"])
 
-    Rkeys = ["diff_next/size_2", "dn/size_10",
-             "diff_next/size_15", "dn/size_20",
-             "diff_next/size_30", "diff_next/size_60",
-             "diff_next/size_300", "diff_bkg"]
+    Rkeys = np.array(
+        ["diff_next/size_2", "dn/size_10",
+         "diff_next/size_15", "dn/size_20",
+         "diff_next/size_30", "diff_next/size_60",
+         "diff_next/size_300", "diff_bkg"])
 
-    Doffsets = [1, 9, 14, 19, 29, 59, 299, 1]
+    Doffsets = np.array([1, 9, 14, 19, 29, 59, 299, 1])
 
 
 class Reducer(ExpCommon):
@@ -99,3 +101,11 @@ class Reducer(ExpCommon):
     def batch_probing(self, qss=[2]):
         for qs in qss:
             self.probing(qs)
+
+    def zipkey(self, keys=[]):
+        if len(keys) == 0:
+            keys = range(len(Const.Names))
+        inxs = range(len(keys))
+        iz = zip(inxs, Const.Names[keys],
+                 Const.Rkeys[keys], Const.Doffsets[keys])
+        return iz

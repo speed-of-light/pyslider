@@ -32,40 +32,20 @@ class PrePlotter(Exts, Base, PF):
             return data
         return inner
 
-    def fc_delay_relations(self, ax, data, cols,
-                           key="Delay-time vs Frame Difference"):
-        """
-        data: dataframe with columns `diff`, `dist`
-        """
-        hls = None
-        if "diff" in cols:
-            ax, hls = self.diff_plot(ax, data["diff"], hls)
-        if "dist" in cols:
-            ax, hls = self.dist_plot(ax, data["dist"], hls)
-        ax.set_xlim(0, max(data.index))
-        ax.legend(hls[0], hls[1], loc=0)
-        ax.set_title(key, fontsize=18, y=1.03)
-        return ax
-
     @render_base
-    def batch_delay_relations(self, fig):
+    def batch_delay_relations(self, fig=None, keys=[]):
         """
         Usage:
             fig = plt.figure(figsize=(15, 38))
             ppt.set_rootname(ro, na)
             ppt.batch_delay_relations(fig, *dn)
         """
-        for ri, na, rk, dof in Base._name_key_zip(self):
-            df = self._get_reduced_slides(rk, dof)
-            # plot
-            ax = fig.add_subplot(len(self.names), 1, ri+1)
-            ax.patch.set_alpha(0.0)
-            title = Base._title_tag(self, na)
-            self.fc_delay_relations(ax, df, cols=["diff", "dist"], key=title)
+        data = Exts._get_batch_delays(self, keys)
+        dp = DeP(data)
+        dp.plot(fig, self.rootname)
 
     @render_base
-    def fc_cov_comparisons(self, fig=None):
-        kz = Base._name_key_zip(self)
+    def fc_cov_comparisons(self, fig=None, keys=[]):
         data = Exts._get_slide_coverages(self, kz)
         print data
         pt = CovP(self.rootname)

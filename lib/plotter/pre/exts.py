@@ -46,14 +46,14 @@ class _Exts(object):
         sdf = self.pp_.ac_segments_df(rdf)
         return sdf
 
-    def _get_slide_coverages(self, keyzip):
+    def _get_slide_coverages(self, keys):
         """
         Load slide coverage and slide hitratio data
         """
         self._reload_obj("reducer")
         self._reload_obj("preproc")
         pda = []
-        for ri, na, rk, dof in keyzip:
+        for ri, na, rk, dof in self.re_.zipkey(keys):
             prk = "/nr/{}".format(rk)
             red = self.re_.load(prk)
             red.frame_id = red.frame_id - dof
@@ -67,3 +67,11 @@ class _Exts(object):
         aa.set_data(self.root, self.name, aa.PreprocessSegmentHitRatio)
         req = ["accuracy", "precision", "sensitivity"]
         return aa.details(req, show=0)
+
+    def _get_batch_delays(self, keys=[]):
+        self._reload_obj("reducer")
+        dis = []
+        for ri, na, rk, dof in self.re_.zipkey(keys):
+            df = self._get_reduced_slides(rk, dof)
+            dis.append(dict(key=na, df=df))
+        return dis
