@@ -2,65 +2,77 @@ __doc__ = """
 Preprocessing data result plotter
 """
 
-__all__ = ["_base", "_exts"]
+__all__ = []
 
-from base import _Base
-from exts import _Exts
+from functools import wraps  # enables @wraps
+from base import _Base as Base
+from exts import _Exts as Exts
+from lib.plotter.plot_filer import _PlotFiler as PF
 from rtplot import _RtPlot as RP
+from acc_plot import _AccPlot as AP
+from cov_plot import _CovPlot as CovP
+from frames_plot import _FramesPlot as FrmP
+from delay_plot import _DelayPlot as DeP
 
 
-class PrePlotter(_Exts, _Base):
-    def __init__(self):
-        _Base.__init__(self)
-        _Exts.__init__(self)
+class PrePlotter(Exts, Base, PF):
+    def __init__(self, autosave=False):
+        PF.__init__(self)
+        Base.__init__(self)
+        Exts.__init__(self)
+        self.autosave_fig = autosave
 
-    def fc_delay_relations(self, ax, data, cols,
-                           key="Delay-time vs Frame Difference"):
-        """
-        data: dataframe with columns `diff`, `dist`
-        """
-        hls = None
-        if "diff" in cols:
-            ax, hls = self.diff_plot(ax, data["diff"], hls)
-        if "dist" in cols:
-            ax, hls = self.dist_plot(ax, data["dist"], hls)
-        ax.set_xlim(0, max(data.index))
-        ax.legend(hls[0], hls[1], loc=0)
-        ax.set_title(key, fontsize=18, y=1.03)
-        return ax
+    def render_base(func):
+        @wraps(func)  # enable func.__name__
+        def inner(self, *args, **kwargs):
+            Base._assert_rootname_exist(self)
+            Base._common_axes(self, kwargs["fig"])
+            data = func(self, *args, **kwargs)
+            PF._savefig(self, kwargs["fig"], func.__name__, self.rn)
+            return data
+        return inner
 
-    def batch_delay_relations(self, fig, root, name):
+    @render_base
+    def batch_delay_relations(self, fig=None, keys=[]):
         """
         Usage:
             fig = plt.figure(figsize=(15, 38))
+            ppt.set_rootname(ro, na)
             ppt.batch_delay_relations(fig, *dn)
         """
-        _Exts._reload_obj(self, root, name, "reducer")
-        _Exts._reload_obj(self, root, name, "preproc")
-        _Base.set_rootname(self, root, name)
-        for ri, na, rk in _Base._name_key_zip(self):
-            df = self._get_reduced_data(self.re_, rk, self.pp_)
-            # plot
-            ax = fig.add_subplot(len(self.names), 1, ri+1)
-            title = _Base._title_tag(self, na)
-            self.fc_delay_relations(ax, df, cols=["diff", "dist"], key=title)
+        data = Exts._get_batch_delays(self, keys)
+        dp = DeP(data)
+        dp.plot(fig, self.rootname)
 
-    def shr_sc_comparisons(self, fig):
-        if _Base.rootname_not_set(self):
-            print "set_rootname() before calling this function"
-            return None
-        kz = _Base._name_key_zip(self)
-        pdf = _Exts._get_slide_coverages(self, self.root, self.name, kz)
-        ax = fig.add_subplot(111)
-        ax = pdf.plot(kind='bar', ax=ax)
-        _Base._shr_sc_cp_labs(self, ax)
-        _Base._shr_sc_texts(self, ax, pdf)
+    @render_base
+    def fc_cov_comparisons(self, fig=None, keys=[]):
+        data = Exts._get_slide_coverages(self, kz)
+        print data
+        pt = CovP(self.rootname)
+        pt.plot(fig.axes[0], data)
 
-    def batch_frame_ratio(self, fig, root, name):
+    @render_base
+    def batch_frame_ratio(self, fig=None):
         """
         Compare frame reduced ratio based on rootname
         """
-        _Exts._reload_obj(self, root, name, "reducer")
+        Exts._reload_obj(self, "reducer")
         rp = RP(self.re_)
-        ax = fig.add_subplot(111)
-        rp.frame_reduced_ratio(ax, self.names)
+        rp.frame_reduced_ratio(fig.axes[0])
+
+    @render_base
+    def roc_curve(self, fig=None):
+        data = Exts._get_accuracy(self)
+        ap = AP(0)
+        ap.plot(fig.axes[0], data)
+        return data
+
+    @render_base
+    def frame_list(self, fig=None, key="", seeds=[], all_seg=False,
+                   rand=False, lim=54):
+        # Print out of most `len(seeds) + lim` frames
+        rdf = self._get_reduced_segments(key)
+        fp = FrmP(self.root, self.name)
+        fp.set_data(rdf, seeds=seeds, all_seg=all_seg, rand=rand, lim=lim)
+        title = "{} \nRandom Selected Candidate Frames".format(self.rootname)
+        fp.plot(fig, title)

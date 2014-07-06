@@ -1,4 +1,9 @@
-__all__ = ['ground_truth']
+__doc__ = """
+Evaluations for experimental data
+"""
+
+__all__ = ['ground_truth', 'accuracy']
+
 from ground_truth import GroundTruth
 
 

@@ -1,41 +1,77 @@
 import pandas as pd
 from lib.exp.summary import Summary
 from lib.exp.evaluator.preproc_evaluator import PreprocEvaluator
+from lib.exp.pre import Const
 from lib.exp.pre import Reducer
+from lib.exp.evaluator.accuracy import Accuracy
 
 
 class _Exts(object):
     def __init__(self):
         pass
 
-    def _reload_obj(self, root, name, obj_name):
+    def __slide_count(self):
+        self._reload_obj("summary")
+        return self.su_.info(self.root, self.name).n_slides
+
+    def _reload_obj(self, obj_name):
         if obj_name == "reducer":
-            self.re_ = Reducer(root, name)
+            self.re_ = Reducer(self.root, self.name)
         elif obj_name == "preproc":
-            self.pp_ = PreprocEvaluator(root, name)
+            self.pp_ = PreprocEvaluator(self.root, self.name)
         elif obj_name == "summary":
             self.su_ = Summary()
 
-    def _get_reduced_data(self, re, rk, pp):
+    def __find_dof(self, key):
+        di = Const.Doffsets[Const.Rkeys.index(key)]
+        return di
+
+    def _get_reduced_data(self, rk, dof):
+        self._reload_obj("reducer")
         prk = "/nr/{}".format(rk)
-        red = re.load(prk)
-        scf = pp.ac_reduced_to_slides(red)
-        return scf
+        rdf = self.re_.load(prk)
+        rdf.frame_id = rdf.frame_id - dof
+        return rdf
 
-    def __slide_count(self, root, name):
-        self._reload_obj(root, name, "summary")
-        return self.su_.info(root, name).n_slides
+    def _get_reduced_slides(self, rk, doffset=0):
+        rdf = self._get_reduced_data(rk, doffset)
+        self._reload_obj("preproc")
+        sdf = self.pp_.ac_reduced_to_slides(rdf)
+        return sdf
 
-    def _get_slide_coverages(self, root, name, keyzip):
+    def _get_reduced_segments(self, rk):
+        dof = self.__find_dof(rk)
+        rdf = self._get_reduced_data(rk, dof)
+        self._reload_obj("preproc")
+        sdf = self.pp_.ac_segments_df(rdf)
+        return sdf
+
+    def _get_slide_coverages(self, keys):
         """
         Load slide coverage and slide hitratio data
         """
-        self._reload_obj(root, name, "reducer")
-        self._reload_obj(root, name, "preproc")
+        self._reload_obj("reducer")
+        self._reload_obj("preproc")
         pda = []
-        for ri, na, rk in keyzip:
+        for ri, na, rk, dof in self.re_.zipkey(keys):
             prk = "/nr/{}".format(rk)
             red = self.re_.load(prk)
-            sc, sh = self.pp_.preview(red, self.__slide_count(root, name))
-            pda.append(dict(method=na, slide_coverage=sc, segments_hit_ratio=sh))
+            red.frame_id = red.frame_id - dof
+            pdc = self.pp_.preview(red, self.__slide_count())
+            pdc.update(method=na)
+            pda.append(pdc)
         return pd.DataFrame(pda)
+
+    def _get_accuracy(self):
+        aa = Accuracy()
+        aa.set_data(self.root, self.name, aa.PreprocessSegmentHitRatio)
+        req = ["accuracy", "precision", "sensitivity"]
+        return aa.details(req, show=0)
+
+    def _get_batch_delays(self, keys=[]):
+        self._reload_obj("reducer")
+        dis = []
+        for ri, na, rk, dof in self.re_.zipkey(keys):
+            df = self._get_reduced_slides(rk, dof)
+            dis.append(dict(key=na, df=df))
+        return dis
