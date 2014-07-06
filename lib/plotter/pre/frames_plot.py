@@ -45,7 +45,7 @@ class _FramesPlot(object):
         for sp in ax.spines.itervalues():
             sp.set_visible(False)
 
-    def plot(self, fig):
+    def plot(self, fig, title):
         self.make_patch_spines_invisible(fig.axes[0])
         for fi, (di, dv) in enumerate(self.data.iterrows(), 1):
             vd = self.video.get_frames([dv.fid]).next()
@@ -53,4 +53,4 @@ class _FramesPlot(object):
             ax.imshow(vd["img"][:, :, [2, 1, 0]])
             self.__atitle(ax, di, int(dv.fid), int(dv.sid))
             print "[", fi, dv.fid, "]",
-        fig.suptitle("Random Selected Candidate Frames", fontsize=18, y=.95)
+        fig.suptitle(title, fontsize=18, y=.98)

@@ -92,4 +92,5 @@ class PrePlotter(Exts, Base, PF):
         rdf = self._get_reduced_segments(key)
         fp = FrmP(self.root, self.name)
         fp.set_data(rdf, seeds=seeds, all_seg=all_seg, rand=rand, lim=lim)
-        fp.plot(fig)
+        title = "{} \nRandom Selected Candidate Frames".format(self.rootname)
+        fp.plot(fig, title)
