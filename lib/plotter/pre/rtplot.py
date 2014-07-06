@@ -65,9 +65,10 @@ class _RtPlot(object):
         ax.set_xticklabels(Const.Names, fontsize=15, rotation=0)
         hx, lx = ax.get_legend_handles_labels()
         labs = ["Origin", "Thresed", "Final"] + al2
-        ax.legend(hx+ah2, labs, loc='upper center',
-                  bbox_to_anchor=(0.5, 1),
-                  ncol=5, fancybox=True, shadow=True, fontsize=14)
+        leg = ax.legend(
+            hx+ah2, labs, loc='upper center', shadow=True, ncol=5,
+            bbox_to_anchor=(0.5, 1), fancybox=True, fontsize=14)
+        leg.get_frame().set_alpha(0.5)
         ax.set_xlabel("Methods", fontsize=15)
         ax.set_ylabel("Frame Count", fontsize=15)
         ax.set_title("Frame reduced ratio", fontsize=20)

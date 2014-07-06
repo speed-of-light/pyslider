@@ -76,8 +76,9 @@ class _Base(object):
         """
         hx, lx = ax.get_legend_handles_labels()
         lelabs = ["Segments Hit-ratio", "Slide Coverage"]
-        ax.legend(hx, lelabs, loc='lower center', ncol=3,
+        leg = ax.legend(hx, lelabs, loc='lower center', ncol=3,
                   fancybox=False, shadow=True, fontsize=14)
+        leg.get_frame().set_alpha(0.5)
         ax.set_xlabel("Methods", fontsize=15)
         ax.set_xticklabels(Const.Names, fontsize=15, rotation=0)
         ax.set_ylabel("Percentage(%)", fontsize=15)

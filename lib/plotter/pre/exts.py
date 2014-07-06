@@ -44,8 +44,8 @@ class _Exts(object):
                 dict(method=na, slide_coverage=sc, segments_hit_ratio=sh))
         return pd.DataFrame(pda)
 
-    def _get_accuracy(self, root, name):
+    def _get_accuracy(self):
         aa = Accuracy()
-        aa.set_data(root, name, aa.PreprocessSegmentHitRatio)
+        aa.set_data(self.root, self.name, aa.PreprocessSegmentHitRatio)
         req = ["accuracy", "precision", "sensitivity"]
         return aa.details(req, show=0)

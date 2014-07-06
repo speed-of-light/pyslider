@@ -79,8 +79,9 @@ class PrePlotter(Exts, Base, PF):
         rp = RP(self.re_)
         rp.frame_reduced_ratio(_ax)
 
-    def roc_curve(self, ax, root, name):
-        data = Exts._get_accuracy(self, root, name)
+    @render_base
+    def roc_curve(self, fig=None, _ax=None):
+        data = Exts._get_accuracy(self)
         ap = AP(0)
-        ap.plot(ax, data)
+        ap.plot(_ax, data)
         return data
