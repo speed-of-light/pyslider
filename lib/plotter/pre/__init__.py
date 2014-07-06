@@ -11,6 +11,7 @@ from lib.plotter.plot_filer import _PlotFiler as PF
 from rtplot import _RtPlot as RP
 from acc_plot import _AccPlot as AP
 from cov_plot import _CovPlot as CovP
+from frames_plot import _FramesPlot as FrmP
 
 
 class PrePlotter(Exts, Base, PF):
@@ -24,8 +25,7 @@ class PrePlotter(Exts, Base, PF):
         @wraps(func)  # enable func.__name__
         def inner(self, *args, **kwargs):
             Base._assert_rootname_exist(self)
-            ax = Base._common_axes(self, kwargs["fig"])
-            kwargs.update(_ax=ax)
+            Base._common_axes(self, kwargs["fig"])
             data = func(self, *args, **kwargs)
             PF._savefig(self, kwargs["fig"], func.__name__, self.rn)
             return data
@@ -53,10 +53,8 @@ class PrePlotter(Exts, Base, PF):
             ppt.set_rootname(ro, na)
             ppt.batch_delay_relations(fig, *dn)
         """
-        Exts._reload_obj(self, "reducer")
-        Exts._reload_obj(self, "preproc")
         for ri, na, rk, dof in Base._name_key_zip(self):
-            df = self._get_reduced_data(self.re_, rk, self.pp_, dof)
+            df = self._get_reduced_slides(rk, dof)
             # plot
             ax = fig.add_subplot(len(self.names), 1, ri+1)
             ax.patch.set_alpha(0.0)
@@ -64,25 +62,34 @@ class PrePlotter(Exts, Base, PF):
             self.fc_delay_relations(ax, df, cols=["diff", "dist"], key=title)
 
     @render_base
-    def fc_cov_comparisons(self, fig=None, _ax=None):
+    def fc_cov_comparisons(self, fig=None):
         kz = Base._name_key_zip(self)
         data = Exts._get_slide_coverages(self, kz)
         print data
         pt = CovP(self.rootname)
-        pt.plot(_ax, data)
+        pt.plot(fig.axes[0], data)
 
     @render_base
-    def batch_frame_ratio(self, fig=None, _ax=None):
+    def batch_frame_ratio(self, fig=None):
         """
         Compare frame reduced ratio based on rootname
         """
         Exts._reload_obj(self, "reducer")
         rp = RP(self.re_)
-        rp.frame_reduced_ratio(_ax)
+        rp.frame_reduced_ratio(fig.axes[0])
 
     @render_base
-    def roc_curve(self, fig=None, _ax=None):
+    def roc_curve(self, fig=None):
         data = Exts._get_accuracy(self)
         ap = AP(0)
-        ap.plot(_ax, data)
+        ap.plot(fig.axes[0], data)
         return data
+
+    @render_base
+    def frame_list(self, fig=None, key="", seeds=[], all_seg=False,
+                   rand=False, lim=54):
+        # Print out of most `len(seeds) + lim` frames
+        rdf = self._get_reduced_segments(key)
+        fp = FrmP(self.root, self.name)
+        fp.set_data(rdf, seeds=seeds, all_seg=all_seg, rand=rand, lim=lim)
+        fp.plot(fig)

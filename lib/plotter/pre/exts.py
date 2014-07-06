@@ -1,6 +1,7 @@
 import pandas as pd
 from lib.exp.summary import Summary
 from lib.exp.evaluator.preproc_evaluator import PreprocEvaluator
+from lib.exp.pre import Const
 from lib.exp.pre import Reducer
 from lib.exp.evaluator.accuracy import Accuracy
 
@@ -21,11 +22,28 @@ class _Exts(object):
         elif obj_name == "summary":
             self.su_ = Summary()
 
-    def _get_reduced_data(self, re, rk, pp, doffset=0):
+    def __find_dof(self, key):
+        di = Const.Doffsets[Const.Rkeys.index(key)]
+        return di
+
+    def _get_reduced_data(self, rk, dof):
+        self._reload_obj("reducer")
         prk = "/nr/{}".format(rk)
-        rdf = re.load(prk)
+        rdf = self.re_.load(prk)
         rdf.frame_id = rdf.frame_id - dof
-        sdf = pp.ac_reduced_to_slides(rdf)
+        return rdf
+
+    def _get_reduced_slides(self, rk, doffset=0):
+        rdf = self._get_reduced_data(rk, doffset)
+        self._reload_obj("preproc")
+        sdf = self.pp_.ac_reduced_to_slides(rdf)
+        return sdf
+
+    def _get_reduced_segments(self, rk):
+        dof = self.__find_dof(rk)
+        rdf = self._get_reduced_data(rk, dof)
+        self._reload_obj("preproc")
+        sdf = self.pp_.ac_segments_df(rdf)
         return sdf
 
     def _get_slide_coverages(self, keyzip):
