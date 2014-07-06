@@ -23,10 +23,10 @@ class _Exts(object):
 
     def _get_reduced_data(self, re, rk, pp, doffset=0):
         prk = "/nr/{}".format(rk)
-        red = re.load(prk)
-        red.frame_id = red.frame_id - dof
-        scf = pp.ac_reduced_to_slides(red)
-        return scf
+        rdf = re.load(prk)
+        rdf.frame_id = rdf.frame_id - dof
+        sdf = pp.ac_reduced_to_slides(rdf)
+        return sdf
 
     def _get_slide_coverages(self, keyzip):
         """

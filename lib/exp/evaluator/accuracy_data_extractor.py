@@ -9,7 +9,6 @@ class PreSegHrBins(object):
         """
         Preprocessing segmented result hit ratio bins
         """
-        self.__load_const()
         self.pp_ = PreprocEvaluator(root, name)
         self.re_ = Reducer(root, name)
         self.gt_ = GroundTruth(root, name)
@@ -18,9 +17,10 @@ class PreSegHrBins(object):
         self.funs = Const.Names
         self.keys = Const.Rkeys
 
-    def __load_data(self, key):
-        df = self.re_.load(key)
-        ddf = self.pp_.ac_segments_df(df)
+    def __load_data(self, key, doffset=0):
+        rdf = self.re_.load(key)
+        rdf.frame_id = rdf.frame_id - doffset
+        ddf = self.pp_.ac_segments_df(rdf)
         gsf = self.gt_.load("segments")
         return ddf, gsf
 
@@ -41,9 +41,9 @@ class PreSegHrBins(object):
         Return extracted bins
         """
         bins = []
-        for rk, nk in zip(self.keys, self.funs):
+        for rk, nk, dof in zip(Const.Rkeys, Const.Names, Const.Doffsets):
             prk = "/nr/{}".format(rk)
-            pdf, gdf = self.__load_data(prk)
+            pdf, gdf = self.__load_data(prk, dof)
             binn = self.__counting(pdf, gdf)
             binn.update(key=nk)
             bins.append(binn)
