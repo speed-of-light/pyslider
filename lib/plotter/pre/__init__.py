@@ -10,6 +10,7 @@ from exts import _Exts as Exts
 from lib.plotter.plot_filer import _PlotFiler as PF
 from rtplot import _RtPlot as RP
 from acc_plot import _AccPlot as AP
+from cov_plot import _CovPlot as CovP
 
 
 class PrePlotter(Exts, Base, PF):
@@ -63,12 +64,11 @@ class PrePlotter(Exts, Base, PF):
             self.fc_delay_relations(ax, df, cols=["diff", "dist"], key=title)
 
     @render_base
-    def fc_shr_sc_comparisons(self, fig=None, _ax=None):
+    def fc_cov_comparisons(self, fig=None, _ax=None):
         kz = Base._name_key_zip(self)
         data = Exts._get_slide_coverages(self, kz)
-        data.plot(kind='bar', ax=_ax)
-        Base._shr_sc_cp_labs(self, _ax)
-        Base._shr_sc_texts(self, _ax, data)
+        pt = CovP(self.rootname)
+        pt.plot(_ax, data)
 
     @render_base
     def batch_frame_ratio(self, fig=None, _ax=None):

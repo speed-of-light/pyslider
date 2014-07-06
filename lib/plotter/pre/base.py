@@ -70,31 +70,6 @@ class _Base(object):
         title = "{} {}".format(self.rootname, info)
         return title
 
-    def _shr_sc_cp_labs(self, ax):
-        """
-        Slide Hit Ratio, Slide Coverage ComParison Labels
-        """
-        hx, lx = ax.get_legend_handles_labels()
-        lelabs = ["Segments Hit-ratio", "Slide Coverage"]
-        leg = ax.legend(hx, lelabs, loc='lower center', ncol=3,
-                  fancybox=False, shadow=True, fontsize=14)
-        leg.get_frame().set_alpha(0.5)
-        ax.set_xlabel("Methods", fontsize=15)
-        ax.set_xticklabels(Const.Names, fontsize=15, rotation=0)
-        ax.set_ylabel("Percentage(%)", fontsize=15)
-        ax.yaxis.set_major_formatter(
-            FuncFormatter(lambda v, p: "{:3.1f}".format(v*100)))
-        title = self._title_tag("Segments and slide soverage")
-        ax.set_title(title, y=1.02, fontsize=18)
-
-    def _shr_sc_texts(self, ax, data):
-        for pdi, pd in data.iterrows():
-            shrf = "{:3.2f}".format(pd.segments_hit_ratio*100)
-            ax.text(pdi+0.3, pd.segments_hit_ratio, shrf,
-                    va='bottom', fontsize=12)
-            scf = "{:3.2f}".format(pd.slide_coverage*100)
-            ax.text(pdi+0.7, pd.slide_coverage, scf, va='bottom', fontsize=12)
-
     def _common_axes(self, fig):
         ax = fig.add_subplot(111)
         ax.patch.set_alpha(.0)
