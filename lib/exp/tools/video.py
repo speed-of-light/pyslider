@@ -7,16 +7,17 @@ import cv
 
 
 class Video(object):
-    """
-    Author: speed-of-light
-    Purpose: Operations on video frames
-    """
     def __init__(self, root, name):
+        """
+        Author: speed-of-light
+        Purpose: Operations on video frames
+        """
         vid = glob.glob("./data/{}/{}/video.*".format(root, name))[0]
         self.stream_path = vid
+        self.cap_loaded = False
 
     @property
-    def cap(self):
+    def __cap(self):
         if self.stream_path == "":
             return ""
         else:
@@ -74,7 +75,8 @@ class Video(object):
             i += 1
 
     def get_frames(self, ids=[], gray=False):
-        cap = self.cap['cap']
+        self.__preload_cap()
+        cap = self.cap["engine"]
         for fid in ids:
             cap.set(cv.CV_CAP_PROP_POS_FRAMES, fid)
             grabed, img = cap.read()
@@ -114,3 +116,58 @@ class Video(object):
         fence = "custom" if type(fence) is int else fence
         iqr = (df.isum.quantile(.75) - df.isum.quantile(.5))*iqt[fence]
         return df[df.isum.gt(iqr)]
+
+    def __invalid_str_attr(self, name):
+        return (not hasattr(self, name)) or \
+            (self.__dict__[name] is None) or (self.__dict__[name] == "")
+
+    def _assert_valid_str(self, name):
+        if self.__invalid_str_attr(name):
+            info = "Attribute {} is invalid.".format(name)
+            raise Exception("Invalid Attribute Error", info)
+
+    def __duration(self, start=0, end=-1):
+        frame = int(self.cap['frames'])
+        if (end < 0 or end > frame):
+            end = frame
+        return start, end+1
+
+    def __load_cap(self):
+        cap = cv2.VideoCapture(self.stream_path)
+        fps = cap.get(cv.CV_CAP_PROP_FPS)
+        frs = cap.get(cv.CV_CAP_PROP_FRAME_COUNT)
+        self.cap = dict(engine=cap, fps=fps, frames=frs, seconds=frs/fps)
+        self.cap_loaded = True
+
+    def __reload_cap(self):
+        self._assert_valid_str("stream_path")
+        self.__load_cap()
+
+    def __preload_cap(self):
+        if not self.cap_loaded:
+            self.__reload_cap()
+
+    def __regulate_q(self, q, qsize, data):
+        q.append(data)
+        if len(q) > qsize:
+            q.popleft()
+        return q
+
+    def frame_set(self, start=0, end=-1, qsize=2):
+        """
+        scoped_frame() improved
+        """
+        self.__preload_cap()
+        dur = self.__duration(start, end)
+        cap = self.cap['engine']
+        iset = collections.deque([])
+        ms_flag = cv.CV_CAP_PROP_POS_MSEC
+        for ci in range(*dur):
+            cap.set(cv.CV_CAP_PROP_POS_FRAMES, ci)
+            grabed, img = cap.read()
+            if grabed:
+                data = dict(img=img, fn=ci, ms=cap.get(ms_flag))
+                iset = self.__regulate_q(iset, qsize, data)
+                if len(iset) < qsize:
+                    continue
+                yield(iset)
