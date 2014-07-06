@@ -39,9 +39,9 @@ class _Exts(object):
             prk = "/nr/{}".format(rk)
             red = self.re_.load(prk)
             red.frame_id = red.frame_id - dof
-            sc, sh = self.pp_.preview(red, self.__slide_count())
-            pda.append(
-                dict(method=na, slide_coverage=sc, segments_hit_ratio=sh))
+            pdc = self.pp_.preview(red, self.__slide_count())
+            pdc.update(method=na)
+            pda.append(pdc)
         return pd.DataFrame(pda)
 
     def _get_accuracy(self):

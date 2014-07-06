@@ -67,6 +67,7 @@ class PrePlotter(Exts, Base, PF):
     def fc_cov_comparisons(self, fig=None, _ax=None):
         kz = Base._name_key_zip(self)
         data = Exts._get_slide_coverages(self, kz)
+        print data
         pt = CovP(self.rootname)
         pt.plot(_ax, data)
 
