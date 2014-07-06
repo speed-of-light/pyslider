@@ -21,9 +21,10 @@ class _Exts(object):
         elif obj_name == "summary":
             self.su_ = Summary()
 
-    def _get_reduced_data(self, re, rk, pp):
+    def _get_reduced_data(self, re, rk, pp, doffset=0):
         prk = "/nr/{}".format(rk)
         red = re.load(prk)
+        red.frame_id = red.frame_id - dof
         scf = pp.ac_reduced_to_slides(red)
         return scf
 
@@ -34,9 +35,10 @@ class _Exts(object):
         self._reload_obj("reducer")
         self._reload_obj("preproc")
         pda = []
-        for ri, na, rk in keyzip:
+        for ri, na, rk, dof in keyzip:
             prk = "/nr/{}".format(rk)
             red = self.re_.load(prk)
+            red.frame_id = red.frame_id - dof
             sc, sh = self.pp_.preview(red, self.__slide_count())
             pda.append(
                 dict(method=na, slide_coverage=sc, segments_hit_ratio=sh))

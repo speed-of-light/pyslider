@@ -1,5 +1,6 @@
 from matplotlib.ticker import FuncFormatter
 import matplotlib.cm as mcm
+import pandas as pd
 import numpy as np
 from lib.exp.pre import Const
 
@@ -9,9 +10,18 @@ class _RtPlot(object):
         self.re_ = reducer
         pass
 
+    def __latest_result(self, rdf):
+        rd = []
+        for rk in Const.Rkeys:
+          ldf = rdf[rdf.key == rk]
+          rd.append(ldf.iloc[-1])
+        return pd.DataFrame(rd)
+
     def __load_reduced_rtdf(self):
         rdf = self.re_.load("rtlog")
+        rdf = self.__latest_result(rdf)
         rdf["left"] = rdf.origin - rdf.thresed - rdf.final
+        rdf = rdf.reset_index(drop=1)
         return rdf
 
     def __bar_kwa(self, cm, y="origin", ha="//"):
@@ -36,13 +46,13 @@ class _RtPlot(object):
     def __line_ratio_texts(self, ax, data):
         for pdi, pd in data.iterrows():
             pfr = pd.final*1./pd.origin
-            ax.text(pdi-.5, pfr*.93, "{:5.2f}%".format(pfr*100), ha='center',
-                    va='bottom', color='b', fontsize=12)
+            ax.text(pdi+.5, pfr*.93, "{:5.2f}%".format(pfr*100), ha='center',
+                    va="bottom", color="b", fontsize=12)
 
     def __line_frame_ratio(self, ax, data):
         ax2 = ax.twinx()
         rat = data.final*1./data.origin
-        ax2.plot(data.index+(-.5), rat, '--ro', label="Reduced Rate")
+        ax2.plot(data.index+.5, rat, '--ro', label="Reduced Rate")
         ax2.set_ylabel("Frames Ratio(%)", fontsize=15)
         ax2.set_yticklabels(ax2.get_yticklabels(), fontsize=13)
         fmt = FuncFormatter(lambda v, p: "{:3.2f}".format(v*100))
@@ -64,7 +74,7 @@ class _RtPlot(object):
         ax.set_xlim(0, len(data))
 
     def __add_text(self, ax, pdi, pdy, pdv):
-        x = pdi - .5
+        x = pdi + .5
         t = "{: 5d}".format(pdv)
         ax.text(x, pdy, t, ha='center', fontsize=12)
 

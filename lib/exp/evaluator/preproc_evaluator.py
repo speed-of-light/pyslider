@@ -31,23 +31,24 @@ class PreprocEvaluator(ExpCommon):
         dfi = self.seg[self.seg.fstart <= fid]
         dist = None
         sid = -1
-        tagid = None
+        gnd_fid = None
         if len(dfi) > 0:
             tag = dfi.iloc[-1]
             sid = self.__get_slide_id(fid, tag)
-            tagid = tag.fstart * -1
+            gnd_fid = tag.fstart * -1
             if sid > 0:
-                tagid = tag.fstart
+                gnd_fid = tag.fstart
                 dist = fid - tag.fstart
-        return sid, dist, tagid
+        return sid, dist, gnd_fid
 
     def ac_segments_df(self, reduced):
         data = []
         for ri, rd in reduced.iterrows():
-            sid, dist, hid = self.in_segment(rd.frame_id)
+            fid = rd.frame_id
+            sid, dist, gfid = self.in_segment(fid)
             data.append(
-                dict(sid=sid, fid=rd.name, dist=dist,
-                     hit_seg_id=hid, diff=rd['diff']))
+                dict(sid=sid, fid=fid, dist=dist, hit_seg_id=gfid,
+                     diff=rd['diff']))
         return pd.DataFrame(data)
 
     def ac_slide_count(self, segments):

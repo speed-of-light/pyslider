@@ -54,8 +54,8 @@ class PrePlotter(Exts, Base, PF):
         """
         Exts._reload_obj(self, "reducer")
         Exts._reload_obj(self, "preproc")
-        for ri, na, rk in Base._name_key_zip(self):
-            df = self._get_reduced_data(self.re_, rk, self.pp_)
+        for ri, na, rk, dof in Base._name_key_zip(self):
+            df = self._get_reduced_data(self.re_, rk, self.pp_, dof)
             # plot
             ax = fig.add_subplot(len(self.names), 1, ri+1)
             ax.patch.set_alpha(0.0)

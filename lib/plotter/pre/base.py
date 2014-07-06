@@ -4,15 +4,11 @@ from lib.exp.pre import Const
 
 class _Base(object):
     def __init__(self):
-        self.__load_const()
-
-    def __load_const(self):
-        self.rkeys = Const.Rkeys
-        self.names = Const.Names
+        pass
 
     def _name_key_zip(self):
-        inxs = range(len(self.names))
-        iz = zip(inxs, self.names, self.rkeys)
+        inxs = range(len(Const.Names))
+        iz = zip(inxs, Const.Names, Const.Rkeys, Const.Doffsets)
         return iz
 
     def __key_is_blank(self, key):
@@ -83,7 +79,7 @@ class _Base(object):
         ax.legend(hx, lelabs, loc='lower center', ncol=3,
                   fancybox=False, shadow=True, fontsize=14)
         ax.set_xlabel("Methods", fontsize=15)
-        ax.set_xticklabels(self.names, fontsize=15, rotation=0)
+        ax.set_xticklabels(Const.Names, fontsize=15, rotation=0)
         ax.set_ylabel("Percentage(%)", fontsize=15)
         ax.yaxis.set_major_formatter(
             FuncFormatter(lambda v, p: "{:3.1f}".format(v*100)))
