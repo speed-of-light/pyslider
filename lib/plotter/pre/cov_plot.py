@@ -1,5 +1,4 @@
 from matplotlib.ticker import FuncFormatter
-from lib.exp.pre import Const
 from lib.plotter.ax_helper import AxHelper
 
 
@@ -21,9 +20,9 @@ class _CovPlot(AxHelper):
             fancybox=False, shadow=True, fontsize=14)
         leg.get_frame().set_alpha(0.8)
 
-    def __labels(self, ax):
+    def __labels(self, ax, xlabs):
         ax.set_xlabel("Methods", fontsize=15)
-        ax.set_xticklabels(Const.Names, fontsize=15, rotation=0)
+        ax.set_xticklabels(xlabs, fontsize=15, rotation=0)
         ax.set_ylabel("Percentage(%)", fontsize=15)
         ax.yaxis.set_major_formatter(
             FuncFormatter(lambda v, p: "{:3.1f}".format(v*100)))
@@ -58,15 +57,15 @@ class _CovPlot(AxHelper):
         self.__point_base(ax2, x, y, "Slide Count", "g>",
                           data.total_slides.max())
 
-    def __base_common(self, ax):
-        self.__labels(ax)
+    def __base_common(self, ax, data):
+        self.__labels(ax, data.method)
         self.__legend(ax)
         self.__title(ax)
 
     def plot(self, ax, data):
         cols = ["segments_hit_ratio", "slide_coverage"]
         data[cols].plot(kind='bar', ax=ax)
-        self.__base_common(ax)
+        self.__base_common(ax, data)
         self.__top_ratio(ax, data)
         self.__point_seg_hits(ax, data)
         self.__point_slide_count(ax, data)

@@ -46,18 +46,18 @@ class PrePlotter(Exts, Base, PF):
 
     @render_base
     def fc_cov_comparisons(self, fig=None, keys=[]):
-        data = Exts._get_slide_coverages(self, kz)
+        data = Exts._get_slide_coverages(self, keys)
         print data
         pt = CovP(self.rootname)
         pt.plot(fig.axes[0], data)
 
     @render_base
-    def batch_frame_ratio(self, fig=None):
+    def batch_frame_ratio(self, fig=None, keys=[]):
         """
         Compare frame reduced ratio based on rootname
         """
         Exts._reload_obj(self, "reducer")
-        rp = RP(self.re_)
+        rp = RP(self.re_, keys=keys)
         rp.frame_reduced_ratio(fig.axes[0])
 
     @render_base

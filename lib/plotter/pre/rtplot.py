@@ -6,15 +6,15 @@ from lib.exp.pre import Const
 
 
 class _RtPlot(object):
-    def __init__(self, reducer):
+    def __init__(self, reducer, keys=[]):
         self.re_ = reducer
-        pass
+        self.keys = keys
 
     def __latest_result(self, rdf):
         rd = []
-        for rk in Const.Rkeys:
-          ldf = rdf[rdf.key == rk]
-          rd.append(ldf.iloc[-1])
+        for rk in Const.Rkeys[self.keys]:
+            ldf = rdf[rdf.key == rk]
+            rd.append(ldf.iloc[-1])
         return pd.DataFrame(rd)
 
     def __load_reduced_rtdf(self):
@@ -44,8 +44,8 @@ class _RtPlot(object):
         data.plot(ax=ax, **kwa)
 
     def __line_ratio_texts(self, ax, data):
-        for pdi, pd in data.iterrows():
-            pfr = pd.final*1./pd.origin
+        for pdi, pt in data.iterrows():
+            pfr = pt.final*1./pt.origin
             ax.text(pdi+.5, pfr*.93, "{:5.2f}%".format(pfr*100), ha='center',
                     va="bottom", color="b", fontsize=12)
 
@@ -62,7 +62,7 @@ class _RtPlot(object):
         return ah2, al2
 
     def __add_labs(self, ax, ah2, al2, data):
-        ax.set_xticklabels(Const.Names, fontsize=15, rotation=0)
+        ax.set_xticklabels(Const.Names[self.keys], fontsize=15, rotation=0)
         hx, lx = ax.get_legend_handles_labels()
         labs = ["Origin", "Thresed", "Final"] + al2
         leg = ax.legend(

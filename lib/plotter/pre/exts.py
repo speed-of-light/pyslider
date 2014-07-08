@@ -23,7 +23,8 @@ class _Exts(object):
             self.su_ = Summary()
 
     def __find_dof(self, key):
-        di = Const.Doffsets[Const.Rkeys.index(key)]
+        dk = Const.Rkeys == key
+        di = Const.Doffsets[dk]
         return di
 
     def _get_reduced_data(self, rk, dof):
