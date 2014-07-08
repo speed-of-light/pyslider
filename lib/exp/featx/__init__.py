@@ -10,15 +10,21 @@ class Featx(Feats):
     def __init__(self, root, name):
         Feats.__init__(self, root, name)
 
-    def get_slide_feats(self):
+    def confusion_slide_feats(self):
+        # Making slide feats confusion matrix
+        pass
+
+    def slide_feats(self):
+        # compute feats of slides
         ss = Slider(self.root, self.name)
         imgl = ss.get_slides(None, gray=True, resize=True)
         self.feats(imgl, prefix="s")
 
-    def get_frame_feats(self):
+    def frame_feats(self):
+        # Compute feats of frames
         rr = Reducer(self.root, self.name)
         vv = Video(self.root, self.name)
-        imgl = vv.get_frames(rr.frame_ids(), gray=True)
+        imgl = vv.get_frames(rr.frame_ids(ikey=4), gray=True)
         self.feats(imgl, prefix="f")
 
     def load_feats(self, key):
