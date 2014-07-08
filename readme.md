@@ -14,9 +14,9 @@ For more information, please refer to [docs][docs].
 # Working flow
 
   - `Reducer`
-  - `Matcher`
-  - `Classification`
-  - `Recognition`
+  - `Feats`
+  - `xFrames`
+  - `Matchx`
   - `DTW`
 
 # Lib. Structure
