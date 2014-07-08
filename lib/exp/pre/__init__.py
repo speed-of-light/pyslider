@@ -87,9 +87,12 @@ class Reducer(ExpCommon):
         self.delete_log()
         # self.delete_store()  # be careful
 
-    def frame_ids(self, key="/reduce/diff_next/size_30"):
-        df = self.load(key)
-        return df.frame_id.values.astype(np.int32)
+    def frame_ids(self, ikey=4, delta=True):
+        rk = "/nr/" + Const.Rkeys[ikey]
+        dfv = self.load(rk).frame_id
+        if delta:
+            dfv -= 30
+        return dfv[dfv > 0].values.astype(np.int32)
 
     def probing(self, qs=2):
         pb = Probe(self.root, self.name)

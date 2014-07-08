@@ -1,9 +1,9 @@
 __all__ = []
 
-from lib.exp.featx.base import Feats
 from lib.exp.tools.slider import Slider
 from lib.exp.tools.video import Video
 from lib.exp.pre import Reducer
+from base import Feats
 
 
 class Featx(Feats):
@@ -41,7 +41,8 @@ class Featx(Feats):
         sfs = []
         for sid in sids:
             sfs.append(self.load_feats("s_{:03d}_des".format(sid)))
-        self.elog.info("loading {}-{} slides feats ...".format(self.root, self.name))
+        self.elog.info("loading {}-{} slides feats ...".
+                       format(self.root, self.name))
         return sfs
 
     def load_frame_feats(self, fid):
