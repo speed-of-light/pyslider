@@ -1,3 +1,4 @@
+import cv2
 from lib.exp.featx import Featx
 
 
@@ -8,22 +9,22 @@ class _Preloader(object):
         Grabing data
         """
         pass
+        # self.__preload("featx")
 
-    def __preload_matcher(self):
-        if not hasattr(self, "matcher"):
-            self._reload_matcher()
+    def __load_mod(self, mod):
+        if mod == "matcher":
+            _mod = cv2.DescriptorMatcher_create(self.mcore)
+        elif mod == "featx":
+            _mod = Featx(self.root, self.name)
+        self.__dict__[mod] = _mod
 
-    def _load_matcher(self):
-        self.matcher = cv2.DescriptorMatcher_create(self.mcore)
+    def _reload_mod(self, mod):
+        self.__load_mod(mod)
 
-    def _reload_matcher(self):
-        self.matcher = self._load_matcher()
+    def preload(self, mod):
+        if not hasattr(self, mod):
+            self._reload_mod(mod)
 
-    def _preload(self):
-        self.__preload_matcher()
-
-    def get_matcher(self):
-        if not hasattr(self, "matcher"):
-            return self._load_matcher()
-        else:
-            return self.matcher
+    def get_mod(self, mod):
+        self._preload(mod)
+        return self.__dict__[mod]

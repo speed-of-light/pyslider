@@ -102,6 +102,9 @@ class Reducer(ExpCommon):
         self.save("dn/size_{}".format(qs), pb.pdf)
 
     def batch_probing(self, qss=[2]):
+        """
+        qss: query size list
+        """
         for qs in qss:
             self.probing(qs)
 

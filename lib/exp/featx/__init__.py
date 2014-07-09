@@ -41,6 +41,6 @@ class Featx(Feats, Cfg, FP):
         """
         Get (pid, kps, des) data
         """
-        self.preload_packs()
-        return dict(slide=self.slide[isx],
-                    frame=self.frame[ifx])
+        self.preload_packs(True)
+        return dict(slide=self.slides[isx],
+                    frame=self.frames[ifx])

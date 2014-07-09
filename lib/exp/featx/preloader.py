@@ -4,7 +4,7 @@ from lib.exp.pre import Reducer
 
 class _Preloader(object):
     _keys = ["slide_kps", "slide_des", "frame_kps", "frame_des"]
-    _pkeys = ["slide", "frame"]
+    _pkeys = ["slides", "frames"]
 
     def __init__(self):
         pass
@@ -58,7 +58,7 @@ class _Preloader(object):
         self.__dict__[key] = data
 
     def _reload_pack(self, key):
-        pids = self._seeds(pf)
+        pids = self._seeds(key)
         data = self.__load_feats_pack(pids, key)
         self.__dict__[key] = data
 
@@ -71,18 +71,21 @@ class _Preloader(object):
                 self._reload_pack(key)
 
     def _load_feats_fac(self, pf, pk):
-        fx = lambda pid: self.__load_feats(pf=pf, pk=pk, pid=pid)
+        fx = lambda pid: self.__load_feats(pf=pf, key=pk, pid=pid)
         return fx
 
     def _seeds(self, key):
-        if key == "slide":
+        if key == "slides":
             pids = self.__slide_seeds()
-        elif key == "frame":
+        elif key == "frames":
             pids = self.__frame_seeds()
         return pids
 
     def preload_packs(self, preload=False):
-        loader = self._preload_pack if preload else self._reload_pack
+        """
+        Produce `frame`, `slide` data pack
+        """
+        loader = self.preload if preload else self._reload_pack
         map(loader, self._pkeys)
 
     def preload_debug(self, preload=False):
