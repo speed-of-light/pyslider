@@ -5,11 +5,13 @@ from lib.exp.tools.video import Video
 from lib.exp.pre import Reducer
 from base import Feats
 from preloader import _Preloader as FP
+from conf import _Conf as Cfg
 
 
-class Featx(Feats, FP):
+class Featx(Feats, Cfg, FP):
     def __init__(self, root, name):
         Feats.__init__(self, root, name)
+        Cfg.__init__(self)
 
     def slide_feats(self):
         # compute feats of slides
@@ -26,6 +28,7 @@ class Featx(Feats, FP):
 
     def get_feats_pair(self, sid, fid):
         """
+        Deprecated, use `feats_pair` instead
         Get features by given `slide`, `frame` pairs
         """
         sk = self.load_feats("s_{:03d}_kps".format(sid))
@@ -35,8 +38,9 @@ class Featx(Feats, FP):
         return dict(sk=sk, sd=sd, fk=fk, fd=fd)
 
     def feats_pair(self, isx, ifx):
-        self.preload_all()
-        return dict(sk=self.slide_kps[isx],
-                    sd=self.slide_des[isx],
-                    fk=self.frame_kps[ifx],
-                    fd=self.frame_des[ifx])
+        """
+        Get (pid, kps, des) data
+        """
+        self.preload_packs()
+        return dict(slide=self.slide[isx],
+                    frame=self.frame[ifx])

@@ -3,6 +3,9 @@ from lib.exp.pre import Reducer
 
 
 class _Preloader(object):
+    _keys = ["slide_kps", "slide_des", "frame_kps", "frame_des"]
+    _pkeys = ["slide", "frame"]
+
     def __init__(self):
         pass
 
@@ -33,25 +36,42 @@ class _Preloader(object):
         pk = "{}_{:03d}_{}".format(pf[0], pid, key)
         return self.__base_loader(pk)
 
+    def __load_feats_pack(self, pids=[], pf="frame"):
+        self.elog.info("Packing {} feats...".format(pf))
+        pks = map(self._load_feats_fac(pf, "kps"), pids)
+        pds = map(self._load_feats_fac(pf, "des"), pids)
+        pkeys = ["pid", "kps", "des"]
+        dll = [dict(zip(pkeys, data)) for data in zip(pids, pks, pds)]
+        self.elog.info("Packing {} feats finished...".format(pf))
+        return dll
+
     def __load_feats_list(self, pids=[], pf="frame", key="des"):
-        fs = []
         self.elog.info("loading {} feats ({})...".format(pf, key))
         fs = map(self._load_feats_fac(pf, key), pids)
         self.elog.info("Load {} feats ({}) finished...".format(pf, key))
         return fs
 
-    def reload(self, key="slide_des"):
+    def _reload(self, key="slide_des"):
         pf, pkey = key.split("_")
         pids = self._seeds(pf)
-        data = self.__load_feats(pids, pf, pkey)
+        data = self.__load_feats_list(pids, pf, pkey)
+        self.__dict__[key] = data
+
+    def _reload_pack(self, key):
+        pids = self._seeds(pf)
+        data = self.__load_feats_pack(pids, key)
         self.__dict__[key] = data
 
     def preload(self, key="slide_des"):
         """`slide_kps`, `slide_des`, `frame_kps`, `frame_des`"""
         if not hasattr(self, key):
-            self.__reload(key)
+            if key.find("_") > 0:
+                self._reload(key)
+            else:
+                self._reload_pack(key)
+
     def _load_feats_fac(self, pf, pk):
-        fx = lambda pid: self.__load_feats(pf=pf, pk=key, pid=pid)
+        fx = lambda pid: self.__load_feats(pf=pf, pk=pk, pid=pid)
         return fx
 
     def _seeds(self, key):
@@ -61,8 +81,13 @@ class _Preloader(object):
             pids = self.__frame_seeds()
         return pids
 
-    def preload_all(self):
-        self.preload("slide_kps")
-        self.preload("slide_des")
-        self.preload("frame_kps")
-        self.preload("frame_des")
+    def preload_packs(self, preload=False):
+        loader = self._preload_pack if preload else self._reload_pack
+        map(loader, self._pkeys)
+
+    def preload_debug(self, preload=False):
+        """
+        Debug use
+        """
+        loader = self.preload if preload else self._reload
+        map(loader, self._keys)
