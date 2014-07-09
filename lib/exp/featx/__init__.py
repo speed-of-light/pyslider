@@ -4,9 +4,10 @@ from lib.exp.tools.slider import Slider
 from lib.exp.tools.video import Video
 from lib.exp.pre import Reducer
 from base import Feats
+from preloader import _Preloader as FP
 
 
-class Featx(Feats):
+class Featx(Feats, FP):
     def __init__(self, root, name):
         Feats.__init__(self, root, name)
 
@@ -32,3 +33,10 @@ class Featx(Feats):
         fk = self.load_feats("f_{:03d}_kps".format(fid))
         fd = self.load_feats("f_{:03d}_des".format(fid))
         return dict(sk=sk, sd=sd, fk=fk, fd=fd)
+
+    def feats_pair(self, isx, ifx):
+        self.preload_all()
+        return dict(sk=self.slide_kps[isx],
+                    sd=self.slide_des[isx],
+                    fk=self.frame_kps[ifx],
+                    fd=self.frame_des[ifx])

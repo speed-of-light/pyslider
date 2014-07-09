@@ -23,22 +23,11 @@ class _Preloader(object):
         fids = self.__frame_seeds(key)
         return sids, fids
 
-    def _seeds(self, key):
-        if key == "slide":
-            pids = self.__slide_seeds()
-        elif key == "frame":
-            pids = self.__frame_seeds()
-        return pids
-
     def __base_loader(self, key):
         fd = self.load(key)
         if fd is None:
             return []
         return fd
-
-    def __load_feats_fac(self, pf, pk):
-        fx = lambda pid: self.__load_feats(pf=pf, pk=key, pid=pid)
-        return fx
 
     def __load_feats(self, pf="slide", pid=1, key="des"):
         pk = "{}_{:03d}_{}".format(pf[0], pid, key)
@@ -47,7 +36,7 @@ class _Preloader(object):
     def __load_feats_list(self, pids=[], pf="frame", key="des"):
         fs = []
         self.elog.info("loading {} feats ({})...".format(pf, key))
-        fs = map(self.__load_feats_fac(pf, key), pids)
+        fs = map(self._load_feats_fac(pf, key), pids)
         self.elog.info("Load {} feats ({}) finished...".format(pf, key))
         return fs
 
@@ -61,3 +50,19 @@ class _Preloader(object):
         """`slide_kps`, `slide_des`, `frame_kps`, `frame_des`"""
         if not hasattr(self, key):
             self.__reload(key)
+    def _load_feats_fac(self, pf, pk):
+        fx = lambda pid: self.__load_feats(pf=pf, pk=key, pid=pid)
+        return fx
+
+    def _seeds(self, key):
+        if key == "slide":
+            pids = self.__slide_seeds()
+        elif key == "frame":
+            pids = self.__frame_seeds()
+        return pids
+
+    def preload_all(self):
+        self.preload("slide_kps")
+        self.preload("slide_des")
+        self.preload("frame_kps")
+        self.preload("frame_des")
