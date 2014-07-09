@@ -75,7 +75,7 @@ class Feats(ExpCommon):
             kpe, des = deng.compute(img, kps)
         return kps, kpe, des, ts.msecs
 
-    def set_algorithm(self, engine="keypoint", method="SIFT"):
+    def set_algorithm(self, engine="kp_core", method="SIFT"):
         """
         Adaptive method for keypoints detection:
             `kp_adap`: '', 'Grid', 'Pyramid'
