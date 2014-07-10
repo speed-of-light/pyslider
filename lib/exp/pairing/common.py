@@ -37,7 +37,6 @@ class _Common(object):
         qcond = data["dist"] < data["dist"].quantile(.25)
         qdis = data[qcond].dist.mean()
         tdis = data.sort(columns="dist")[:10].dist.mean()
-        print tdis
         raw = [slide["pid"], frame["pid"], time, dlen, mdis, qdis, tdis]
         return dict(zip(self._skeys, raw))
 

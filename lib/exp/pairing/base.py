@@ -23,7 +23,7 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
         pfo = "({}, {})".format(slide["pid"], frame["pid"])
         return nfo.format(pfo)
 
-    def _pairing(self, data, nn_dist=0.9):
+    def _pairing(self, data, nn_dist=0.9, save=False):
         # NOTICE the skipped data should be re-considered
         with ET(verbose=0) as ts:
             if len(data["frame"]["kps"]) == 0:
@@ -31,7 +31,8 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
                 return None
             else:
                 pdf = self.__pairing_core(nn_dist=0.9, **data)
-                self._save_pdf(pdf, **data)
+        if save:
+            self._save_pdf(pdf, **data)
         return Cmn._statisticalize(self, pdf, ts, **data)
 
     def __pairing_core(self, frame=None, slide=None, nn_dist=0.9):

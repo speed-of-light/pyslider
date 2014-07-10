@@ -15,7 +15,7 @@ class PairFeats(Pbase):
         # Making slide feats confusion matrix
         pass
 
-    def pairing(self, fs=0, fe=-1):
+    def pairing(self, fs=0, fe=-1, save=False):
         self._update_klass_var()
         sdl = []
         for fx in self.featx.frames[fs:fe]:
@@ -23,6 +23,6 @@ class PairFeats(Pbase):
                 pin = "Pairing s-{: 3d}, f-{: 5d}"
                 self.elog.info(pin.format(sx["pid"], fx["pid"]))
                 dp = dict(frame=fx, slide=sx)
-                sdl.append(self._pairing(dp, nn_dist=0.9))
+                sdl.append(self._pairing(dp, nn_dist=0.9, save=save))
         self._save_rtlog(sdl)
         return sdl
