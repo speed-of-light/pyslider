@@ -36,7 +36,8 @@ class _Common(object):
         mdis = data.dist.mean()
         qcond = data["dist"] < data["dist"].quantile(.25)
         qdis = data[qcond].dist.mean()
-        tdis = data.sort(columns="dist")[:10].mean()
+        tdis = data.sort(columns="dist")[:10].dist.mean()
+        print tdis
         raw = [slide["pid"], frame["pid"], time, dlen, mdis, qdis, tdis]
         return dict(zip(self._skeys, raw))
 
@@ -63,4 +64,3 @@ class _Common(object):
         st = self.__pdf_key()
         self.klass_var = "{}_{}".format(kls, st)
         self.elog.info("Current configs: {}".format(st))
-
