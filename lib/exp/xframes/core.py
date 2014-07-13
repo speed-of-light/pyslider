@@ -20,19 +20,29 @@ class _Core(object):
         bb = {}
         for i, t in enumerate(tmp):
             bb[i] = old.index(t)
-        return [bb[ll] for ll in li]
+        return np.array([bb[ll] for ll in li])
 
     def __gmmize(self, data):
         clf = mixture.GMM(n_components=self.gmmc, covariance_type='full')
         clf.fit(data)
         pr = clf.predict(data)
-        return np.array(self.__reorder(clf.means_.tolist(), pr))
+        means = clf.means_.tolist()
+        return self.__post_tuning(data.values, pr, means)
 
-    def _gmm_base(self, data, key="mean_dist"):
-        tn = data[key]
-        kn = key.split("_")[0]
-        data["{}_ans".format(kn)] = self.__gmmize(tn)
+    def __post_tuning(self, base, predicted, means):
+        """
+        Manual change dist over no_slides, and below hs_slides
+        """
+        means = [m[0] for m in means]
+        ret = self.__reorder(means, predicted)
+        ret[base >= np.max(means)] = 1
+        ret[base <= np.min(means)] = 0
+        return ret
 
-    def _gmm(self, data, keys=["mean_dist"]):
+    def _gmm_base(self, data, key="mean"):
+        tn = data["{}_dist".format(key)]
+        data["{}_ans".format(key)] = self.__gmmize(tn)
+
+    def _gmm(self, data, keys=["mean"]):
         for ky in keys:
             self._gmm_base(data, ky)

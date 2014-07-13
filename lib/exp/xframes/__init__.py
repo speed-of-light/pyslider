@@ -14,5 +14,5 @@ class xFrames(Core, Base):
     def crossing(self, pkeys=[]):
         pc = self.pairs
         for kn, df in pc.iter_data(pkeys, proc=pc.dp_group_fid):
-            self._gmm(df, keys=["mean_dist", "qart_dist", "top_dist"])
+            self._gmm(df, keys=["mean", "qart", "top"])
             yield kn, df
