@@ -1,9 +1,10 @@
 import cv2
 from lib.exp.featx import Featx
 from lib.exp.tools.preloader import Preloader as Pldr
+from lib.exp.tools.configurator import Configurator as Cfgr
 
 
-class _Conf(Pldr):
+class _Conf(Cfgr, Pldr):
     _vars = ["nn_dist", "ransac", "homo",
              "octaf", "save_matches"]
 
@@ -11,7 +12,12 @@ class _Conf(Pldr):
              0, False]
 
     def __init__(self):
+        # nn_dist: distance
+        # ransac: px torlerance
+        # homo: homo negative weight
+        # vals: consider only normal frame, 0 forall
         Pldr.__init__(self)
+        Cfgr.__init__(self)
 
     def set_featx(self, preload=True, kp="SIFT", des="SIFT"):
         self.elog.info("Loading featx")
@@ -28,36 +34,6 @@ class _Conf(Pldr):
         self.elog.info("Loading matcher")
         self.mcore = fn
         self._reload("matcher")
-
-    def set_var(self, var="nn_dist", val=0.9, log=False):
-        """
-        nn_dist=.9, ransac=False, homo=False
-        """
-        self.__dict__[var] = val
-        if log:
-            self._log_cfg()
-
-    def set_default_vars(self):
-        # nn_dist: distance
-        # ransac: px torlerance
-        # homo: homo negative weight
-        # vals: consider only normal frame, 0 forall
-        self.set_vars(self._vals)
-        self.elog.info("Setting default vars")
-        self._log_cfg()
-
-    def set_vars(self, vals):
-        # len(vals) should be the same with self._vars
-        map(self.set_var, self._vars, vals)
-
-    def _log_cfg(self):
-        st = "Current Configs:"
-        for vi, va in enumerate(self._vars):
-            if vi % 5 == 0:
-                st += "\n"
-            st += " {}: {},".format(va, self.__dict__[va])
-        print st
-        self.elog.info(st)
 
     def _reload(self, mod="matcher"):
         print "override reloading {}".format(mod)

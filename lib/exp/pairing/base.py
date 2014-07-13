@@ -1,7 +1,5 @@
-import cv2
 from lib.exp.base import ExpCommon
 from lib.exp.tools.timer import ExpTimer as ET
-from lib.exp.featx import Featx
 from conf import _Conf as Cfg
 from common import _Common as Cmn
 
@@ -81,10 +79,3 @@ class _Base(Cfg, Cmn, ExpCommon):
             sdl += map(fpb, self.featx.slides)
         return self._save_stats(sdl)
 
-    def _reload(self, mod="matcher"):
-        print "override reloading {}".format(mod)
-        if mod == "matcher":
-            _mod = cv2.DescriptorMatcher_create(self.mcore)
-        elif mod == "featx":
-            _mod = Featx(self.root, self.name)
-        self.__dict__[mod] = _mod

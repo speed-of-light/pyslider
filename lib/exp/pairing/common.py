@@ -1,9 +1,23 @@
+import numpy as np
 import pandas as pd
 from data_tuner import _DataTuner as Datn
 
 
 class _Common(Datn):
     _mkeys = ["ski", "fki", "iix", "dist"]
+
+    _epre = np.array([dict(en="BBF .7", ev=dict(bbft=0.7001)),
+             dict(en="BBF .8", ev=dict(bbft=0.8001)),
+             dict(en="BBF .9", ev=dict(bbft=0.9001)),
+             dict(en="Raw Matches", ev=dict(bbft=1.0001)),
+             dict(en="Ransac(1px)", ev=dict(bbft=1.0001, ransac=1.0)),
+             dict(en="Ransac(5px)", ev=dict(bbft=1.0001, ransac=5.0)),
+             dict(en="Ransac(10px)", ev=dict(bbft=1.0001, ransac=10.0)),
+             dict(en="Ransac(20px)", ev=dict(bbft=1.0001, ransac=20.0)),
+             dict(en="BBF(.8)\nRansac(5px)", ev=dict(bbft=.80001, ransac=5.0)),
+             dict(en="BBF(.8)\nRansac(5px)\nHG", ev=dict(bbft=.80001, ransac=5.0, homo=True)),
+             dict(en="BBF(.8)\nRansac(5px)\nHG\nOct", ev=dict(bbft=.80001, ransac=5.0, homo=True, octaf=1))
+            ])
 
     def __init__(self):
         """
@@ -12,7 +26,6 @@ class _Common(Datn):
         Datn.__init__(self)
 
     def warmup(self):
-        self.set_default_vars()
         self.set_featx()
         self.set_matcher()
 
@@ -32,10 +45,13 @@ class _Common(Datn):
         fos = "rs_d{}_r{}_h{}_o{}"
         return fos.format(nds, ras, hos, oca)
 
-    def __df_key(self):
-        kbs = self.__df_key_base(self.nn_dist, self.ransac, self.homo,
-                                 self.octaf)
-        return kbs
+    def __df_key(self, data={"en":"default", "ev":None}):
+        en = data["en"]
+        ev = data["ev"]
+        if ev is None:
+            ev = dict(bbft=self.nn_dist, ransac=self.ransac,
+                        homo=self.homo, octaf=self.octaf)
+        return en, self.__df_key_base(**ev)
 
     def _update_klass_var(self):
         kls = "{}_{}".format(self.featx.klass_var, self.mcore)
@@ -44,12 +60,25 @@ class _Common(Datn):
 
     def _save_stats(self, rdl):
         rdf = pd.DataFrame(rdl)
-        st = self.__df_key()
+        en, st = self.__df_key()
         self.save(st, rdf)
         ins = "Save to {}.h5 with key: {}".format(self.klass_var, st)
         self.elog.info(ins)
         return rdf
 
-    def cfg_keys(self, bbftv=[]):
-        kb = self.__df_key_base
-        return map(kb, bbftv)
+    def __keyset(self, keys):
+        if len(keys) == 0:
+            keys = range(len(self._epre))
+        kb = self.__df_key
+        return map(kb, self._epre[keys])
+
+    def __load_and_proc(self, key, proc):
+        data = self.load(key)
+        if proc:
+            data = proc(data)
+        return data
+
+    def iter_data(self, keys=[], proc=None):
+        self._update_klass_var()
+        for kn, ks in self.__keyset(keys):
+            yield kn, self.__load_and_proc(ks, proc)
