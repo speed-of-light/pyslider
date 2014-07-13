@@ -23,38 +23,17 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
         pfo = "({}, {})".format(slide["pid"], frame["pid"])
         return nfo.format(pfo)
 
-    def _pairing(self, data, nn_dist=0.9, save=False):
-        # NOTICE the skipped data should be re-considered
-        with ET(verbose=0) as ts:
-            if len(data["frame"]["kps"]) == 0:
-                self.elog.info(self.__skip_info(**data))
-                return None
-            else:
-                pdf = self.__pairing_core(nn_dist=0.9, **data)
-        if save:
-            self._save_pdf(pdf, **data)
-        return Cmn._statisticalize(self, pdf, ts, **data)
-
-    def __pairing_core(self, frame=None, slide=None, nn_dist=0.9):
-        """
-        frame, slide: should containing `pid`, `des`, `kps`
-        """
-        nnr = self.matcher.knnMatch(frame["des"].values,
-                                    slide["des"].values, k=2)
-        mli = self.__best_bin_first(nnr, nn_dist)
-        return Cmn._to_matches_df(self, mli)
-
-    def __reject_dist_ratio(self, m, n, thres=0.8):
+    def __reject_dist_ratio(self, m, n):
         """
         According to wiki:
             thres: greater than 0.8, which eliminates 90% of the false matches
             while discarding less than 5% of the correct matches
         """
-        if m.distance < n.distance*thres:
+        if m.distance < n.distance*self.nn_dist:
             return m
         return None
 
-    def __best_bin_first(self, matches, nn_dist=.9):
+    def __best_bin_first(self, matches):
         """
         Remove high similarity pairs
           Beis, J., and Lowe, D.G "Shape indexing using approximate nearest-
@@ -62,5 +41,43 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
           Vision and Pattern Recognition, Puerto Rico, 1997, pp. 1000-1006
         """
         not_non = lambda v: v is not None
-        rejector = lambda (m, n): self.__reject_dist_ratio(m, n, nn_dist)
+        rejector = lambda (m, n): self.__reject_dist_ratio(m, n)
         return filter(not_non, map(rejector, matches))
+
+    def __pairing_core(self, slide=None, frame=None):
+        """
+        frame, slide: should containing `pid`, `des`, `kps`
+        """
+        nnr = self.matcher.knnMatch(frame["des"].values,
+                                    slide["des"].values, k=2)
+        nnrl = len(nnr)
+        mli = self.__best_bin_first(nnr)
+        return Cmn._to_matches_df(self, mli), nnrl
+
+    def __pairing_base(self, sx, fx):
+        pin = "Pairing s-{: 3d}, f-{: 5d}"
+        self.elog.info(pin.format(sx["pid"], fx["pid"]))
+        dp = self._pairing(slide=sx, frame=fx)
+        return dp
+
+    def _pairing(self, slide=None, frame=None):
+        # NOTICE the skipped data should be re-considered
+        data = dict(slide=slide, frame=frame)
+        with ET(verbose=0) as ts:
+            if len(frame["kps"]) == 0:
+                self.elog.info(self.__skip_info(**data))
+                return None
+            else:
+                pdf, odfl = self.__pairing_core(**data)
+        if self.save_matches:
+            self._save_pdf(pdf, **data)
+        data.update(timer=ts, data=pdf, olen=odfl)
+        return Cmn._statisticalize(self, **data)
+
+    def _batch_pairing(self, fs=0, fe=-1):
+        self._update_klass_var()
+        sdl = []
+        for fx in self.featx.frames[fs:fe]:
+            fpb = lambda sx: self.__pairing_base(sx, fx)
+            sdl += map(fpb, self.featx.slides)
+        return self._save_stats(sdl)
