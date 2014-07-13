@@ -1,11 +1,11 @@
 __all__ = []
 
-from lib.exp.base import ExpCommon
+from base import _Base as Base
 
 
-class xFrames(ExpCommon):
-    def __init__(self, root, name):
-        ExpCommon.__init__(self)
+class xFrames(Base):
+    def __init__(self, root, name, pairs=None):
+        Base.__init__(self, root, name, pairs)
 
-    def cross_out(self):
+    def cross_no_slides(self):
         pass

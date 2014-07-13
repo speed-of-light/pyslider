@@ -1,4 +1,9 @@
-class _Conf(object):
+import cv2
+from lib.exp.featx import Featx
+from lib.exp.tools.preloader import Preloader as Pldr
+
+
+class _Conf(Pldr):
     _vars = ["nn_dist", "ransac", "homo",
              "octaf", "save_matches"]
 
@@ -6,11 +11,11 @@ class _Conf(object):
              0, False]
 
     def __init__(self):
-        pass
+        Pldr.__init__(self)
 
     def set_featx(self, preload=True, kp="SIFT", des="SIFT"):
         self.elog.info("Loading featx")
-        self.preload("featx")
+        Pldr._preload(self, "featx")
         self.featx.preset(kp, des)
         self.featx.preload_packs(preload)
 
@@ -22,7 +27,7 @@ class _Conf(object):
         """
         self.elog.info("Loading matcher")
         self.mcore = fn
-        self._reload_mod("matcher")
+        self._reload("matcher")
 
     def set_var(self, var="nn_dist", val=0.9, log=False):
         """
@@ -53,3 +58,11 @@ class _Conf(object):
             st += " {}: {},".format(va, self.__dict__[va])
         print st
         self.elog.info(st)
+
+    def _reload(self, mod="matcher"):
+        print "override reloading {}".format(mod)
+        if mod == "matcher":
+            _mod = cv2.DescriptorMatcher_create(self.mcore)
+        elif mod == "featx":
+            _mod = Featx(self.root, self.name)
+        self.__dict__[mod] = _mod

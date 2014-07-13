@@ -1,11 +1,12 @@
+import cv2
 from lib.exp.base import ExpCommon
 from lib.exp.tools.timer import ExpTimer as ET
-from preloader import _Preloader as Pldr
+from lib.exp.featx import Featx
 from conf import _Conf as Cfg
 from common import _Common as Cmn
 
 
-class _Base(ExpCommon, Cfg, Cmn, Pldr):
+class _Base(Cfg, Cmn, ExpCommon):
     def __init__(self, root, name):
         """
         Configurations
@@ -14,7 +15,6 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
         """
         ExpCommon.__init__(self, root, name)
         ExpCommon.common_path(self, "stores", asure=True)
-        Pldr.__init__(self)
         Cfg.__init__(self)
         Cmn.__init__(self)
 
@@ -80,3 +80,11 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
             fpb = lambda sx: self.__pairing_base(sx, fx)
             sdl += map(fpb, self.featx.slides)
         return self._save_stats(sdl)
+
+    def _reload(self, mod="matcher"):
+        print "override reloading {}".format(mod)
+        if mod == "matcher":
+            _mod = cv2.DescriptorMatcher_create(self.mcore)
+        elif mod == "featx":
+            _mod = Featx(self.root, self.name)
+        self.__dict__[mod] = _mod

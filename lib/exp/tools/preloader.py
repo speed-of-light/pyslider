@@ -10,10 +10,12 @@ class Preloader(object):
 
     def _reload(self, module="video"):
         if module == "video":
-            self.video = Video(self.root, self.name)
+            mod = Video(self.root, self.name)
+        self.__dict__[module] = mod
 
     def _preload(self, module="video"):
         if not hasattr(self, module):
+            print "preload {}".format(module)
             self._reload(module)
 
     def __mod_not_load(self, module="video"):

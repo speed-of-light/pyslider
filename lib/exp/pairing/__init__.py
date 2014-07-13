@@ -14,8 +14,9 @@ class PairFeats(Pbase):
               dict(en="BBF 1.", ev=1.0001) ]
 
     def __init__(self, root, name, fx=None):
+        if fx:
+            self.featx = fx
         Pbase.__init__(self, root, name)
-        self.featx = fx
 
     def confusion_slide_feats(self):
         # Making slide feats confusion matrix
@@ -24,4 +25,4 @@ class PairFeats(Pbase):
     def exp_nn_dist(self):
         for nnd in self._e_NND:
             self.set_var("nn_dist", nnd["ev"], log=True)
-            self._batch_pairing()
+            self._batch_pairing(24, 25)
