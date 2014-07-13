@@ -1,11 +1,18 @@
 __all__ = []
 
 from base import _Base as Base
+from core import _Core as Core
 
 
-class xFrames(Base):
+class xFrames(Core, Base):
     def __init__(self, root, name, pairs=None):
-        Base.__init__(self, root, name, pairs)
+        if pairs:
+            self.pairs = pairs
+        Base.__init__(self, root, name)
+        Core.__init__(self)
 
-    def cross_no_slides(self):
-        pass
+    def crossing(self, pkeys=[]):
+        pc = self.pairs
+        for kn, df in pc.iter_data(pkeys, proc=pc.dp_group_fid):
+            self._gmm(df, keys=["mean_dist", "qart_dist", "top_dist"])
+            yield kn, df
