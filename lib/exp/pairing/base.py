@@ -61,12 +61,11 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
         return dp
 
     def _pairing(self, slide=None, frame=None):
-        # NOTICE the skipped data should be re-considered
         data = dict(slide=slide, frame=frame)
         with ET(verbose=0) as ts:
             if len(frame["kps"]) == 0:
                 self.elog.info(self.__skip_info(**data))
-                return None
+                pdf, odfl = [], len(data)
             else:
                 pdf, odfl = self.__pairing_core(**data)
         if self.save_matches:

@@ -26,6 +26,8 @@ class _DataTuner(object):
         return df
 
     def __base_dist(self, data):
+        if len(data) == 0:
+            return [None, None, None]
         mdis = data.dist.mean()
         qcond = data["dist"] < data["dist"].quantile(.25)
         qdis = data[qcond].dist.mean()
