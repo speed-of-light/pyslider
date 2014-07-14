@@ -8,7 +8,7 @@ class _PlotFiler(object):
         """
         Provide common functions to save plots
         """
-        self.autosave_fig = False
+        self.save_fig = False
 
     def __assert_name_exist(self, name):
         if (name is None) or (name == ""):
@@ -41,7 +41,7 @@ class _PlotFiler(object):
         return all_cap_re.sub(r"\1_\2", s1).lower()
 
     def _savefig(self, figh, func, name):
-        if not self.autosave_fig:
+        if not self.save_fig:
             return
         fp = self.__make_path(ft="eps", method=func, name=name)
         figh.savefig(fp, transparent=1)
