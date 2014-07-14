@@ -5,14 +5,14 @@ from core import _Core as Core
 
 
 class xFrames(Core, Base):
-    def __init__(self, root, name, pairs=None):
-        if pairs:
-            self.pairs = pairs
-        Base.__init__(self, root, name)
+    _xkeys = ["mean", "qart", "top"]
+    def __init__(self, pairs=None):
+        self.pairs = pairs
+        Base.__init__(self, pairs.root, pairs.name)
         Core.__init__(self)
 
     def crossing(self, pkeys=[]):
         pc = self.pairs
         for kn, df in pc.iter_data(pkeys, proc=pc.dp_group_fid):
-            self._gmm(df, keys=["mean", "qart", "top"])
+            self._gmm(df, keys=self._xkeys)
             yield kn, df
