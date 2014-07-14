@@ -8,7 +8,7 @@ class __AccExtractors(object):
 
 
 class Accuracy(__AccExtractors):
-    def __init__(self, bs=None):
+    def __init__(self, bs=None, preview=True):
         """
         Usage example:
             acc = Accuracy()
@@ -17,7 +17,7 @@ class Accuracy(__AccExtractors):
         """
         if bs:
             self.bin_set = bs
-        self.preview = True
+        self.preview = preview
 
     def set_data(self, root, name, extractor):
         ext = extractor(root, name)

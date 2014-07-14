@@ -14,7 +14,6 @@ class XframeEval(Pldr, ExpCommon):
     def _reload(self, module="gnd"):
         if module == "gnd":
             mod = GT(self.root, self.name)
-        self.__dict__[module] = mod
 
     def cross_result(self, data, dkey="mean"):
         gkey = "{}_gnd".format(dkey)
@@ -50,11 +49,14 @@ class XframeEval(Pldr, ExpCommon):
         ckf = lambda k: self.__count_by_keys(df, name=kn, key=k)
         return map(ckf, keys)
 
-    def evaluate(self, keys=[1, 2, 3]):
+    def roc_details(self, keys=[1, 2, 3]):
         bs = [self.__core(k, d) for k, d in self.xf_.crossing(keys)]
         bs = reduce(lambda x, y: x+y, bs)
-        acc = Accuracy(bs)
+        acc = Accuracy(bs, self.preview)
         return acc.details(acc.Common_Details+["fdr", "speficity"])
 
-    def timer(self, keys):
-        pass
+    def timer(self, keys=[1, 2, 3]):
+        bs = [self.__core(k, d) for k, d in self.xf_.crossing(keys)]
+        bs = reduce(lambda x, y: x+y, bs)
+        acc = Accuracy(bs, self.preview)
+        return acc.details(acc.Common_Details+["fdr", "speficity"])
