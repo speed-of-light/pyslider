@@ -5,14 +5,14 @@ from lib.exp.tools.configurator import Configurator as Cfgr
 
 
 class _Conf(Cfgr, Pldr):
-    _vars = ["nn_dist", "ransac", "homo",
+    _vars = ["bbft", "ransac", "homo",
              "octaf", "save_matches"]
 
     _vals = [0.9, None, False,
              0, False]
 
     def __init__(self):
-        # nn_dist: distance
+        # bbft: distance
         # ransac: px torlerance
         # homo: homo negative weight
         # vals: consider only normal frame, 0 forall

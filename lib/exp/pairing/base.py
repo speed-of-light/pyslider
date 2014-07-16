@@ -27,7 +27,7 @@ class _Base(Cfg, Cmn, ExpCommon):
             thres: greater than 0.8, which eliminates 90% of the false matches
             while discarding less than 5% of the correct matches
         """
-        if m.distance < n.distance*self.nn_dist:
+        if m.distance < n.distance*self.bbft:
             return m
         return None
 

@@ -2,7 +2,7 @@ class Configurator(object):
     def __init__(self):
         self.set_default_vars()
 
-    def set_var(self, var="nn_dist", val=0.9, log=False):
+    def set_var(self, var="bbft", val=0.9, log=False):
         self.__dict__[var] = val
         if log:
             self._log_cfg()

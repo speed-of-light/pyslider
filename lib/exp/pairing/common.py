@@ -6,18 +6,21 @@ from data_tuner import _DataTuner as Datn
 class _Common(Datn):
     _mkeys = ["ski", "fki", "iix", "dist"]
 
-    _epre = np.array([dict(en="BBF .7", ev=dict(bbft=0.7001)),
-             dict(en="BBF .8", ev=dict(bbft=0.8001)),
-             dict(en="BBF .9", ev=dict(bbft=0.9001)),
-             dict(en="Raw Matches", ev=dict(bbft=1.0001)),
-             dict(en="Ransac(1px)", ev=dict(bbft=1.0001, ransac=1.0)),
-             dict(en="Ransac(5px)", ev=dict(bbft=1.0001, ransac=5.0)),
-             dict(en="Ransac(10px)", ev=dict(bbft=1.0001, ransac=10.0)),
-             dict(en="Ransac(20px)", ev=dict(bbft=1.0001, ransac=20.0)),
-             dict(en="BBF(.8)\nRansac(5px)", ev=dict(bbft=.80001, ransac=5.0)),
-             dict(en="BBF(.8)\nRansac(5px)\nHG", ev=dict(bbft=.80001, ransac=5.0, homo=True)),
-             dict(en="BBF(.8)\nRansac(5px)\nHG\nOct", ev=dict(bbft=.80001, ransac=5.0, homo=True, octaf=1))
-            ])
+    _epre = np.array([
+        dict(en="BBF .7", ev=dict(bbft=0.7001)),
+        dict(en="BBF .8", ev=dict(bbft=0.8001)),
+        dict(en="BBF .9", ev=dict(bbft=0.9001)),
+        dict(en="Raw Matches", ev=dict(bbft=1.0001)),
+        dict(en="Ransac(1px)", ev=dict(bbft=1.0001, ransac=1.0)),
+        dict(en="Ransac(5px)", ev=dict(bbft=1.0001, ransac=5.0)),
+        dict(en="Ransac(10px)", ev=dict(bbft=1.0001, ransac=10.0)),
+        dict(en="Ransac(20px)", ev=dict(bbft=1.0001, ransac=20.0)),
+        dict(en="BBF(.8)\nRansac(5px)", ev=dict(bbft=.80001, ransac=5.0)),
+        dict(en="BBF(.8)\nRansac(5px)\nHG",
+             ev=dict(bbft=.80001, ransac=5.0, homo=True)),
+        dict(en="BBF(.8)\nRansac(5px)\nHG\nOct",
+             ev=dict(bbft=.80001, ransac=5.0, homo=True, octaf=1))
+        ])
 
     def __init__(self):
         """
@@ -45,12 +48,12 @@ class _Common(Datn):
         fos = "d{}_r{}_h{}_o{}"
         return fos.format(nds, ras, hos, oca)
 
-    def __df_key(self, prefx="rs", data={"en":"default", "ev":None}):
+    def __df_key(self, prefx="rs", data={"en": "default", "ev": None}):
         en = data["en"]
         ev = data["ev"]
         if ev is None:
-            ev = dict(bbft=self.nn_dist, ransac=self.ransac,
-                        homo=self.homo, octaf=self.octaf)
+            ev = dict(bbft=self.bbft, ransac=self.ransac,
+                      homo=self.homo, octaf=self.octaf)
         rk = prefx + "_" + self.__df_key_base(**ev)
         return en, rk
 
@@ -61,7 +64,7 @@ class _Common(Datn):
 
     def _save_stats(self, prefx="rs", rdl=None):
         rdf = pd.DataFrame(rdl)
-        en, st = self.__df_key(prefx)
+        en, st = self.__df_key(prefx, dict(en="", ev=None))
         self.save(st, rdf)
         ins = "Save to {}.h5 with key: {}".format(self.klass_var, st)
         self.elog.info(ins)

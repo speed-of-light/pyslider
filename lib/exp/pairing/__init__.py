@@ -18,8 +18,8 @@ class PairFeats(Pbase):
             if len(keys) == 0:
                 keys = range(len(self._epre))
             for vd in self._epre[keys]:
-                self.set_dict_vars(vd)
-            func(self, *args, **kwargs)
+                self.set_dict_vars(vd["ev"])
+                func(self, *args, **kwargs)
         return inner
 
     @__batch_job
