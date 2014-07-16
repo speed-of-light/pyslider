@@ -1,25 +1,28 @@
 import pandas as pd
-from accuracy_data_extractor import PreSegHrBins
+from pre_seg_hr import PreSegHrBins
 
 
 class __AccExtractors(object):
     PreprocessSegmentHitRatio = PreSegHrBins
+    Common_Details = ["accuracy", "precision", "sensitivity"]
 
 
 class Accuracy(__AccExtractors):
-    def __init__(self):
+    def __init__(self, bs=None, preview=True):
         """
         Usage example:
             acc = Accuracy()
             acc.set_data(data, caller)
             acc.detail("accuracy")
         """
-        pass
+        if bs:
+            self.bin_set = bs
+        self.preview = preview
 
-    def set_data(self, root, name, extractor, show=True):
+    def set_data(self, root, name, extractor):
         ext = extractor(root, name)
-        self.bin_set = ext.extract(show=False)
-        if show is True:
+        self.bin_set = ext.extract(self.preview)
+        if self.preview is True:
             print self.bin_set
 
     def __detail_callable(self, dcl):
@@ -30,25 +33,30 @@ class Accuracy(__AccExtractors):
                 yield box[bci+len(cat):]
 
     def detail_list(self):
+        """
+        show callable detail funcitons
+        """
         return list(self.__detail_callable(dir(self)))
 
-    def details(self, names=["accuracy"], show=True):
+    def details(self, names=["accuracy"]):
         self.__assert_set_data()
         dts = []
         for binn in self.bin_set:
-            dt = dict(key=binn.pop("key"))
+            dt = dict(key=binn.pop("key"), name=binn.pop("name"))
+            if self.preview is True:
+                print "{name}-{key}------".format(**dt)
             for name in names:
-                dt[name] = self.detail(binn, name, show)
+                dt[name] = self.detail(binn, name)
             dts.append(dt)
         return pd.DataFrame(dts)
 
-    def detail(self, binn, name="accuracy", show=True):
+    def detail(self, binn, name="accuracy"):
         """
         binn: dictionary containing `tp`, `tn`, `fp`, `fn` keys
         """
         method = getattr(self, "_Accuracy__ca_{}".format(name))
         mv = method(**binn)
-        if show is True:
+        if self.preview is True:
             print "{}: {:5.3f}".format(name, mv)
         return mv
 

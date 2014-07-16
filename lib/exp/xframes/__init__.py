@@ -1,11 +1,18 @@
 __all__ = []
 
-from lib.exp.base import ExpCommon
+from base import _Base as Base
+from core import _Core as Core
 
 
-class xFrames(ExpCommon):
-    def __init__(self, root, name):
-        ExpCommon.__init__(self)
+class xFrames(Core, Base):
+    _xkeys = ["mean", "qart", "top"]
+    def __init__(self, pairs=None):
+        self.pairs = pairs
+        Base.__init__(self, pairs.root, pairs.name)
+        Core.__init__(self)
 
-    def cross_out(self):
-        pass
+    def crossing(self, pkeys=[]):
+        pc = self.pairs
+        for kn, df in pc.iter_data(pkeys, proc=pc.dp_group_fid):
+            self._gmm(df, keys=self._xkeys)
+            yield kn, df

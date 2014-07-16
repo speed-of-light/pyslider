@@ -26,14 +26,29 @@ class _DataTuner(object):
         return df
 
     def __base_dist(self, data):
+        if len(data) == 0:
+            return [None, None, None]
         mdis = data.dist.mean()
         qcond = data["dist"] < data["dist"].quantile(.25)
         qdis = data[qcond].dist.mean()
         tdis = data.sort(columns="dist")[:10].dist.mean()
         return [mdis, qdis, tdis]
 
-    def _statisticalize(self, data=None, olen=None, timer=None, frame=None, slide=None):
+    def _statisticalize(self, data=None, olen=None, timer=None, frame=None,
+                        slide=None):
         aa = [slide["pid"], frame["pid"]]
         aa += [timer.msecs, len(data), olen]
         aa += self.__base_dist(data)
         return dict(zip(self._skeys, aa))
+
+    def __group_dist(self, gi, grp):
+        r = dict(fid=gi,
+                 mean_dist=grp.mean_dist.mean(),
+                 qart_dist=grp.qart_dist.mean(),
+                 top_dist=grp.top10_dist.mean())
+        return r
+
+    def dp_group_fid(self, data):
+        dgs = data.groupby("fid")
+        ad = [self.__group_dist(*dg) for dg in dgs]
+        return pd.DataFrame(ad)

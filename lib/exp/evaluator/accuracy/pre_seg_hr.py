@@ -1,6 +1,6 @@
-from preproc_evaluator import PreprocEvaluator
 from lib.exp.pre import Reducer
 from lib.exp.evaluator.ground_truth import GroundTruth
+from lib.exp.evaluator.preproc_evaluator import PreprocEvaluator
 
 
 class PreSegHrBins(object):

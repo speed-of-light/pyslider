@@ -1,11 +1,10 @@
 from lib.exp.base import ExpCommon
 from lib.exp.tools.timer import ExpTimer as ET
-from preloader import _Preloader as Pldr
 from conf import _Conf as Cfg
 from common import _Common as Cmn
 
 
-class _Base(ExpCommon, Cfg, Cmn, Pldr):
+class _Base(Cfg, Cmn, ExpCommon):
     def __init__(self, root, name):
         """
         Configurations
@@ -14,7 +13,6 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
         """
         ExpCommon.__init__(self, root, name)
         ExpCommon.common_path(self, "stores", asure=True)
-        Pldr.__init__(self)
         Cfg.__init__(self)
         Cmn.__init__(self)
 
@@ -61,12 +59,11 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
         return dp
 
     def _pairing(self, slide=None, frame=None):
-        # NOTICE the skipped data should be re-considered
         data = dict(slide=slide, frame=frame)
         with ET(verbose=0) as ts:
             if len(frame["kps"]) == 0:
                 self.elog.info(self.__skip_info(**data))
-                return None
+                pdf, odfl = [], len(data)
             else:
                 pdf, odfl = self.__pairing_core(**data)
         if self.save_matches:
@@ -74,10 +71,16 @@ class _Base(ExpCommon, Cfg, Cmn, Pldr):
         data.update(timer=ts, data=pdf, olen=odfl)
         return Cmn._statisticalize(self, **data)
 
-    def _batch_pairing(self, fs=0, fe=-1):
+    def __bp_base(self, base_feats):
         self._update_klass_var()
         sdl = []
-        for fx in self.featx.frames[fs:fe]:
-            fpb = lambda sx: self.__pairing_base(sx, fx)
-            sdl += map(fpb, self.featx.slides)
+        for bf in base_feats:
+            bpb = lambda sx: self.__pairing_base(sx, bf)
+            sdl += map(bpb, self.featx.slides)
         return self._save_stats(sdl)
+
+    def _batch_pairing(self, fs=0, fe=-1):
+        self.__bp_base(self.featx.frames[fs:fe])
+
+    def _batch_slides_pairing(self, ss=0, se=-1):
+        self.__bp_base(self.featx.slides[ss:se])

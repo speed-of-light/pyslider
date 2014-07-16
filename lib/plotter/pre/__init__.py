@@ -20,7 +20,7 @@ class PrePlotter(Exts, Base, PF):
         PF.__init__(self)
         Base.__init__(self)
         Exts.__init__(self)
-        self.autosave_fig = autosave
+        self.save_fig = autosave
 
     def render_base(func):
         @wraps(func)  # enable func.__name__
