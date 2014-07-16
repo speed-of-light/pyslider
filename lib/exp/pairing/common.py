@@ -42,25 +42,26 @@ class _Common(Datn):
         ras = "{:2.0f}".format(ransac*100) if ransac else "NoRansac"
         hos = "homo" if homo else "NoHomo"
         oca = "{:d}".format(octaf)
-        fos = "rs_d{}_r{}_h{}_o{}"
+        fos = "d{}_r{}_h{}_o{}"
         return fos.format(nds, ras, hos, oca)
 
-    def __df_key(self, data={"en":"default", "ev":None}):
+    def __df_key(self, prefx="rs", data={"en":"default", "ev":None}):
         en = data["en"]
         ev = data["ev"]
         if ev is None:
             ev = dict(bbft=self.nn_dist, ransac=self.ransac,
                         homo=self.homo, octaf=self.octaf)
-        return en, self.__df_key_base(**ev)
+        rk = prefx + "_" + self.__df_key_base(**ev)
+        return en, rk
 
     def _update_klass_var(self):
         kls = "{}_{}".format(self.featx.klass_var, self.mcore)
         self.klass_var = kls
         self.elog.info("Current configs: {}".format(kls))
 
-    def _save_stats(self, rdl):
+    def _save_stats(self, prefx="rs", rdl=None):
         rdf = pd.DataFrame(rdl)
-        en, st = self.__df_key()
+        en, st = self.__df_key(prefx)
         self.save(st, rdf)
         ins = "Save to {}.h5 with key: {}".format(self.klass_var, st)
         self.elog.info(ins)
@@ -69,7 +70,7 @@ class _Common(Datn):
     def __keyset(self, keys):
         if len(keys) == 0:
             keys = range(len(self._epre))
-        kb = self.__df_key
+        kb = lambda dx: self.__df_key("rs", dx)
         return map(kb, self._epre[keys])
 
     def __load_and_proc(self, key, proc):

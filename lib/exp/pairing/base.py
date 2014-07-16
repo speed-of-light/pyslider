@@ -71,16 +71,16 @@ class _Base(Cfg, Cmn, ExpCommon):
         data.update(timer=ts, data=pdf, olen=odfl)
         return Cmn._statisticalize(self, **data)
 
-    def __bp_base(self, base_feats):
+    def __bp_base(self, prefx="rs", base_feats=None):
         self._update_klass_var()
         sdl = []
         for bf in base_feats:
             bpb = lambda sx: self.__pairing_base(sx, bf)
             sdl += map(bpb, self.featx.slides)
-        return self._save_stats(sdl)
+        return self._save_stats(prefx, sdl)
 
     def _batch_pairing(self, fs=0, fe=-1):
-        self.__bp_base(self.featx.frames[fs:fe])
+        self.__bp_base("rs", self.featx.frames[fs:fe])
 
     def _batch_slides_pairing(self, ss=0, se=-1):
-        self.__bp_base(self.featx.slides[ss:se])
+        self.__bp_base("ss", self.featx.slides[ss:se])
