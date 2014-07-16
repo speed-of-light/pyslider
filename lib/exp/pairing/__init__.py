@@ -12,13 +12,21 @@ class PairFeats(Pbase):
         self.featx = fx
         Pbase.__init__(self, self.featx.root, self.featx.name)
 
-    def exp_ss_mat(self):
+    def __batch_job(func):
+        def inner(self, *args, **kwargs):
+            keys = kwargs["keys"]
+            if len(keys) == 0:
+                keys = range(len(self._epre))
+            for vd in self._epre[keys]:
+                self.set_dict_vars(vd)
+            func(self, *args, **kwargs)
+        return inner
+
+    @__batch_job
+    def exp_ss_mat(self, keys=[]):
         # Making slide feats confusion matrix
         self._batch_slides_pairing()
 
+    @__batch_job
     def exp_nn_dist(self, keys=[]):
-        if len(keys) == 0:
-            keys = range(len(self._epre))
-        for vd in self._epre[keys]:
-            self.set_dict_vars(vd)
-            self._batch_pairing()
+        self._batch_pairing()
