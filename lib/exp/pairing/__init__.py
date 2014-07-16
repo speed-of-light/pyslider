@@ -8,14 +8,13 @@ from base import _Base as Pbase
 
 
 class PairFeats(Pbase):
-    def __init__(self, root, name, fx=None):
-        if fx:
-            self.featx = fx
-        Pbase.__init__(self, root, name)
+    def __init__(self, fx=None):
+        self.featx = fx
+        Pbase.__init__(self, self.featx.root, self.featx.name)
 
-    def confusion_slide_feats(self):
+    def exp_ss_mat(self):
         # Making slide feats confusion matrix
-        pass
+        self._batch_slides_pairing()
 
     def exp_nn_dist(self, keys=[]):
         if len(keys) == 0:
