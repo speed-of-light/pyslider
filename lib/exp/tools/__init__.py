@@ -5,10 +5,10 @@ import time
 
 
 class ToolHelper(object):
-    """
-    Helper methods for expriments
-    """
     def __init__(self):
+        """
+        Helper methods for expriments
+        """
         # precompile regex to speed up underscore matching
         self.fc = re.compile("(.)([A-Z][a-z]+)")
         self.ac = re.compile("([a-z0-9])([A-Z])")
@@ -41,3 +41,12 @@ class ToolHelper(object):
     def fast_underscore(self, string=""):
         s1 = self.fc.sub(r"\1_\2", string)
         return self.ac.sub(r"\1_\2", s1).lower()
+
+    @staticmethod
+    def fmt_time(ms=0):
+        """Format input milliseconds to hh:mm:ss with padding zeros
+        """
+        ts = ms/1000
+        hours, remainder = divmod(int(ts), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return "{:02}:{:02}:{:02}".format(hours, minutes, seconds)

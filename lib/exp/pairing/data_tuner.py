@@ -1,9 +1,9 @@
-import pandas as pd
-
-
 class _DataTuner(object):
-    _skeys = ["sid", "fid", "time", "dlen", "olen",
-              "mean_dist", "qart_dist", "top10_dist",
+    _skeys = ["sid", "fid", "area_ratio",
+              "time", "dlen", "olen",
+              "mean_dist", "qart_dist",
+              "top10", "top20", "top30", "top40", "top50",
+              "rtop10", "rdist", "inv_rdist"
               ]
 
     def __init__(self):
@@ -12,33 +12,56 @@ class _DataTuner(object):
         """
         pass
 
-    def _to_matches_df(self, data):
-        """
-        `ski`: slide keypoint index
-        `fki`: frame keypoint index
-        """
-        if len(data) is 0:
-            df = pd.DataFrame(columns=self._mkeys)
-        else:
-            dflator = lambda m: [m.queryIdx, m.trainIdx, m.imgIdx, m.distance]
-            fm = map(dflator, data)
-            df = pd.DataFrame(fm, columns=self._mkeys)
-        return df
+    def __no_data(self, data):
+        return (len(data) == 0)
 
-    def __base_dist(self, data):
-        if len(data) == 0:
-            return [None, None, None]
+    def __no_ransac(self, data):
+        return ("ransac" not in data.columns)
+
+    def __datagen(func):
+        def inner(self, *args, **kwargs):
+            rejectable = kwargs["rejector"]
+            if rejectable(args[0]):
+                return [None]*kwargs["isize"]
+            return func(self, *args, **kwargs)
+        return inner
+
+    @__datagen
+    def __topN(self, data, isize=5, rejector=None):
+        sd = data.sort(columns="dist")
+        dm = lambda n: sd[:n].dist.mean()
+        return map(dm, range(10, 10*(isize+1), 10))
+
+    @__datagen
+    def __base_dist(self, data, isize=2, rejector=None):
         mdis = data.dist.mean()
         qcond = data["dist"] < data["dist"].quantile(.25)
         qdis = data[qcond].dist.mean()
-        tdis = data.sort(columns="dist")[:10].dist.mean()
-        return [mdis, qdis, tdis]
+        return [mdis, qdis]
 
-    def _statisticalize(self, data=None, olen=None, timer=None, frame=None,
-                        slide=None):
-        aa = [slide["pid"], frame["pid"]]
+    @__datagen
+    def __ransac_dist(self, data, isize=3, rejector=None):
+        rdf = data[data.ransac > 0]
+        ra = self.__topN(rdf, isize=5, rejector=self.__no_data)[:1]
+        ra += [rdf.dist.mean()]
+        rdf["wd"] = rdf["dist"] * rdf["ransac"]
+        ra += [rdf.wd.mean()]
+        return ra
+
+    def __arear(self, data):
+        ar = None
+        if "area" in data.columns:
+            dar = data.iloc[0]
+            ar = dar.area/dar.barea
+        return ar
+
+    def _statisticalize(self, data=None, olen=None, timer=None,
+                        sx=None,  fx=None):
+        aa = [sx["pid"], fx["pid"], self.__arear(data)]
         aa += [timer.msecs, len(data), olen]
-        aa += self.__base_dist(data)
+        aa += self.__base_dist(data, isize=2, rejector=self.__no_data)
+        aa += self.__topN(data, isize=5, rejector=self.__no_data)
+        aa += self.__ransac_dist(data, isize=3, rejector=self.__no_ransac)
         return dict(zip(self._skeys, aa))
 
     def __group_dist(self, gi, grp):
@@ -48,7 +71,3 @@ class _DataTuner(object):
                  top_dist=grp.top10_dist.mean())
         return r
 
-    def dp_group_fid(self, data):
-        dgs = data.groupby("fid")
-        ad = [self.__group_dist(*dg) for dg in dgs]
-        return pd.DataFrame(ad)

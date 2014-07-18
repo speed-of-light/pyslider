@@ -19,6 +19,7 @@ class PairFeats(Pbase):
                 keys = range(len(self._epre))
             for vd in self._epre[keys]:
                 self.set_dict_vars(vd["ev"])
+                Pbase._reload(self, "pcore")
                 func(self, *args, **kwargs)
         return inner
 
@@ -28,5 +29,5 @@ class PairFeats(Pbase):
         self._batch_slides_pairing()
 
     @__batch_job
-    def exp_nn_dist(self, keys=[]):
-        self._batch_pairing()
+    def exp(self, keys=[], rngs=123):
+        self._batch_pairing()  # fs=rngs, fe=rngs+3)
