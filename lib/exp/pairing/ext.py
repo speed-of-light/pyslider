@@ -29,7 +29,7 @@ class _Core(object):
 
     def __base_area(self):
         h, w = self.imsize
-        pts = np.float32([ [0, 0], [0, h-1], [w-1, h-1], [w-1, 0] ]).\
+        pts = np.float32([[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]).\
             reshape(-1, 1, 2)
         self.base_area = cv2.contourArea(pts)
 
@@ -46,13 +46,13 @@ class _Core(object):
     def __good_pts(self, mkp, skp, fkp):
         remap = lambda ar: np.float32(ar).reshape(-1, 1, 2)
         return remap([skp.iloc[m] for m in mkp.ski]), \
-               remap([fkp.iloc[m] for m in mkp.fki])
+            remap([fkp.iloc[m] for m in mkp.fki])
 
     def __get_area(self, m):
         if m is None:
             return 0
         h, w = self.imsize
-        pts = np.float32([ [0, 0], [0, h-1], [w-1, h-1], [w-1, 0] ]). \
+        pts = np.float32([[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]). \
             reshape(-1, 1, 2)
         dst = cv2.perspectiveTransform(pts, m)
         return cv2.contourArea(dst)
@@ -67,16 +67,17 @@ class _Core(object):
         if len(good) >= self.minmat:
             src, des = self.__good_pts(good, skp, fkp)
             M, mask = cv2.findHomography(
-                 src, des, method=self.hm,
-                 ransacReprojThreshold=self.thres)
+                src, des, method=self.hm,
+                ransacReprojThreshold=self.thres)
             return M, mask.ravel().tolist()
         return None, [0]*len(good)
 
     def __inv(self, data):
-        if self.invw:
-            data[data == 1] = -10**self.invw
-            data[data == 0] = 1
-        return data
+        nda = np.array(data)
+        if self.invw > 0:
+            nda[nda == 1] = -10**self.invw
+            nda[nda == 0] = 1
+        return nda
 
     def __homo_core(self, gd, sx, fx):
         """

@@ -44,8 +44,10 @@ class _DataTuner(object):
         rdf = data[data.ransac > 0]
         ra = self.__topN(rdf, isize=5, rejector=self.__no_data)[:1]
         ra += [rdf.dist.mean()]
-        rdf["wd"] = rdf["dist"] * rdf["ransac"]
-        ra += [rdf.wd.mean()]
+        dist = data.dist.copy()
+        dist[dist == 0] = 1
+        data["wd"] = dist * data["ransac"]
+        ra += [data.wd.mean()]
         return ra
 
     def __arear(self, data):
