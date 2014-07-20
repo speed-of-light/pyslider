@@ -88,12 +88,16 @@ class _Common(Datn):
         self.elog.info("Current configs: {}".format(kls))
 
     def _save_stats(self, prefx="rs", rdl=None):
-        rdf = pd.DataFrame(rdl)
         en, st = self.__df_key(prefx, dict(en="", ev=None))
-        self.save(st, rdf)
+        self.__combine_data(st, rdl)
         ins = "Save to {}.h5 with key: {}".format(self.klass_var, st)
         self.elog.info(ins)
-        return rdf
+
+    def __combine_data(self, st, dl):
+        df = pd.DataFrame(dl)
+        ldf = pd.DataFrame(self.load(st))
+        df = ldf.append(df)
+        self.save(st, df)
 
     def __keyset(self, keys):
         if len(keys) == 0:

@@ -6,6 +6,7 @@ from core import _Core as Core
 
 class xFrames(Core, Base):
     _xkeys = ["mean", "qart", "top"]
+
     def __init__(self, pairs=None):
         self.pairs = pairs
         Base.__init__(self, pairs.root, pairs.name)
@@ -13,6 +14,12 @@ class xFrames(Core, Base):
 
     def crossing(self, pkeys=[]):
         pc = self.pairs
-        for kn, df in pc.iter_data(pkeys, proc=pc.dp_group_fid):
+        for keyname, df in pc.iter_data(pkeys, proc=pc.dp_group_fid):
             self._gmm(df, keys=self._xkeys)
-            yield kn, df
+            yield keyname, df
+
+    def rev_crossing(self, pkeys=[]):
+        pc = self.pairs
+        for keyname, df in pc.iter_data(pkeys, proc=pc.dp_group_fid):
+            self._gmm(df, keys=self._xkeys)
+            yield keyname, df

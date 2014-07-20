@@ -24,10 +24,10 @@ class PairFeats(Pbase):
         return inner
 
     @__batch_job
-    def exp_ss_mat(self, keys=[]):
+    def exp_ss_mat(self, keys=[], ss=0, se=None):
         # Making slide feats confusion matrix
-        self._batch_slides_pairing()
+        self._batch_slides_pairing(ss=ss, se=se)
 
     @__batch_job
-    def exp(self, keys=[], rngs=123):
-        self._batch_pairing()  # fs=rngs, fe=rngs+3)
+    def exp(self, keys=[], fs=0, fe=None):
+        self._batch_pairing(fs=fs, fe=fe)

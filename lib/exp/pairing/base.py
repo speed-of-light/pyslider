@@ -58,10 +58,10 @@ class _Base(Cfg, Cmn, ExpCommon):
         for bf in base_feats:
             bpb = lambda sx: self.__pairing_base(sx, bf)
             sdl += map(bpb, self.featx.slides)
-        return self._save_stats(prefx, sdl)
+        self._save_stats(prefx, sdl)
 
-    def _batch_pairing(self, fs=0, fe=-1):
+    def _batch_pairing(self, fs=0, fe=None):
         self.__bp_base("rs", self.featx.frames[fs:fe])
 
-    def _batch_slides_pairing(self, ss=0, se=-1):
+    def _batch_slides_pairing(self, ss=0, se=None):
         self.__bp_base("ss", self.featx.slides[ss:se])
