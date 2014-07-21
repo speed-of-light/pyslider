@@ -66,10 +66,28 @@ class _DataTuner(object):
         aa += self.__ransac_dist(data, isize=3, rejector=self.__no_ransac)
         return dict(zip(self._skeys, aa))
 
-    def __group_dist(self, gi, grp):
+    def _group_dist(self, gi, grp):
         r = dict(fid=gi,
                  mean_dist=grp.mean_dist.mean(),
                  qart_dist=grp.qart_dist.mean(),
                  top_dist=grp.top10_dist.mean())
         return r
 
+    def _group_all(self, gi, grp):
+        ga = grp.area_ratio.copy()
+        ga.sort(ascending=0)
+        r = dict(fid=gi,
+            top10=grp.top10.mean(),
+            top20=grp.top20.mean(),
+            top30=grp.top30.mean(),
+            top40=grp.top40.mean(),
+            top50=grp.top50.mean(),
+            rdist=grp.rdist.mean(),
+            rtop10=grp.rtop10.mean(),
+            ridist=grp.inv_rdist.mean(),
+            mean=grp.mean_dist.mean(),
+            qart=grp.qart_dist.mean(),
+            bot_area=ga[:1].sum(),
+            mean_area=ga[:3].mean(),
+            )
+        return r

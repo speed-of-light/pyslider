@@ -39,10 +39,25 @@ class _Core(object):
         ret[base <= np.min(means)] = 0
         return ret
 
-    def _gmm_base(self, data, key="mean"):
-        tn = data["{}_dist".format(key)]
-        data["{}_ans".format(key)] = self.__gmmize(tn)
+    def __area_swap(self, data, gre):
+        # gre[gre == 0] = 2
+        # gre[gre == 1] = 0
+        # gre[gre == 2] = 1
+        gr = np.array([1] * len(gre))
+        gr[gre.values > 0.1999] = 0
+        return gr
 
-    def _gmm(self, data, keys=["mean"]):
+    def _gmm_base(self, data, key="mean", post="_dist"):
+        tn = data["{}{}".format(key, post)]
+        if len(tn) == len(tn[tn.isnull()]):
+            gr = [1] * len(tn)
+        else:
+            if "area" in key:
+                gr = self.__area_swap(data,tn)
+            else:
+                gr = self.__gmmize(tn)
+        data["{}_ans".format(key)] = gr
+
+    def _gmm(self, data, keys=["mean"], post="_dist"):
         for ky in keys:
-            self._gmm_base(data, ky)
+            self._gmm_base(data, ky, post)

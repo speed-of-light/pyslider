@@ -33,7 +33,8 @@ class _Common(Datn):
 
     def __fix_invw(self, bbft=.8, ransac=5.0):
         n, v = self.__fix_base("InvRansac", [1, 2, 3],
-                               dict(bbft=bbft, thres=ransac), "invw", "{}(^{})")
+                               dict(bbft=bbft, thres=ransac),
+                               "invw", "{}(^{})")
         return map(self.__preset, n, v)
 
     def __preset_conf(self):
@@ -66,7 +67,8 @@ class _Common(Datn):
 
     def __df_key_base(self, **dt):
         bs = "d{:2.0f}".format(dt["bbft"]*100)
-        bs += "_ra{:2.0f}".format(dt["thres"]*100) if dt["thres"] else "_NoRansac"
+        dtt = dt["thres"]
+        bs += "_ra{:2.0f}".format(dtt*100) if dtt else "_NoRansac"
         bs += "_rm{:d}".format(dt["mm"])
         bs += "_iw{:d}".format(dt["invw"])
         bs += "_ot{:d}".format(dt["octaf"])
@@ -95,8 +97,8 @@ class _Common(Datn):
 
     def __combine_data(self, st, dl):
         df = pd.DataFrame(dl)
-        ldf = pd.DataFrame(self.load(st))
-        df = ldf.append(df)
+        # ldf = pd.DataFrame(self.load(st))
+        # df = ldf.append(df)
         self.save(st, df)
 
     def __keyset(self, keys):
@@ -121,5 +123,10 @@ class _Common(Datn):
 
     def dp_group_fid(self, data):
         dgs = data.groupby("fid")
-        ad = [self.__group_dist(*dg) for dg in dgs]
+        ad = [Datn._group_dist(self, *dg) for dg in dgs]
+        return pd.DataFrame(ad)
+
+    def dp_grouping(self, data):
+        dgs = data.groupby("fid")
+        ad = [Datn._group_all(self, *dg) for dg in dgs]
         return pd.DataFrame(ad)

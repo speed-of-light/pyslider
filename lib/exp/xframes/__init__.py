@@ -20,6 +20,7 @@ class xFrames(Core, Base):
 
     def rev_crossing(self, pkeys=[]):
         pc = self.pairs
-        for keyname, df in pc.iter_data(pkeys, proc=pc.dp_group_fid):
-            self._gmm(df, keys=self._xkeys)
+        for keyname, df in pc.iter_data(pkeys, proc=pc.dp_grouping):
+            dc = filter(lambda k: k != "fid", df.columns)
+            self._gmm(df, keys=dc, post="")
             yield keyname, df

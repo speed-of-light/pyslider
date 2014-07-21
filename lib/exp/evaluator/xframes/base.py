@@ -14,8 +14,8 @@ class _Base(Pldr, ExpCommon):
             mod = GT(self.root, self.name)
         self.__dict__[module] = mod
 
-    def cross_result(self, data, dkey="mean"):
-        gkey = "{}_gnd".format(dkey)
+    def cross_result(self, data, dkey="mean_ans"):
+        gkey = "{}_gnd".format(dkey[:-4])
         data[gkey] = map(self.gnd.answer, data["fid"].values)
 
     def cross_results(self, data, dkeys=["mean"]):
