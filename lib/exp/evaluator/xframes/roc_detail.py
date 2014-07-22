@@ -1,4 +1,5 @@
 from lib.exp.evaluator.accuracy import Accuracy
+import inflection as Inf
 
 
 class RocDetail(object):
@@ -17,22 +18,21 @@ class RocDetail(object):
         return dict(tn=tn, fn=fn, tp=tp, fp=fp)
 
     def __count_by_keys(self, df, name="no_name", key="mean"):
-        ak = "{}_ans".format(key)
-        gk = "{}_gnd".format(key)
-        binn = self.__counting(df, ak, gk)
-        binn.update(name=name, key=key)
+        gk = "{}_gnd".format(key[:-4])
+        binn = self.__counting(df, key, gk)
+        binn.update(name=name, key=Inf.titleize(key))
         if self.preview:
             print binn
         return binn
 
     def __core(self, kn, df):
-        keys = ["mean", "qart", "top"]
+        keys = filter(lambda c: "ans" in c, df.columns)
         self.cross_results(df, dkeys=keys)
         ckf = lambda k: self.__count_by_keys(df, name=kn, key=k)
         return map(ckf, keys)
 
     def roc_details(self, keys=[1, 2, 3]):
-        bs = [self.__core(k, d) for k, d in self.xf_.crossing(keys)]
+        bs = [self.__core(k, d) for k, d in self.xf_.rev_crossing(keys)]
         bs = reduce(lambda x, y: x+y, bs)
         acc = Accuracy(bs, self.preview)
         return acc.details(acc.Common_Details+["fdr", "speficity"])

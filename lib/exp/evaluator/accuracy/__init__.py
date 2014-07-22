@@ -78,7 +78,7 @@ class Accuracy(__AccExtractors):
     def __ca_precision(self, tp=0, fp=0, tn=0, fn=0):
         # positive predictive value (PPV)
         a = tp + fp
-        return tp*1.0/a
+        return tp*1.0/a if a > 0 else 0
 
     def __ca_npv(self, tp=0, fp=0, tn=0, fn=0):
         # negative predictive value (NPV)
@@ -103,7 +103,7 @@ class Accuracy(__AccExtractors):
     def __ca_fdr(self, tp=0, fp=0, tn=0, fn=0):
         # false discovery rate
         a = tp + fp
-        return fp*1.0/a
+        return fp*1.0/a if a > 0 else 0
 
     def __ca_fmeasure_raw(self, beta=1, tp=0, fp=0, tn=0, fn=0):
         p = self.precision(tp, fp, tn, fn)

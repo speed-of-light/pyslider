@@ -5,9 +5,7 @@ from lib.exp.pairing import PairFeats as Pif
 
 
 class _Base(Cfgr, Pldr, ExpCommon):
-    _vars = ["gmmc"]
-
-    _vals = [2]
+    _conf = dict(gmmc=2)
 
     def __init__(self, root, name):
         ExpCommon.__init__(self, root, name)
@@ -20,3 +18,7 @@ class _Base(Cfgr, Pldr, ExpCommon):
             mod = Pif(self.root, self.name)
             mod.warmup()
         self.__dict__[module] = mod
+
+    def _configs(self):
+        _conf = dict(gmmc=2)
+        return _conf

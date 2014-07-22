@@ -4,6 +4,7 @@ import matplotlib.cm as mcm
 from functools import wraps  # enables @wraps
 from lib.plotter.plot_filer import _PlotFiler as PF
 from roc_plot import _RocPlot as Rocp
+from roc_grid import _RocGrid as Rgrid
 
 
 class XframePlotter(PF):
@@ -25,7 +26,7 @@ class XframePlotter(PF):
         def inner(self, *args, **kwargs):
             data = func(self, *args, **kwargs)
             PF._savefig(self, kwargs["fig"], func.__name__, self.__rn())
-            return data
+            # return data
         return inner
 
     @__plot_base
@@ -35,3 +36,10 @@ class XframePlotter(PF):
         data = self.xfe.roc_details(keys=range(4))
         rop.plot(ax, data)
         return data
+
+    @__plot_base
+    def roc_curve_plus(self, fig=None, data=None):
+        if data is None:
+            data = self.xfe.roc_details(keys=range(0, 18))
+        rop = Rgrid(self.__ds_key(), self._cm)
+        rop.plot(fig, data)
