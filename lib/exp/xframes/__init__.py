@@ -19,6 +19,10 @@ class xFrames(Core, Base):
             yield keyname, df
 
     def rev_crossing(self, pkeys=[]):
+        """
+        Get classified data from pairing class
+        pkeys: keys of config set in pair_feats class
+        """
         pc = self.pairs
         for keyname, df in pc.iter_data(pkeys, proc=pc.dp_grouping):
             dc = filter(lambda k: k != "fid", df.columns)
