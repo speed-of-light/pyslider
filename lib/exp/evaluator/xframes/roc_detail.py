@@ -31,6 +31,12 @@ class RocDetail(object):
         ckf = lambda k: self.__count_by_keys(df, name=kn, key=k)
         return map(ckf, keys)
 
+    def roc_df(self, key=9):
+        for k, df in self.xf_.rev_crossing([key]):
+            keys = filter(lambda c: "ans" in c, df.columns)
+            self.cross_results(df, dkeys=keys)
+        return df
+
     def roc_details(self, keys=[1, 2, 3]):
         bs = [self.__core(k, d) for k, d in self.xf_.rev_crossing(keys)]
         bs = reduce(lambda x, y: x+y, bs)

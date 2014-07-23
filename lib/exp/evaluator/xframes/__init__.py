@@ -16,6 +16,6 @@ class XframeEval(Rocd, Base):
         # return acc.details(acc.Common_Details+["fdr", "speficity"])
         pass
 
-    def slide_coverage(self, fixes=dict(pre_ns=47, pre_ws=61), keys=[]):
+    def coverages(self, fixes=dict(pre_ns=47, pre_ws=61), keys=[]):
         scov = Scov(self.gnd, **fixes)
         return scov.compute(self.xf_.rev_crossing(keys))

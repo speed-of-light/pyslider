@@ -5,6 +5,7 @@ from functools import wraps  # enables @wraps
 from lib.plotter.plot_filer import _PlotFiler as PF
 from roc_plot import _RocPlot as Rocp
 from roc_grid import _RocGrid as Rgrid
+from frames import _Frames as Frs
 
 
 class XframePlotter(PF):
@@ -18,14 +19,15 @@ class XframePlotter(PF):
     def __ds_key(self):
         return "[{}-{}]".format(self.xfe.root, self.xfe.name)
 
-    def __rn(self):
-        return self.xfe.root + "_" + self.xfe.name
+    def __rn(self, more=""):
+        return self.xfe.root + "_" + self.xfe.name + more
 
     def __plot_base(func):
         @wraps(func)  # enable func.__name__
         def inner(self, *args, **kwargs):
-            data = func(self, *args, **kwargs)
-            PF._savefig(self, kwargs["fig"], func.__name__, self.__rn())
+            func(self, *args, **kwargs)
+            more = "_s{}".format(kwargs["st"]) if "st" in kwargs else ""
+            PF._savefig(self, kwargs["fig"], func.__name__, self.__rn(more=more))
             # return data
         return inner
 
@@ -43,3 +45,8 @@ class XframePlotter(PF):
             data = self.xfe.roc_details(keys=range(0, 18))
         rop = Rgrid(self.__ds_key(), self._cm)
         rop.plot(fig, data)
+
+    @__plot_base
+    def ns_frame_list(self, fig=None, data=None, st=0):
+        pt = Frs(self.__ds_key(), self.xfe.root, self.xfe.name)
+        pt.plot(fig, data, st=st)
