@@ -28,11 +28,11 @@ class _Scov(Scov):
 
     def __switch_cov(self, pdf):
         fs = self.__cov_base(pdf, "hit_seg_id")
-        return dict(swc=fs/len(self.gseg), fix_swc=fs/self.prews)
+        return dict(sws=fs, swc=fs/len(self.gseg), fix_swc=fs/self.prews)
 
     def __slide_cov(self, pdf):
         fs = self.__cov_base(pdf, "sid")
-        return dict(slc=fs/self.ns, fix_slc=fs/self.prens)
+        return dict(sls=fs, slc=fs/self.ns, fix_slc=fs/self.prens)
 
     def __covs(self, df, appkey):
         akn = appkey[:-4]
