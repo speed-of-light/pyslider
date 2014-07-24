@@ -2,6 +2,7 @@ __all__ = []
 
 from base import _Base as Base
 from core import _Core as Core
+from slide_voter import SlideVoter as SV
 
 
 class xFrames(Core, Base):
@@ -28,3 +29,10 @@ class xFrames(Core, Base):
             dc = filter(lambda k: k != "fid", df.columns)
             self._gmm(df, keys=dc, post="")
             yield keyname, df
+
+    def slides_ans(self, key, voters=[], name=""):
+        cdf = self.rev_crossing(pkeys=[key]).next()[1]
+        pdf = self.pairs.iter_data([key], proc=None).next()[1]
+        ssf = self.pairs.load(self.pairs._keyset([key])[0][1])
+        sv = SV(self.root, self.name, ssf)
+        return sv.votes(cdf, pdf, voters, name=name)
