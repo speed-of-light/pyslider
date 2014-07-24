@@ -26,7 +26,7 @@ class _Mater(object):
         cbar.set_ticklabels(labels)
 
     def __ax_mat(self, fig, ax, mat, vmax=None, st=0):
-        cax = ax.matshow(mat, vmin=0, vmax=vmax, extent=(0, 200,1,48))
+        cax = ax.matshow(mat, vmax=vmax, extent=(0, 200,1,48))
         cb = fig.colorbar(cax, fraction=.012, pad=.01)
         if vmax is not None:
             self.__ratio_bar(cb)
@@ -42,7 +42,7 @@ class _Mater(object):
         self.__finfo(ax, key)
 
     def plot(self, fig, df, st=0):
-        fts = "Ranking Similarity Comparison {}".format(self.ks)
+        fts = "Similarity Comparison {}".format(self.ks)
         fig.suptitle(fts, fontsize=23, y=.98)
         pltr = lambda i, k: self.__add_mat(fig, df, k, i, st=st)
         map(pltr, range(1, len(self.obs)+1), self.obs)
