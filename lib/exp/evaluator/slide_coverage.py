@@ -29,9 +29,10 @@ class SlideCoverage(object):
 
     def _mk_xdict(self, fid, ov):
         """
-        Get ground truth fid(gfid) and original value(ov)
+        Get ground truth fid(gfid) and
+        Ans: original value(ov)
         """
         sid, dist, gfid = self._in_segment(fid)
         return dict(
-            sid=sid, fid=fid, dist=dist, hit_seg_id=gfid, ov=ov)
-
+            sid=sid, fid=fid, dist=dist,
+            hit_seg_id=gfid, ans=ov)
