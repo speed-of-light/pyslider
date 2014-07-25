@@ -71,3 +71,8 @@ class XframePlotter(PF):
     def rec_timeline(self, fig=None, data=None, obk=[]):
         pt = Rec(self.__ds_key(), data)
         pt.plot(fig, obk)
+
+    @__plot_base
+    def sframe_list(self, fig=None, data=None, st=0):
+        pt = Frs(self.__ds_key(), self.xfe.root, self.xfe.name)
+        pt.splot(fig, df=data, st=st, key="v_atmri")

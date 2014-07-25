@@ -63,3 +63,17 @@ class _Frames(AxHelper):
             ax, img = self.__fpa(fig, df.fid, rows, cols, len(fig.axes)+1)
             self.__ax_annotates(ax, img.shape,
                                 df["{}_gnd".format(key)], df[ansk], df.fid)
+
+    def splot(self, fig=None, df=None, key="bot_area", st=0):
+        """
+        key: column prefix in df, contained key_ans, key_gnd for
+            color true positive and false positive results.
+        st: start index of all slide candidates in df
+        """
+        cols, rows = 10, 7
+        ansk = "{}_ans".format(key)
+        for di, dr in df.iterrows():
+            if len(fig.axes) == rows*cols:
+                break
+            ax, img = self.__fpa(fig, dr.fid, rows, cols, len(fig.axes)+1)
+            self.__ax_annotates(ax, img.shape, dr.gnd, dr[ansk], dr.fid)
