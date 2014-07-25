@@ -30,9 +30,36 @@ class xFrames(Core, Base):
             self._gmm(df, keys=dc, post="")
             yield keyname, df
 
-    def slides_ans(self, key, voters=[], name=""):
+    VOTES = [dict(voters=["area"], name="v_a"),
+            dict(name="v_at", voters=["area", "top50"]),
+            dict(name="v_atm", voters=["area", "top50", "mean"]),
+            dict(name="v_atmr",
+                 voters=["area", "top50", "mean", "rmean"]),
+            dict(name="v_atmri",
+                 voters=["area", "top50", "mean", "rmean", "invr"]),
+            dict(name="v_at_64", voters=["area", "top50"],
+                 wts=[.6, .4]),
+            dict(name="v_at_73", voters=["area", "top50"],
+                 wts=[.7, .3]),
+            dict(name="v_atm_721", voters=["area", "top50", "mean"],
+                 wts=[.7, .2, .1]),
+            dict(name="v_atm_253", voters=["area", "top50", "mean"],
+                 wts=[.2, .5, .3]),
+            dict(name="v_atm_533", voters=["area", "top50", "mean"],
+                 wts=[.5, .3, .2]),
+            dict(name="v_atm_433", voters=["area", "top50", "mean"],
+                 wts=[.4, .3, .3]),
+            dict(name="v_atm_442", voters=["area", "top50", "mean"],
+                 wts=[.2, .4, .4]),
+            dict(name="v_atm_re", voters=["area", "top50", "mean"],
+                 wts="even refine"),
+            ]
+
+    def slides_ans(self, key):
         cdf = self.rev_crossing(pkeys=[key]).next()[1]
         pdf = self.pairs.iter_data([key], proc=None).next()[1]
         ssf = self.pairs.load(self.pairs._keyset([key])[0][1])
-        sv = SV(self.root, self.name, ssf)
-        return sv.votes(cdf, pdf, voters, name=name)
+        sv = SV(self.root, self.name, cdf, pdf, ssf)
+        for vt in self.VOTES:
+            sv.votes(**vt)
+        return sv.vdf
