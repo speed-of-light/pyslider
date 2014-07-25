@@ -7,6 +7,7 @@ from roc_plot import _RocPlot as Rocp
 from roc_grid import _RocGrid as Rgrid
 from frames import _Frames as Frs
 from mater import _Mater as Mater
+from rec_plot import _RecPlot as Rec
 
 
 class XframePlotter(PF):
@@ -24,7 +25,7 @@ class XframePlotter(PF):
         return self.xfe.root + "_" + self.xfe.name + more
 
     def __red_ary(self, ary):
-        return reduce(lambda x,y: "{},{}".format(x, y), ary)
+        return reduce(lambda x, y: "{},{}".format(x, y), ary)
 
     def __plot_base(func):
         @wraps(func)  # enable func.__name__
@@ -65,3 +66,8 @@ class XframePlotter(PF):
         """
         pt = Mater(self.__ds_key(), self.xfe.gnd.info().n_slides, obk)
         pt.plot(fig, data, st)
+
+    @__plot_base
+    def rec_timeline(self, fig=None, data=None, obk=[]):
+        pt = Rec(self.__ds_key(), data)
+        pt.plot(fig, obk)

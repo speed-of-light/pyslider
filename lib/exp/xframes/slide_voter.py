@@ -16,7 +16,7 @@ class SlideVoter(object):
 
     def __make_votes(self, data):
         fi, fd = data[0], data[1]
-        sids = [fi, self.gnd.answer(fi)]
+        sids = [fi, self.gnd.answer(fi-30)]
         sids.append(int(fd.ix[fd[fd.area_ratio < 1.5].area_ratio.argmax()].sid))
         sids.append(int(fd.ix[fd.top50.argmin()].sid))
         sids.append(int(fd.ix[fd.mean_dist.argmin()].sid))
@@ -42,8 +42,6 @@ class SlideVoter(object):
             wgs = wg.w.sum()
             conf = wgs if wgs > conf else conf
             sid = wi if (wgs >= conf) & (wgs > .5) else sid
-        if ("refine" in wm) & (conf < 0.34) & (len(row.values) > 2):
-            sid = row["area"]
         return dict(ans=sid, confidence=conf)
 
     def __voting(self, vdf, w):
@@ -56,9 +54,21 @@ class SlideVoter(object):
         fids = [xi for xi, xd in xdf.groupby("fid")]
         return pdf[pdf.fid.isin(fids)]
 
+    def __refine(self, vdf, vf, vk):
+        for vi in range(2, len(vf)-2):
+            precf = vf.iloc[vi-2:vi].confidence.mean()
+            poscf = vf.iloc[vi+1:vi+3].confidence.mean()
+            vcr = vdf.iloc[vi]
+            conf = vf.iloc[vi].confidence
+            if (conf < 0.34) & (conf <= precf) & \
+               (conf <= poscf) & (len(vcr.value_counts()) > 2):
+                vf.ix[vf.iloc[vi].name, "ans"] = vcr.area
+
     def votes(self, voters=["area"], name="area_only", wts="even"):
         vok = "{}_ans".format(name)
         voc = "{}_conf".format(name)
         vf = self.__voting(self.vdf[voters], wts)
+        if ("refine" in wts):
+            self.__refine(self.vdf[voters], vf, vok)
         self.vdf[vok] = vf["ans"]
         self.vdf[voc] = vf["confidence"]
