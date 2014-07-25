@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from lib.exp.evaluator.slide_coverage import SlideCoverage as Scov
 from lib.exp.evaluator.accuracy import Accuracy
 
@@ -8,6 +9,7 @@ class _SFcov(Scov):
 
     def __init__(self, gnd, presl=0, presw=0):
         self.gseg = gnd.load("segments")
+        self.nframe = gnd.info().n_frames
         self.presl = presl
         self.presw = presw
 
@@ -68,12 +70,25 @@ class _SFcov(Scov):
         slcov = lambda k, df: self.__cov("sl", k, df)
         return pd.DataFrame(map(slcov, keys, covl))
 
+    def __tlcov(self, keys, covl):
+        ak = []
+        for ky, df in zip(keys, covl):
+            dsum = 0
+            for di, dg in df[df["ans"]>0].groupby("hit_seg_id"):
+                if np.isnan(dg.dist.iloc[0]):
+                    continue
+                dsum += dg.dist.iloc[0]
+            ak.append(dict(key=ky, tcov=1-dsum/self.nframe))
+        return pd.DataFrame(ak)
+
     def batch_detail(self, akl, ansl):
         adf = self.__accuracy(akl, ansl)
         swf = self.__swcov(akl, ansl)
         slf = self.__slcov(akl, ansl)
+        tlf = self.__tlcov(akl, ansl)
         df = adf.merge(swf, on="key")
         df = df.merge(slf, on="key")
+        df = df.merge(tlf, on="key")
         return df
 
     def __raw_covs(self, fdf, ak):
