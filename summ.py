@@ -18,7 +18,38 @@ warnings.filterwarnings('ignore')
 
 #dc = mm.df_classify_perf(key="coverages_9")
 #saf = mm.df_rec_ans()
-mm.get_storage()
+sd = mm.get_storage()
+sd.Classifier = [0, 1, 2]
+sd.Reducer = [170, 167, 178]
+sd.Feats = [1282, 1322, 1621]
+sd.Slides = [40, 38, 42]
+sd.Matches = [2265, 2695, 3105]
+sd
+
+# <codecell>
+
+fig = plt.figure(figsize=(18, 5))
+#fig.suptitle("Storage Comparisons of 3 dataset(MB)", fontsize=20, y=1.02)
+kcrs = ["#3355ee", "#ee5533", "#449b44"]
+crs = mpl.cm.GnBu(range(30,250, 30))
+lbs = filter(lambda k: "dsn" not in k, sd.columns)
+explode=(0, 0.1, 0, 0)
+for si, sr in sd.iterrows():
+  ax = plt.subplot(1, 3, si+1)
+  dt = sr[lbs]
+  dts = dt.sum()
+  exp = (dt.values / (1.*dts))*.2
+  pa, tx, txa = ax.pie(dt, explode=exp, labels=lbs, autopct='%1.1f%%', colors=crs)
+  # texts
+  [t.set_text(t.get_text() + "({})".format(v)) for t, v in zip(tx, dt.values)]
+  [t.set_text("") for t, v in zip(tx, dt.values) if v == 0]
+  [t.set_color(kcrs[si]) for t, v in zip(tx, dt.values)]
+  [t.set_size(18) for t in tx]
+  [t.set_size(18) for t in txa]
+  # final
+  ax.set_title("{} ({})".format(sr.dsn, dts), fontsize=32, color=kcrs[si])
+fig.savefig("data/fig/mary/storage.eps", transparent=1)
+#sd.plot(kind='pie', ax=ax, autopct='%1.1f%%', startangle=270, fontsize=17)
 
 # <codecell>
 

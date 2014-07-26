@@ -3,6 +3,7 @@ from lib.exp.tools.slider import Slider
 from lib.exp.tools.video import Video
 from lib.exp.pre import Reducer
 from lib.exp.featx import Featx
+from lib.exp.match import Matchx
 from lib.exp.pairing import PairFeats
 from lib.exp.xframes import xFrames
 from lib.exp.evaluator.xframes import XframeEval
@@ -24,7 +25,7 @@ class _Storage(object):
         ps.append(Reducer(r, n)._store_size())
         fx = Featx(r, n)
         ps.append( fx._store_size() )
-        pf = PairFeats(fx)
+        pf = Matchx(r, n)
         ps.append( pf._store_size() )
         xf = xFrames(pf)
         ps.append( xf._store_size() )
