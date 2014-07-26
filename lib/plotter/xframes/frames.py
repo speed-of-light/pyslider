@@ -29,7 +29,7 @@ class _Frames(AxHelper):
         ax.imshow(fimg[:, :, [2, 1, 0]])
         self._ax_hide_ticks(ax)
 
-    def __ax_annotates(self, ax, isize, sid, ans, fid):
+    def __ax_annotate_ns(self, ax, isize, sid, ans, fid):
         ax.set_title("S[{}]".format(int(sid)))
         ax.set_xlabel("A[{}]F[{}]".format(int(ans), int(fid)))
         if (sid > 0) & (ans == 0):
@@ -37,8 +37,21 @@ class _Frames(AxHelper):
         elif (sid <= 0) & (ans == 0):
             self.__remake_spines(ax, isize, c="r")
 
+    def __ax_annotate_s(self, ax, isize, sid, ans, fid):
+        ax.set_title("S[{}]".format(int(sid)))
+        ax.set_xlabel("A[{}]F[{}]".format(int(ans), int(fid)))
+        if (ans == sid) & (sid > 0):
+            self.__remake_spines(ax, isize, c="#77FF88")
+        elif (ans == sid) & (sid < 0):
+            self.__remake_spines(ax, isize, c="#77FF88")
+        elif (sid < 0) & (ans > 0):
+            self.__remake_spines(ax, isize, c="r")
+        elif ((sid > 0) & (ans < 0)) | ((ans != sid) & (sid > 0) & (ans > 0)):
+            self.__remake_spines(ax, isize, c="r")
+
     def __prep_data(self, fig, df, st, se, ansk):
-        fts = "Classified Frames of {} ({}~{})".format("Univ_07-coates", st, se)
+        fts = "Classified Frames of {} ({}~{})".\
+            format("Univ_07-coates", st, se)
         fig.suptitle(fts, fontsize=18, y=.93)
         daf = df[df[ansk] == 0][st:se]
         return daf
@@ -61,8 +74,8 @@ class _Frames(AxHelper):
         daf = self.__prep_data(fig, df, st, st+cols*rows, ansk)
         for di, df in daf.iterrows():
             ax, img = self.__fpa(fig, df.fid, rows, cols, len(fig.axes)+1)
-            self.__ax_annotates(ax, img.shape,
-                                df["{}_gnd".format(key)], df[ansk], df.fid)
+            self.__ax_annotate_ns(ax, img.shape,
+                                  df["{}_gnd".format(key)], df[ansk], df.fid)
 
     def splot(self, fig=None, df=None, key="bot_area", st=0):
         """
@@ -76,4 +89,4 @@ class _Frames(AxHelper):
             if len(fig.axes) == rows*cols:
                 break
             ax, img = self.__fpa(fig, dr.fid, rows, cols, len(fig.axes)+1)
-            self.__ax_annotates(ax, img.shape, dr.gnd, dr[ansk], dr.fid)
+            self.__ax_annotate_s(ax, img.shape, dr.gnd, dr[ansk], dr.fid)
