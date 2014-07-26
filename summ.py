@@ -3,7 +3,9 @@
 
 # <codecell>
 
-rks = ["lib.exp.summ"]
+rks = [
+  "lib.exp.summ.storage",
+  "lib.exp.summ"]
 reload_mods(rks)
 
 from lib.exp.summ import Mary
@@ -14,9 +16,9 @@ warnings.filterwarnings('ignore')
 
 # <codecell>
 
-dc = mm.df_classify_perf(key="coverages_9")
+#dc = mm.df_classify_perf(key="coverages_9")
 #saf = mm.df_rec_ans()
-#dc
+mm.get_storage()
 
 # <codecell>
 
@@ -106,7 +108,8 @@ for ci, rg in cc.groupby("dsn"):
 
 # <codecell>
 
-len(saf)
+aa = [1,2]
+[4] + aa
 
 # <codecell>
 

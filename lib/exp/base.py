@@ -127,3 +127,10 @@ class ExpCommon(Explog, PathMaker):
             return self._reload(key)
         else:
             return self.__dict__[sk]
+
+    def _store_size(self):
+        sp = self.__stores_path()
+        if os.path.isfile(sp):
+            return os.path.getsize(sp)
+        else:
+            return 0

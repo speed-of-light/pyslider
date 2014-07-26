@@ -1,7 +1,9 @@
+import pandas as pd
 from lib.exp.featx import Featx
 from lib.exp.pairing import PairFeats
 from lib.exp.xframes import xFrames
 from lib.exp.evaluator.xframes import XframeEval
+from storage import _Storage as Stg
 
 
 class Mary(object):
@@ -41,3 +43,10 @@ class Mary(object):
 
     def df_rec_ans(self):
         return reduce(lambda x, y: x.append(y), map(self.__load_saf, self.names))
+
+    def get_storage(self):
+        da = []
+        for ns in self.names:
+            stg = Stg(self.root, ns)
+            da.append(stg.sd)
+        return pd.DataFrame(da)
