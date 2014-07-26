@@ -26,7 +26,7 @@ class _RocPlot(object):
                     fontsize=12, ha="right", va="bottom", arrowprops=arp)
 
     def __plot_core(self, ax, ei, gi, gd, cpn="name"):
-        mk, clr = self._marker[ei], self._cm(ei*1.0/self._cm.N)
+        mk, clr = self._marker[ei % 4], self._cm(ei*1.0/self._cm.N)
         xs, ys = "speficity", "sensitivity"
         gd.plot(x=xs, y=ys, marker=mk, markersize=11, ls="-",
                 color=clr, ax=ax, label=gi)
