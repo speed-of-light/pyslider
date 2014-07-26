@@ -1,51 +1,24 @@
 import pandas as pd
 from lib.exp.base import ExpCommon
 from ground_truth import GroundTruth
+from slide_coverage import SlideCoverage as Scov
 
 
-class PreprocEvaluator(ExpCommon):
+class PreprocEvaluator(Scov, ExpCommon):
     def __init__(self, root, name):
         """
         Evaluate preprocess effectiveness
         Depends on `GroundTruth` should include `segments` dataframe
         """
         ExpCommon.__init__(self, root, name)
-        self.__load_segments_gnd()
-
-    def __load_segments_gnd(self):
         gt = GroundTruth(self.root, self.name)
-        self.gseg = gt.load("segments")
-
-    def __get_slide_id(self, fid, tag):
-        ret = -1
-        fs = tag.fstart
-        fe = tag.fstart + tag.duration
-        if fs <= fid <= fe:
-            ret = tag.sid
-        return ret
-
-    def in_segment(self, fid):
-        """
-        Return value if frame is in the segments
-        """
-        dfi = self.gseg[self.gseg.fstart <= fid]
-        dist = None
-        sid = -1
-        gnd_fid = None
-        if len(dfi) > 0:
-            tag = dfi.iloc[-1]
-            sid = self.__get_slide_id(fid, tag)
-            gnd_fid = tag.fstart * -1
-            if sid > 0:
-                gnd_fid = tag.fstart
-                dist = fid - tag.fstart
-        return sid, dist, gnd_fid
+        Scov.__init__(self, gt.load("segments"))
 
     def ac_segments_df(self, reduced):
         data = []
         for ri, rd in reduced.iterrows():
             fid = rd.frame_id
-            sid, dist, gfid = self.in_segment(fid)
+            sid, dist, gfid = self._in_segment(fid)
             data.append(
                 dict(sid=sid, fid=fid, dist=dist, hit_seg_id=gfid,
                      diff=rd['diff']))

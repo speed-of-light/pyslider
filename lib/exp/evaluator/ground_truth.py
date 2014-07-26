@@ -156,3 +156,30 @@ class GroundTruth(ExpCommon, Summary):
         """
         asid = self.answer(fid)
         return asid == sid
+
+    def __load_seg(self):
+        seg = self.load("segments")
+        self.__check_segments(seg)
+        return seg
+
+    def __check_segments(self, seg):
+        if (seg is None) or (len(seg) == 0):
+            raise Exception("Error", "Segments not exist")
+
+    def update_segment(self):
+        """
+        Fix unmarked frames from univ_07 groudtruth
+        """
+        seg = self.__load_seg()
+        gfp = "data/{}/{}/ground_truth".format(self.root, self.name)
+        gdf = pd.read_csv(gfp, names=["fid", "sid", "stype", "ctype"])
+        pgd = gdf.iloc[0]
+        drs = "duration"
+        for gi, gd in gdf[1:].iterrows():
+            if (pgd.sid != gd.sid) & (pgd.sid != -1):
+                fdiff = gd.fid - pgd.fid - 1
+                st = seg[seg.fstart < pgd.fid].iloc[-1]
+                seg.ix[st.name, drs] = seg.ix[st.name][drs] + fdiff
+            pgd = gd
+        self.save("segments", seg)
+        print "Finished update segments"

@@ -15,9 +15,15 @@ class _Base(Pldr, ExpCommon):
         self.__dict__[module] = mod
 
     def cross_result(self, data, dkey="mean_ans"):
+        """
+        Check correctness of single data list results
+        """
         gkey = "{}_gnd".format(dkey[:-4])
         data[gkey] = map(self.gnd.answer, data["fid"].values)
 
     def cross_results(self, data, dkeys=["mean"]):
+        """
+        Check correctness of data results with different keys
+        """
         crd = lambda k: self.cross_result(data, k)
         map(crd, dkeys)

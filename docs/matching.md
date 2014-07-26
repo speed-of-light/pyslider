@@ -22,4 +22,5 @@ The core routine to get matched results
 
 # API
 
-[API Reference](http://nbviewer.ipython.org/github/speed-of-light/pyslider/blob/master/docs/nb/matching_base.ipynb)
+[API Reference v2](http://nbviewer.ipython.org/github/speed-of-light/pyslider/blob/master/docs/nb/matching_base.ipynb)
+[API Reference v4](http://nbviewer.ipython.org/github/speed-of-light/pyslider/blob/master/docs/nb/matching.ipynb)

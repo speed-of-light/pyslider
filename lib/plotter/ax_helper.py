@@ -20,3 +20,7 @@ class AxHelper(object):
         ax.spines[spine_pos].set_position(("axes", delta))
         self._ax_hide_patch_spines(ax)
         ax.spines[spine_pos].set_visible(True)
+
+    def _ax_hide_ticks(self, ax):
+        ax.set_xticks([])
+        ax.set_yticks([])

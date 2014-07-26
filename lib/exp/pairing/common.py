@@ -101,7 +101,7 @@ class _Common(Datn):
         # df = ldf.append(df)
         self.save(st, df)
 
-    def __keyset(self, keys):
+    def _keyset(self, keys):
         if len(keys) == 0:
             keys = range(len(self._epre))
         kb = lambda dx: self.__df_key("rs", dx)
@@ -118,7 +118,7 @@ class _Common(Datn):
         yield "data name" and its data pack
         """
         self._update_klass_var()
-        for kn, ks in self.__keyset(keys):
+        for kn, ks in self._keyset(keys):
             yield kn, self.__load_and_proc(ks, proc)
 
     def dp_group_fid(self, data):
