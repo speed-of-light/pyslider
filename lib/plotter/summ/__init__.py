@@ -21,8 +21,16 @@ class MaryPlotter(PF):
             return data
         return inner
 
+    _dek = ["result", "coverages_9", "classified_cov_result", "slide_ans_9"]
+
     @save_fig
     def classfy_perf(self, fig=None, ks=[]):
         dc = self.mm.df_classify_perf()
         pt = FigPlot(dc)
         pt._classfy_roc(fig, ks)
+
+    @save_fig
+    def rec_timeline(self, fig=None, ds=[0], ks=[0,0,0]):
+        dc = self.mm.df_rec_ans()
+        pt = FigPlot(dc)
+        pt._rec_timeline(fig, ds, ks)

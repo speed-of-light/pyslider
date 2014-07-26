@@ -3,19 +3,14 @@ class SumNsTab(object):
         self.df = data
 
     def __mark_loc_best(self):
-        for df in self.df:
-            df["local_best"] = 0
-            for ti, tg in df.groupby("key"):
-                ix = tg.sort(columns=["sensitivity", "precision", "accuracy", "sensitivity"], ascending=False).iloc[0].name
-                df.ix[ix, "local_best"] = 1
+        self.df["local_best"] = 0
+        for ti, tg in self.df.groupby("key"):
+            ix = tg.sort(columns=["sensitivity", "precision", "accuracy", "sensitivity"], ascending=False).iloc[0].name
+            self.df.ix[ix, "local_best"] = 1
 
     def __concat_best(self):
         skey = ["Mean Ans", "Top50 Ans", "Ridist Ans", "Bot Area Ans", "Rdist Ans"]
-        dp = None
-        for df in self.df:
-            dff = df[(df["local_best"] == 1) & df.key.isin(skey)]
-            dp = dff if dp is None else dp.append(dff)
-        return dp
+        return self.df[(self.df["local_best"] == 1) & self.df.key.isin(skey)]
 
     def __dp(self):
         self.__mark_loc_best()

@@ -1,5 +1,6 @@
 import numpy as np
 from lib.plotter.ax_helper import AxHelper
+from lib.plotter.xframes.rec_plot import _RecPlot as RP
 
 
 class FigPlot(AxHelper):
@@ -11,11 +12,7 @@ class FigPlot(AxHelper):
     _skey = np.array(["Bot Area Ans", "Top50 Ans", "Mean Ans", "Ridist Ans", "Rdist Ans"])
 
     def __concat_data(self):
-        dp = None
-        for df in self.db:
-            dff = df[df.key.isin(self._skey)]
-            dp = dff if dp is None else dp.append(dff)
-        return dp
+        return self.db[self.db.key.isin(self._skey)]
 
     def __ax_info(self, ax, fk):
         ax.set_title(fk, fontsize=16)
@@ -52,3 +49,18 @@ class FigPlot(AxHelper):
         df = self.__concat_data()
         pt = lambda fk: self.__plot(fig, df, fk, len(ks))
         map(pt, self._skey[ks])
+
+    def _rec_timeline(self, fig, ds, keys):
+        oks = np.array(filter(lambda k: "ans" in k, self.db.columns))
+        print "Keys available:", oks
+        ks = oks[keys]
+        rds = np.array(["chaves", "coates", "rozenblit"])[ds]
+        fig.suptitle("Confidence VS Recognition results", fontsize=20, y=.99)
+        fi = 1
+        for rd in rds:
+            for ki in ks:
+                df = self.db[(self.db.dsn == rd)]
+                ax = fig.add_subplot(len(rds)*len(ks), 1, fi)
+                rp = RP(ks=rd.capitalize(), data=df)
+                rp.ax_plot(ax, ki)
+                fi+=1

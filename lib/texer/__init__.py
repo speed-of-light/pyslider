@@ -6,6 +6,8 @@ __all__ = []
 from nsf_roc_tab import NsfRocTab
 from nsf_cov_tab import NsfCovTab
 from sum_ns_tab import SumNsTab
+from sum_ns_cov import SumNsCovTab
+from sum_sf_cov import SumSfCovTab
 
 
 class Texer(object):
@@ -22,4 +24,12 @@ class Texer(object):
 
     def sum_ns_roc(self, data):
         tab = SumNsTab(data)
+        return tab.tabular()
+
+    def sum_ns_cov(self, data):
+        tab = SumNsCovTab(data)
+        return tab.tabular()
+
+    def sum_sf_cov(self, data):
+        tab = SumSfCovTab(data)
         return tab.tabular()
