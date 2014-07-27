@@ -50,3 +50,12 @@ class Mary(object):
             stg = Stg(self.root, ns)
             da.append(stg.sd)
         return pd.DataFrame(da)
+
+    def save(self, key, df):
+        df.to_hdf(
+            "./data/sumy.h5", key, mode='a', data_columns=True,
+            format='t', complib='blosc', complevel=6)
+
+    def load(self, key):
+        df = pd.read_hdf("./data/sumy.h5", key, format='t')
+        return df

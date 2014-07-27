@@ -30,6 +30,6 @@ class Texer(object):
         tab = SumNsCovTab(data)
         return tab.tabular()
 
-    def sum_sf_cov(self, data):
+    def sum_sf_cov(self, data, cov=True):
         tab = SumSfCovTab(data)
-        return tab.tabular()
+        return tab.tabular(cov)

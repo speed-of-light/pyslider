@@ -10,7 +10,7 @@ from lib.exp.evaluator.xframes import XframeEval
 
 
 class _Storage(object):
-    sna = ["dsn", "Slides", "Video", "Reducer", "Feats", "Matches",
+    sna = ["dsn", "Slides", "Video", "Preprocess", "Features", "Matches",
            "Classifier", "Recognizer"]
 
     def __init__(self, r, n):
