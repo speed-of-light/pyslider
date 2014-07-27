@@ -275,5 +275,39 @@ from lib.exp.tools.slider import Slider
 from lib.exp.featx import Featx
 
 dn = ("univ_07", "coates")
-V
+vid = Video(*dn)
+slr = Slider(*dn)
+fx = Featx(*dn)
+fid, sid = 18050, 16
+sp = fx.load("s_{:03d}_kps".format(sid))
+fp = fx.load("f_{}_kps".format(fid))
+vimg = vid.get_frames(ids=[fid]).next()["img"]
+simg = slr.get_slides(ids=[sid], resize=(vimg.shape[1], vimg.shape[0])).next()["img"]
+
+# <codecell>
+
+def draw_kps(ax, img, kps, show=1, ty="Frame", iid=18050):
+  ax.imshow(img[:, :, [2, 1, 0]])
+  if show:
+    ax.scatter(kps.x, kps.y, marker="x", color="#55Fe36")
+    ax.scatter(kps.x, kps.y, marker=".", facecolors="none", edgecolors="#EE5869", s=kps.size*50)
+  ax.set_xlim(0, img.shape[1])
+  ax.set_ylim(img.shape[0], 0)
+  ax.set_xticks([])
+  ax.set_yticks([])
+  ax.set_title("{}[{}]".format(ty, iid), fontsize=16)
+
+fig = plt.figure(figsize=(18, 6))
+ax = fig.add_subplot(122)
+draw_kps(ax, vimg, fp, show=1, iid=fid)
+ax = fig.add_subplot(121)
+draw_kps(ax, simg, sp, show=1, ty="Slide", iid=sid)
+fig.savefig("data/fig/mary/sift_after.eps", transparent=1)
+
+# <codecell>
+
+fp.columns
+
+# <codecell>
+
 
