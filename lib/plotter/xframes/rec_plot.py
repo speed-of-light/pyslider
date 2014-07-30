@@ -2,18 +2,18 @@ import numpy as np
 from lib.plotter.ax_helper import AxHelper
 
 
-class _RecPlot(object):
+class _RecPlot(AxHelper):
     def __init__(self, ks="", data=None):
         self.ks = ks
         self.df = data
 
     _atmri = dict(
-            a="Area", at="Area and top50", atm="Area, top50, mean",
-            atmri="Area, top50, mean, ransac, and inverse")
+        a="Area", at="Area and top50", atm="Area, top50, mean",
+        atmri="Area, top50, mean, ransac, and inverse")
 
     def __translator(self, key):
         kegs = key.split("_")
-        w = ""
+        ak, w = "", ""
         for keg in kegs:
             if keg == "v":
                 continue
@@ -31,10 +31,11 @@ class _RecPlot(object):
         h1, l1 = ax.get_legend_handles_labels()
         h2, l2 = ax2.get_legend_handles_labels()
         leg = ax.legend(h1+h2, l1+l2, loc=8, ncol=6)
-        leg.set_alpha(.6)
+        leg.get_frame().set_alpha(.4)
 
     def __title(self, ax, ks):
         tk = self.__translator(ks)
+        tk = "{} ({})".format(tk, self.ks)
         ax.set_title(tk, fontsize=18)
 
     def __spine_info(self, ax, ax2):
@@ -66,3 +67,6 @@ class _RecPlot(object):
         for ki, ky in enumerate(ks, 1):
             ax = fig.add_subplot(len(keys)/2+1, 2, ki)
             self.__ploting(ax, ky)
+
+    def ax_plot(self, ax, ky):
+        self.__ploting(ax, ky)

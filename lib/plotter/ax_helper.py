@@ -24,3 +24,6 @@ class AxHelper(object):
     def _ax_hide_ticks(self, ax):
         ax.set_xticks([])
         ax.set_yticks([])
+
+    def _ax_transparent(self, ax):
+        ax.patch.set_visible(False)

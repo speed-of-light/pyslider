@@ -85,7 +85,7 @@ class _Frames(AxHelper):
         """
         cols, rows = 10, 7
         ansk = "{}_ans".format(key)
-        for di, dr in df.iterrows():
+        for di, dr in df[st:st+rows*cols].iterrows():
             if len(fig.axes) == rows*cols:
                 break
             ax, img = self.__fpa(fig, dr.fid, rows, cols, len(fig.axes)+1)
